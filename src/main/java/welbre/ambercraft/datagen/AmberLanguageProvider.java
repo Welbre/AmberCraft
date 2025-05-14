@@ -11,7 +11,9 @@ public class AmberLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        addBlock(Main.Blocks.IRON_MACHINE_CASE_BLOCK, "Iron machine case");
         addBlock(Main.Blocks.VOLTAGE_SOURCE_BLOCK, "Voltage source");
+        addBlock(Main.Blocks.RESISTOR_BLOCK, "Resistor");
         addItem(Main.Items.MULTIMETER, "Multimeter");
     }
 }

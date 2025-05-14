@@ -1,0 +1,52 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "cullface": "down",
+          "rotation": 180,
+          "texture": "#base"
+        },
+        "east": {
+          "cullface": "east",
+          "rotation": 90,
+          "texture": "#base"
+        },
+        "north": {
+          "cullface": "north",
+          "texture": "#c0"
+        },
+        "south": {
+          "cullface": "south",
+          "texture": "#c1"
+        },
+        "up": {
+          "cullface": "up",
+          "texture": "#base"
+        },
+        "west": {
+          "cullface": "west",
+          "rotation": 270,
+          "texture": "#base"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    }
+  ],
+  "textures": {
+    "base": "ambercraft:block/voltage_source_block",
+    "c0": "ambercraft:block/connection_creative_block",
+    "c1": "ambercraft:block/connection_creative_block",
+    "particle": "ambercraft:block/voltage_source_block"
+  }
+}
