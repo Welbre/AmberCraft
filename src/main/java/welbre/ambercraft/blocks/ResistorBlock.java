@@ -1,7 +1,9 @@
 package welbre.ambercraft.blocks;
 
 
-public class ResistorBlock extends Amber2AxesBlock {
+import welbre.ambercraft.blocks.parent.AmberSidedBasicBlock;
+
+public class ResistorBlock extends AmberSidedBasicBlock {
     public ResistorBlock(Properties p) {
         super(p);
     }

@@ -1,12 +1,12 @@
-package welbre.ambercraft.blocks;
+package welbre.ambercraft.blocks.parent;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 
-public class BasicAmberBlock extends Block {
+public class AmberBasicBlock extends Block {
 
-    public BasicAmberBlock(Properties p) {
+    public AmberBasicBlock(Properties p) {
         super(p
                 .sound(SoundType.STONE)
                 .strength(0.3F)

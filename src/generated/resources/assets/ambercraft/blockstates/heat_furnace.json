@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "ambercraft:block/heat_furnace",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "ambercraft:block/heat_furnace"
+    },
+    "facing=south": {
+      "model": "ambercraft:block/heat_furnace",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ambercraft:block/heat_furnace",
+      "y": 270
+    }
+  }
+}
