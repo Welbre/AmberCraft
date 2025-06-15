@@ -41,13 +41,18 @@ public class AmberModelProvider extends ModelProvider {
 
     private static void registerBlocks(@NotNull BlockModelGenerators blocks) {
         blocks.createTrivialCube(Main.Blocks.IRON_MACHINE_CASE_BLOCK.get());
+        blocks.createTrivialCube(Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get());
+        blocks.createTrivialCube(Main.Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get());
 
         CREATE_AMBER_SIDED_BLOCK(blocks, Main.Blocks.VOLTAGE_SOURCE_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "voltage_source_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, Main.Blocks.RESISTOR_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "resistor_block");
         CREATE_AMBER_HORIZONTAL_BLOCK(blocks, Main.Blocks.HEAT_FURNACE_BLOCK.get(),
-                "brick_machine_block", "furnace_base_block","iron_machine_base_beauty_block"
-                );
+                "brick_machine_block", "furnace_base_block","iron_machine_base_beauty_block");
+        CREATE_AMBER_SIDED_BLOCK(blocks, Main.Blocks.GROUND_BLOCK.get(),
+                "connection_creative_block", "ground_block","ground_block");
+
+        CREATE_AMBER_FREE_BLOCK_STATE(blocks, Main.Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get());
     }
 }

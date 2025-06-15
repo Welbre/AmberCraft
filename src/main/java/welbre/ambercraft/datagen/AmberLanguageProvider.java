@@ -14,7 +14,11 @@ public class AmberLanguageProvider extends LanguageProvider {
         addBlock(Main.Blocks.IRON_MACHINE_CASE_BLOCK, "Iron machine case");
         addBlock(Main.Blocks.VOLTAGE_SOURCE_BLOCK, "Voltage source");
         addBlock(Main.Blocks.RESISTOR_BLOCK, "Resistor");
+        addBlock(Main.Blocks.GROUND_BLOCK, "Ground");
         addBlock(Main.Blocks.HEAT_FURNACE_BLOCK, "Heat furnace");
+        addBlock(Main.Blocks.CREATIVE_HEAT_FURNACE_BLOCK, "Creative heat furnace");
+        addBlock(Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK, "Copper heat conductor");
+        addBlock(Main.Blocks.IRON_HEAT_CONDUCTOR_BLOCK, "Iron heat conductor");
 
         addItem(Main.Items.MULTIMETER, "Multimeter");
     }

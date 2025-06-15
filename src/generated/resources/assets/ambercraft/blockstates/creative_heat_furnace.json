@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "face_rotation=0,facing=down": {},
+    "face_rotation=0,facing=east": {},
+    "face_rotation=0,facing=north": {},
+    "face_rotation=0,facing=south": {},
+    "face_rotation=0,facing=up": {},
+    "face_rotation=0,facing=west": {},
+    "face_rotation=180,facing=down": {},
+    "face_rotation=180,facing=east": {},
+    "face_rotation=180,facing=north": {},
+    "face_rotation=180,facing=south": {},
+    "face_rotation=180,facing=up": {},
+    "face_rotation=180,facing=west": {},
+    "face_rotation=270,facing=down": {},
+    "face_rotation=270,facing=east": {},
+    "face_rotation=270,facing=north": {},
+    "face_rotation=270,facing=south": {},
+    "face_rotation=270,facing=up": {},
+    "face_rotation=270,facing=west": {},
+    "face_rotation=90,facing=down": {},
+    "face_rotation=90,facing=east": {},
+    "face_rotation=90,facing=north": {},
+    "face_rotation=90,facing=south": {},
+    "face_rotation=90,facing=up": {},
+    "face_rotation=90,facing=west": {}
+  }
+}

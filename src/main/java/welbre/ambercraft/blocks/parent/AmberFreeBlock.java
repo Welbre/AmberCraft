@@ -27,7 +27,7 @@ public class AmberFreeBlock extends AmberSidedBasicBlock {
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         //todo create a method to placement
-        return this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
     }
 
 

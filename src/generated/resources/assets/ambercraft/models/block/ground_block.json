@@ -1,0 +1,9 @@
+{
+  "parent": "ambercraft:block/sided_block",
+  "textures": {
+    "base": "ambercraft:block/ground_block",
+    "c0": "ambercraft:block/connection_creative_block",
+    "c1": "ambercraft:block/ground_block",
+    "particle": "ambercraft:block/ground_block"
+  }
+}

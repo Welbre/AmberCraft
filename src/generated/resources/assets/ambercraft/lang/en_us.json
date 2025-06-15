@@ -1,5 +1,9 @@
 {
+  "block.ambercraft.copper_heat_conductor": "Copper heat conductor",
+  "block.ambercraft.creative_heat_furnace": "Creative heat furnace",
+  "block.ambercraft.ground_block": "Ground",
   "block.ambercraft.heat_furnace": "Heat furnace",
+  "block.ambercraft.iron_heat_conductor": "Iron heat conductor",
   "block.ambercraft.iron_machine_case_block": "Iron machine case",
   "block.ambercraft.resistor_block": "Resistor",
   "block.ambercraft.voltage_source_block": "Voltage source",
