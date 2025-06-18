@@ -17,7 +17,7 @@ public class HeatFurnaceTile extends HeatBlockEntity {
 
     public HeatFurnaceTile(BlockPos pos, BlockState blockState) {
         super(Main.Tiles.HEAT_FURNACE_TILE.get(), pos, blockState);
-        this.thermal_conductivity = 100;
+        this.heatModule.setThermalConductivity(100.0);
     }
 
     @Override
@@ -35,13 +35,13 @@ public class HeatFurnaceTile extends HeatBlockEntity {
         if (!level.isClientSide) {
             if (blockEntity instanceof HeatFurnaceTile furnace) {
                 if (furnace.timer++ >= (furnace.overcharged ? 5 : 20)) {
-                    furnace.transferHeat(furnace.boost);
+                    furnace.heatModule.transferHeat(furnace.boost);
                     furnace.timer = 0;
-                    if (furnace.getTemperature() > 1000)
+                    if (furnace.heatModule.getTemperature() > 1000)
                         level.setBlock(pos, Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
                     level.sendBlockUpdated(pos,state,state, Block.UPDATE_CLIENTS);
                 }
-                furnace.transferHeatToNeighbor(level, pos);
+                furnace.heatModule.transferHeatToNeighbor(level, pos);
                 level.sendBlockUpdated(pos,state,state, Block.UPDATE_CLIENTS);
             }
         }

@@ -1,8 +1,9 @@
-// 1.21.4	2025-06-15T11:37:39.703078	Model Definitions - ambercraft
+// 1.21.4	2025-06-18T13:08:37.3589111	Model Definitions - ambercraft
 9017b80459b2cdea1f854ac115816ace512e93f3 assets/ambercraft/blockstates/copper_heat_conductor.json
 d705d1e2ec195924e0875b6076311d75d08b57a6 assets/ambercraft/blockstates/creative_heat_furnace.json
 b48b34a9c8e8ae84542264f6b7916e3b482a0021 assets/ambercraft/blockstates/ground_block.json
 26fff51bfde52aae1f18930228d32198738f31f2 assets/ambercraft/blockstates/heat_furnace.json
+1447e63a76292f6253737a0e4f3ecedc1896a9eb assets/ambercraft/blockstates/heat_sink.json
 4289f8cfefa90313a88174fa70a060b8e474d393 assets/ambercraft/blockstates/iron_heat_conductor.json
 33e1a578790409e769f050092d40c3f29ef7af10 assets/ambercraft/blockstates/iron_machine_case_block.json
 a17cf0d6fe4b2ba5d07a7e7a5c4cfd858dc2d438 assets/ambercraft/blockstates/resistor_block.json
@@ -11,6 +12,7 @@ d579a423315bddba6c480a2bcbf39dab795eb98d assets/ambercraft/items/copper_heat_con
 5b51fb2eca6f5d1a73f305a7e6c702af1581148d assets/ambercraft/items/creative_heat_furnace.json
 e2562d8d374d48df3432253f119f05c8d278646e assets/ambercraft/items/ground_block.json
 a10ccf38b27a2567f8a0a0868bd3c1e2e86a63f3 assets/ambercraft/items/heat_furnace.json
+ba5dc8d626b8c9cb15645b992aea2aa6ac7f3daf assets/ambercraft/items/heat_sink.json
 b5baece9838bea44fd19cac6425fc451c72b1653 assets/ambercraft/items/iron_heat_conductor.json
 ede0603661e7c3717454c36062cdffb9c63e9a8c assets/ambercraft/items/iron_machine_case_block.json
 1860b4e7896a9635096dabecc465c609d0479b59 assets/ambercraft/items/multimeter.json

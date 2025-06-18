@@ -15,6 +15,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import welbre.ambercraft.blockentity.CopperHeatConductorTile;
 import welbre.ambercraft.blockentity.HeatFurnaceTile;
+import welbre.ambercraft.blockentity.HeatSinkBlockEntity;
 import welbre.ambercraft.blockentity.IronHeatConductorTile;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
@@ -47,6 +48,8 @@ public class Main {
 
         public static final DeferredHolder<Block, CopperHeatConductorBlock> COPPER_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("copper_heat_conductor", CopperHeatConductorBlock::new);
         public static final DeferredHolder<Block, IronHeatConductorBlock> IRON_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("iron_heat_conductor", IronHeatConductorBlock::new);
+
+        public static final DeferredHolder<Block, HeatSinkBlock> HEAT_SINK_BLOCK = REGISTER.registerBlock("heat_sink", HeatSinkBlock::new);
     }
 
     public static final class Items{
@@ -61,13 +64,17 @@ public class Main {
 
         public static final DeferredItem<BlockItem> COPPER_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.COPPER_HEAT_CONDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> IRON_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_HEAT_CONDUCTOR_BLOCK);
+
+        public static final DeferredItem<BlockItem> HEAT_SINK_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_SINK_BLOCK);
     }
 
     public static final class Tiles {
         public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
+
         public static final Supplier<BlockEntityType<HeatFurnaceTile>> HEAT_FURNACE_TILE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceTile::new, Blocks.HEAT_FURNACE_BLOCK.get()));
         public static final Supplier<BlockEntityType<CopperHeatConductorTile>> COPPER_HEAT_CONDUCTOR_TILE = REGISTER.register("copper_heat_conductor", () -> new BlockEntityType<>(CopperHeatConductorTile::new, Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()));
         public static final Supplier<BlockEntityType<IronHeatConductorTile>> IRON_HEAT_CONDUCTOR_TILE = REGISTER.register("iron_heat_conductor", () -> new BlockEntityType<>(IronHeatConductorTile::new, Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<HeatSinkBlockEntity>> HEAT_SINK_BLOCK_ENTITY = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBlockEntity::new,Blocks.HEAT_SINK_BLOCK.get()));
     }
 
     public static final class TABS {

@@ -32,7 +32,7 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
             if (stack.getItem() == Items.LEVER){
                 BlockEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof HeatFurnaceTile furnace) {
-                    ((ServerPlayer) player).sendSystemMessage(Component.literal(furnace.getTemperature() + "ºC"), false);
+                    ((ServerPlayer) player).sendSystemMessage(Component.literal(furnace.heatModule.getTemperature() + "ºC"), false);
                     return InteractionResult.SUCCESS;
                 }
             } else if (stack.getItem() == Items.COAL) {

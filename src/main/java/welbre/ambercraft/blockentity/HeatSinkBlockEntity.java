@@ -9,15 +9,21 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.Main;
 import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.ModularBlockEntity;
 import welbre.ambercraft.module.Module;
 
-public class HeatBlockEntity extends BlockEntity implements ModularBlockEntity {
-    public HeatModule heatModule = new HeatModule();
+public class HeatSinkBlockEntity extends BlockEntity implements ModularBlockEntity {
+    public HeatModule heatModule = new HeatModule(this);
+
+    public HeatSinkBlockEntity(BlockPos pos, BlockState blockState) {
+        super(Main.Tiles.HEAT_SINK_BLOCK_ENTITY.get(), pos, blockState);
+        heatModule.setEnvThermalConductivity(10.0);
+        heatModule.setThermalConductivity(100.0);
+    }
 
     @Override
     public Module[] getModules() {
@@ -26,23 +32,21 @@ public class HeatBlockEntity extends BlockEntity implements ModularBlockEntity {
 
     @Override
     public Module[] getModule(Direction direction) {
-        return new Module[]{heatModule};
-    }
-
-    public HeatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
-        super(type, pos, blockState);
-    }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        loadData(tag,registries);
+        if (direction == Direction.DOWN)
+            return new Module[]{heatModule};
+        return new Module[0];
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         saveData(tag, registries);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        loadData(tag,registries);
     }
 
     @Override
