@@ -5,10 +5,9 @@ import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
-import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.blockstates.Variant;
 import net.minecraft.client.data.models.blockstates.VariantProperties;
-import net.minecraft.client.data.models.model.*;
+import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +46,7 @@ public class AmberModelProvider extends ModelProvider {
         blocks.createTrivialCube(Main.Blocks.IRON_MACHINE_CASE_BLOCK.get());
         blocks.createTrivialCube(Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get());
         blocks.createTrivialCube(Main.Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get());
-        blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(Main.Blocks.HEAT_SINK_BLOCK.get(), new Variant().with(VariantProperties.MODEL, ResourceLocation.parse("ambercraft:block/heat_sink"))));
+        blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(Main.Blocks.HEAT_SINK_BLOCK.get(), new Variant().with(VariantProperties.MODEL, ResourceLocation.parse("minecraft:block/air"))));
 
         CREATE_AMBER_SIDED_BLOCK(blocks, Main.Blocks.VOLTAGE_SOURCE_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "voltage_source_block");

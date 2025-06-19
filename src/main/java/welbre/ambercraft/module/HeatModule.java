@@ -27,9 +27,7 @@ public class HeatModule implements Module {
     public HeatModule(BlockEntity entity) {
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            Holder<Biome> biome = level.getBiomeManager().getBiome(entity.getBlockPos());
-            float baseTemperature = biome.value().getBaseTemperature();
-            this.envTemperature = baseTemperature * 40f;
+            this.envTemperature = getAmbientTemperature(level, entity.getBlockPos());
             this.temperature = this.envTemperature;
         }
     }
@@ -99,6 +97,10 @@ public class HeatModule implements Module {
         this.envConductive = conductive;
     }
 
+    public void setThermalMass(double thermal_mass) {
+        this.thermal_mass = thermal_mass;
+    }
+
     public void transferHeatToEnvironment(double env_temperature, double env_conductivity, double dt){
         double resistence = (1.0/thermal_conductivity) + (1.0/env_conductivity);
         double power, heat;
@@ -143,5 +145,11 @@ public class HeatModule implements Module {
         transferHeatToNeighbor(level,pos);
         if (this.envConductive != 0)
             transferHeatToEnvironment(envTemperature, envConductive, DEFAULT_TIME_STEP);
+    }
+
+    public static double getAmbientTemperature(Level level, BlockPos pos){
+        Holder<Biome> biome = level.getBiomeManager().getBiome(pos);
+        float baseTemperature = biome.value().getBaseTemperature();
+        return baseTemperature * 40f;
     }
 }

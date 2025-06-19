@@ -1,12 +1,13 @@
 package welbre.ambercraft.blocks;
 
-import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
@@ -14,7 +15,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -23,9 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.HeatSinkBlockEntity;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
-import welbre.ambercraft.module.HeatModuleDefinition;
-import welbre.ambercraft.module.ModularBlock;
-import welbre.ambercraft.module.ModuleDefinition;
+import welbre.ambercraft.module.*;
 
 public class HeatSinkBlock extends AmberBasicBlock implements ModularBlock, EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
@@ -52,6 +50,25 @@ public class HeatSinkBlock extends AmberBasicBlock implements ModularBlock, Enti
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.getItem() == Items.WATER_BUCKET) {
+            if (level.getBlockEntity(pos) instanceof HeatSinkBlockEntity sink) {
+                if (sink.heatModule.getTemperature() >= 100) {
+                    if (!player.isCreative()) {
+                        player.getInventory().removeItem(stack);
+                        player.getInventory().add(new ItemStack(Items.BUCKET));
+                    }
+                    level.playLocalSound(
+                            pos,
+                            SoundEvents.FIRE_EXTINGUISH,
+                            SoundSource.BLOCKS, 0.5f, 1f, false
+                    );
+                    sink.heatModule.transferHeatToEnvironment(HeatModule.getAmbientTemperature(level, pos), 30.0, HeatModule.DEFAULT_TIME_STEP);
+                    return InteractionResult.SUCCESS;
+
+                }
+                return InteractionResult.CONSUME;
+            }
+        }
         return heatModuleDefinition.useItemOn(stack,state,level,pos,player,hand, hitResult);
     }
 

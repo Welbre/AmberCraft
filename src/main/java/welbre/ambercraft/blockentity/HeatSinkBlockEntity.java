@@ -8,6 +8,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -17,11 +18,18 @@ import welbre.ambercraft.module.ModularBlockEntity;
 import welbre.ambercraft.module.Module;
 
 public class HeatSinkBlockEntity extends BlockEntity implements ModularBlockEntity {
-    public HeatModule heatModule = new HeatModule(this);
+    public HeatModule heatModule = new HeatModule(this){
+        @Override
+        public void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
+            super.tick(level, pos, state, blockEntity);
+            level.sendBlockUpdated(pos, state,state, 0);
+        }
+    };
 
     public HeatSinkBlockEntity(BlockPos pos, BlockState blockState) {
         super(Main.Tiles.HEAT_SINK_BLOCK_ENTITY.get(), pos, blockState);
-        heatModule.setEnvThermalConductivity(10.0);
+        heatModule.setEnvThermalConductivity(2.0);
+        heatModule.setThermalMass(10.0);
         heatModule.setThermalConductivity(100.0);
     }
 

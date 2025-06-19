@@ -1,9 +1,9 @@
-// 1.21.4	2025-06-18T13:08:37.3589111	Model Definitions - ambercraft
+// 1.21.4	2025-06-19T13:43:02.1389762	Model Definitions - ambercraft
 9017b80459b2cdea1f854ac115816ace512e93f3 assets/ambercraft/blockstates/copper_heat_conductor.json
 d705d1e2ec195924e0875b6076311d75d08b57a6 assets/ambercraft/blockstates/creative_heat_furnace.json
 b48b34a9c8e8ae84542264f6b7916e3b482a0021 assets/ambercraft/blockstates/ground_block.json
 26fff51bfde52aae1f18930228d32198738f31f2 assets/ambercraft/blockstates/heat_furnace.json
-1447e63a76292f6253737a0e4f3ecedc1896a9eb assets/ambercraft/blockstates/heat_sink.json
+3dff9e1ec59415779195d2abfa9f07bc17b428a1 assets/ambercraft/blockstates/heat_sink.json
 4289f8cfefa90313a88174fa70a060b8e474d393 assets/ambercraft/blockstates/iron_heat_conductor.json
 33e1a578790409e769f050092d40c3f29ef7af10 assets/ambercraft/blockstates/iron_machine_case_block.json
 a17cf0d6fe4b2ba5d07a7e7a5c4cfd858dc2d438 assets/ambercraft/blockstates/resistor_block.json

@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "ambercraft:block/heat_sink"
+      "model": "minecraft:block/air"
     }
   }
 }

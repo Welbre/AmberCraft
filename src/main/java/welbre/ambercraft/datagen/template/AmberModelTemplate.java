@@ -14,10 +14,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import net.neoforged.neoforge.client.model.generators.template.FaceRotation;
+import welbre.ambercraft.blocks.VoltageSourceBlockAmberBasic;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
 import welbre.ambercraft.blocks.parent.AmberSidedBasicBlock;
-import welbre.ambercraft.blocks.VoltageSourceBlockAmberBasic;
 
 import static welbre.ambercraft.Main.MOD_ID;
 
