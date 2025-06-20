@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import welbre.ambercraft.blockentity.HeatSinkBlockEntity;
+import welbre.ambercraft.client.ClientMain;
 
 import java.util.List;
 

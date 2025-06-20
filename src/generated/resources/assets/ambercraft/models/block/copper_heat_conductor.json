@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "loader": "ambercraft:cable_loader",
   "textures": {
     "all": "ambercraft:block/copper_heat_conductor"
   }
