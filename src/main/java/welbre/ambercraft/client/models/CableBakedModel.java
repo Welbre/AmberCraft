@@ -8,10 +8,13 @@ import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -19,8 +22,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelProperty;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import welbre.ambercraft.blocks.HeatConductorBlock;
 
 import static welbre.ambercraft.client.RenderHelper.*;
@@ -31,27 +37,45 @@ import java.util.List;
 public class CableBakedModel implements IDynamicBakedModel {
     ModelBaker baker;
     ItemTransforms transforms;
-    TextureSlots textureSlots;
+    TextureAtlasSprite sprite;
+    TextureSlots slots;
 
     public CableBakedModel(ModelBaker baker, ItemTransforms transforms, TextureSlots textureSlots) {
         this.baker = baker;
         this.transforms = transforms;
-        this.textureSlots = textureSlots;
+        this.slots = textureSlots;
+    }
+
+    private void initTextures(){
+        Material cable = slots.getMaterial("cable");
+
+        if (cable == null) {
+            sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("minecraft:block/missing"));
+            return;
+        }
+        if (sprite != null)
+            return;
+
+        sprite = cable.sprite();
     }
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
-
+        initTextures();
+        float radius;
+        if (state == null) radius = 0.4f;
+        else
+        {
+            radius = extraData.get(HeatConductorBlock.RADIUS_PROPERTY);
+        }
         QuadBakingVertexConsumer consumer = new QuadBakingVertexConsumer();
-        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("ambercraft:block/copper_heat_conductor"));
         consumer.setSprite(sprite);
 
-        float o = HeatConductorBlock.MODEL_SIZE;
-        ArrayList<BakedQuad> quads = new ArrayList<>(CUBE_CENTRED(consumer, sprite, o));
+        ArrayList<BakedQuad> quads = new ArrayList<>(CUBE_CENTRED(consumer, sprite, radius));
 
         if (state != null)
         {
-            AABB c = AABB.ofSize(new Vec3(.5, .5f, .5), o, o, o);//center
+            AABB c = AABB.ofSize(new Vec3(.5, .5f, .5), radius, radius, radius);//center
             if (state.getValue(HeatConductorBlock.UP))
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.maxY, c.minZ, c.maxX, 1f, c.maxZ).bounds()));
             if (state.getValue(HeatConductorBlock.DOWN))
@@ -86,7 +110,7 @@ public class CableBakedModel implements IDynamicBakedModel {
 
     @Override
     public TextureAtlasSprite getParticleIcon() {
-        return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("ambercraft:block/copper_heat_conductor"));
+        return sprite;
     }
 
     @Override
@@ -97,5 +121,14 @@ public class CableBakedModel implements IDynamicBakedModel {
     @Override
     public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data) {
         return ItemBlockRenderTypes.getRenderLayers(state);
+    }
+
+    @Override
+    public @NotNull ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, @NotNull ModelData modelData) {
+        if (state.getBlock() instanceof HeatConductorBlock conductor)
+        {
+            return modelData.derive().with(HeatConductorBlock.RADIUS_PROPERTY, conductor.model_radius).build();
+        }
+        return IDynamicBakedModel.super.getModelData(level, pos, state, modelData);
     }
 }

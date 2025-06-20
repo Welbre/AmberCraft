@@ -9,7 +9,7 @@ import welbre.ambercraft.blockentity.CopperHeatConductorTile;
 
 public class CopperHeatConductorBlock extends HeatConductorBlock {
     public CopperHeatConductorBlock(Properties p) {
-        super(p);
+        super(p, 0.4f);
     }
 
     @Override

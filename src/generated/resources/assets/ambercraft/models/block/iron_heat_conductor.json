@@ -1,6 +1,7 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "loader": "ambercraft:cable_loader",
+  "radius": 0.0,
   "textures": {
-    "all": "ambercraft:block/iron_heat_conductor"
+    "cable": "minecraft:block/iron_block"
   }
 }

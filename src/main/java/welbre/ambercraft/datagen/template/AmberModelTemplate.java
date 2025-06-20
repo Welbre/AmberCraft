@@ -5,15 +5,13 @@ import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.blockstates.Variant;
 import net.minecraft.client.data.models.blockstates.VariantProperties;
-import net.minecraft.client.data.models.model.ModelTemplate;
-import net.minecraft.client.data.models.model.ModelTemplates;
-import net.minecraft.client.data.models.model.TextureMapping;
-import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.data.models.model.*;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import net.neoforged.neoforge.client.model.generators.template.FaceRotation;
+import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.blocks.VoltageSourceBlockAmberBasic;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
@@ -155,5 +153,18 @@ public class AmberModelTemplate {
                         .put(TextureSlot.FRONT, ResourceLocation.parse(MOD_ID + ":block/"+front))
                         .put(TextureSlot.SIDE, ResourceLocation.parse(MOD_ID + ":block/"+sides)),
                 g.modelOutput));
+    }
+
+    public static final class CABLES {
+        public static void CREATE_CENTRED(@NotNull BlockModelGenerators g, Block block, ResourceLocation texture){
+            g.createTrivialBlock(block, TexturedModel.createDefault(
+                    block1 -> new TextureMapping()
+                            .put(CentredCableLoaderBuilder.CABLE, texture),
+                    ExtendedModelTemplateBuilder.builder()
+                            .customLoader(CentredCableLoaderBuilder::new, loader -> {})
+                            .requiredTextureSlot(CentredCableLoaderBuilder.CABLE)
+                            .build()
+            ));
+        }
     }
 }

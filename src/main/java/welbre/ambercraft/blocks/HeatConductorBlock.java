@@ -32,6 +32,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
@@ -40,7 +41,8 @@ import welbre.ambercraft.module.ModularBlock;
 import welbre.ambercraft.module.ModuleDefinition;
 
 public abstract class HeatConductorBlock extends AmberBasicBlock implements ModularBlock, EntityBlock {
-    public static final float MODEL_SIZE = 0.4f;
+    public final float model_radius;
+    public static final ModelProperty<Float> RADIUS_PROPERTY = new ModelProperty<>();
 
     public static final BooleanProperty UP = BooleanProperty.create("up");
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
@@ -51,7 +53,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Modu
 
     private final HeatModuleDefinition heatModule = new HeatModuleDefinition();
 
-    public HeatConductorBlock(Properties p) {
+    public HeatConductorBlock(Properties p, float modelRadius) {
         super(p);
         p.sound(SoundType.METAL);
         p.noOcclusion();
@@ -63,6 +65,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Modu
                 .setValue(WEST,false)
                 .setValue(EAST,false)
         );
+        model_radius = modelRadius;
     }
 
     @Override
@@ -150,7 +153,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Modu
 
     @Override
     protected VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        AABB c = AABB.ofSize(new Vec3(.5, .5, .5), MODEL_SIZE, MODEL_SIZE, MODEL_SIZE);//center
+        AABB c = AABB.ofSize(new Vec3(.5, .5, .5), model_radius, model_radius, model_radius);//center
         VoxelShape shape = Shapes.create(c);
         if (state.getValue(HeatConductorBlock.UP))
             shape = Shapes.join(shape, Shapes.box(c.minX, c.maxY, c.minZ, c.maxX, 1f, c.maxZ),BooleanOp.OR);

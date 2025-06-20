@@ -2,6 +2,6 @@
   "loader": "ambercraft:cable_loader",
   "radius": 0.0,
   "textures": {
-    "cable": "ambercraft:block/copper_heat_conductor"
+    "cable": "minecraft:block/gold_block"
   }
 }

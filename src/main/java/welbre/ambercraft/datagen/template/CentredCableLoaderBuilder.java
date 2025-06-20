@@ -1,13 +1,17 @@
 package welbre.ambercraft.datagen.template;
 
 import com.google.gson.JsonObject;
+import net.minecraft.client.data.models.model.TextureSlot;
 import net.neoforged.neoforge.client.model.generators.template.CustomLoaderBuilder;
+import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.client.models.CableModelLoader;
 
-import java.util.function.Supplier;
+public class CentredCableLoaderBuilder extends CustomLoaderBuilder {
+    public static final TextureSlot CABLE = TextureSlot.create("cable");
+    public static final TextureSlot INSULATION = TextureSlot.create("insulation");
+    public float radius = 0;
 
-public class MyLoaderBuilder extends CustomLoaderBuilder {
-    public MyLoaderBuilder() {
+    public CentredCableLoaderBuilder() {
         super(
                 // Your model loader's id.
                 CableModelLoader.ID,
@@ -19,16 +23,18 @@ public class MyLoaderBuilder extends CustomLoaderBuilder {
     // Add fields and setters for the fields here. The fields can then be used below.
 
     @Override
-    protected CustomLoaderBuilder copyInternal() {
+    protected @NotNull CustomLoaderBuilder copyInternal() {
         // Create a new instance of your loader builder and copy the properties from this builder
         // to the new instance.
-        MyLoaderBuilder builder = new MyLoaderBuilder();
+        CentredCableLoaderBuilder builder = new CentredCableLoaderBuilder();
+        builder.radius = this.radius;
         // builder.<field> = this.<field>;
         return builder;
     }
 
     @Override
-    public JsonObject toJson(JsonObject json) {
+    public @NotNull JsonObject toJson(JsonObject json) {
+        json.addProperty("radius", radius);
         return super.toJson(json);
     }
 }

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
@@ -18,10 +19,16 @@ public class CableModelLoader implements UnbakedModelLoader<CableModelLoader.Cab
 
     @Override
     public CableModelGeometry read(JsonObject jsonObject, JsonDeserializationContext deserializationContext) throws JsonParseException {
-        return new CableModelGeometry();
+        return new CableModelGeometry(jsonObject);
     }
 
     public static final class CableModelGeometry implements UnbakedModel {
+        final JsonObject json;
+
+        public CableModelGeometry(JsonObject json) {
+            this.json = json;
+        }
+
         @Override
         public BakedModel bake(TextureSlots textureSlots, ModelBaker baker, ModelState modelState, boolean hasAmbientOcclusion, boolean useBlockLight, ItemTransforms transforms) {
             return new CableBakedModel(baker, transforms, textureSlots);
@@ -30,6 +37,11 @@ public class CableModelLoader implements UnbakedModelLoader<CableModelLoader.Cab
         @Override
         public void resolveDependencies(Resolver resolver) {
 
+        }
+
+        @Override
+        public TextureSlots.Data getTextureSlots() {
+            return TextureSlots.parseTextureMap(json.getAsJsonObject("textures"), TextureAtlas.LOCATION_BLOCKS);
         }
     }
 }

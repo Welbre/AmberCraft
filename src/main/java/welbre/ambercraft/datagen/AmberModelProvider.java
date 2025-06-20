@@ -9,15 +9,13 @@ import net.minecraft.client.data.models.blockstates.Variant;
 import net.minecraft.client.data.models.blockstates.VariantProperties;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
-import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
-import welbre.ambercraft.client.models.CableBakedModel;
-import welbre.ambercraft.datagen.template.MyLoaderBuilder;
+import welbre.ambercraft.datagen.template.CentredCableLoaderBuilder;
 
 import java.util.HashMap;
 
@@ -50,8 +48,6 @@ public class AmberModelProvider extends ModelProvider {
 
     private static void registerBlocks(@NotNull BlockModelGenerators blocks) {
         blocks.createTrivialCube(Main.Blocks.IRON_MACHINE_CASE_BLOCK.get());
-        //blocks.createTrivialCube(Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get());
-        blocks.createTrivialCube(Main.Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get());
         blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(Main.Blocks.HEAT_SINK_BLOCK.get(), new Variant().with(VariantProperties.MODEL, ResourceLocation.parse("minecraft:block/air"))));
 
         CREATE_AMBER_SIDED_BLOCK(blocks, Main.Blocks.VOLTAGE_SOURCE_BLOCK.get(),
@@ -65,25 +61,8 @@ public class AmberModelProvider extends ModelProvider {
 
         CREATE_AMBER_FREE_BLOCK_STATE(blocks, Main.Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get());
 
-        blocks.createTrivialBlock(
-                // The block to generate the model for
-                Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get(),
-                TexturedModel.createDefault(
-                        // A mapping used to get the textures
-                        block -> new TextureMapping().put(
-                                TextureSlot.ALL, TextureMapping.getBlockTexture(block)
-                        ),
-                        // The model template builder used to create the JSON
-                        ExtendedModelTemplateBuilder.builder()
-                                // Say we are using a custom model loader
-                                .customLoader(MyLoaderBuilder::new, loader -> {
-                                    // Set any required fields here
-                                })
-                                // Textures required by the model
-                                .requiredTextureSlot(TextureSlot.ALL)
-                                // Call build once complete
-                                .build()
-                )
-        );
+        CABLES.CREATE_CENTRED(blocks, Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("ambercraft:block/copper_heat_conductor"));
+        CABLES.CREATE_CENTRED(blocks, Main.Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/iron_block"));
+        CABLES.CREATE_CENTRED(blocks, Main.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/gold_block"));
     }
 }
