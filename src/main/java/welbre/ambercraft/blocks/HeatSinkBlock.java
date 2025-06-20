@@ -1,6 +1,7 @@
 package welbre.ambercraft.blocks;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -36,6 +37,14 @@ public class HeatSinkBlock extends AmberBasicBlock implements ModularBlock, Enti
     @Override
     public ModuleDefinition[] getModuleDefinition() {
         return new ModuleDefinition[]{heatModuleDefinition};
+    }
+
+    @Override
+    public ModuleDefinition[] getModuleDefinition(BlockState state, Direction direction) {
+        if (direction == Direction.DOWN)
+            return new ModuleDefinition[]{heatModuleDefinition};
+        else
+            return new ModuleDefinition[0];
     }
 
     @Override

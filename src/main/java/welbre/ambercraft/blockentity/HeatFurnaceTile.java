@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import welbre.ambercraft.Main;
+import welbre.ambercraft.module.HeatModule;
 
 public class HeatFurnaceTile extends HeatBlockEntity {
     private int timer = 0;
@@ -34,7 +35,9 @@ public class HeatFurnaceTile extends HeatBlockEntity {
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
         if (!level.isClientSide) {
             if (blockEntity instanceof HeatFurnaceTile furnace) {
-                if (furnace.timer++ >= (furnace.overcharged ? 5 : 20)) {
+                if (!furnace.overcharged)
+                    return;
+                if (furnace.timer++ >= 5) {
                     furnace.heatModule.transferHeat(furnace.boost);
                     furnace.timer = 0;
                     if (furnace.heatModule.getTemperature() > 1000)
@@ -66,6 +69,6 @@ public class HeatFurnaceTile extends HeatBlockEntity {
     }
 
     public void addBoost() {
-        boost++;
+        boost+=10;
     }
 }

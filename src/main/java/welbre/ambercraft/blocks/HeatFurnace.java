@@ -1,6 +1,7 @@
 package welbre.ambercraft.blocks;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -22,10 +23,28 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatFurnaceTile;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
+import welbre.ambercraft.module.HeatModuleDefinition;
+import welbre.ambercraft.module.ModularBlock;
+import welbre.ambercraft.module.ModuleDefinition;
 
-public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
+public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock, ModularBlock {
+    public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition();
+
     public HeatFurnace(Properties p) {
         super(p);
+    }
+
+    @Override
+    public ModuleDefinition[] getModuleDefinition() {
+        return new ModuleDefinition[]{heatModuleDefinition};
+    }
+
+    @Override
+    public ModuleDefinition[] getModuleDefinition(BlockState state, Direction direction) {
+        if (direction == state.getValue(AmberHorizontalBlock.FACING).getOpposite())
+            return new ModuleDefinition[]{heatModuleDefinition};
+        else
+            return new ModuleDefinition[0];
     }
 
     @Override
@@ -41,7 +60,7 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
                 BlockEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof HeatFurnaceTile furnace) {
                     furnace.addBoost();
-                    stack.consume(1, player);
+                    stack.consume(10, player);
                     return InteractionResult.SUCCESS;
                 }
             }

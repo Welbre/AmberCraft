@@ -17,7 +17,7 @@ import welbre.ambercraft.module.ModularBlockEntity;
 import welbre.ambercraft.module.Module;
 
 public class HeatBlockEntity extends BlockEntity implements ModularBlockEntity {
-    public HeatModule heatModule = new HeatModule();
+    public HeatModule heatModule = new HeatModule(this);
 
     @Override
     public Module[] getModules() {

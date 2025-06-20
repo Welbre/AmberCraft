@@ -76,6 +76,10 @@ public class HeatModule implements Module {
         return temperature;
     }
 
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
     public void transferHeat(double heat){
         temperature += heat / thermal_mass;
     }

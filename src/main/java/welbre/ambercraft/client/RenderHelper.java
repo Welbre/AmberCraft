@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
@@ -38,7 +39,7 @@ public final class RenderHelper {
         return consumer.bakeQuad();
     }
 
-    private List<BakedQuad> CUBE_CENTRED(
+    public static List<BakedQuad> CUBE_CENTRED(
             QuadBakingVertexConsumer consumer,
             TextureAtlasSprite sprite,
             float size
@@ -52,7 +53,6 @@ public final class RenderHelper {
             float size,
             Vec3 center
     ){
-        List<BakedQuad> quads = new ArrayList<>();
         float ax = (float) (center.x-size/2f);
         float bx = (float) (center.x+size/2f);
         float ay = (float) (center.y-size/2f);
@@ -60,53 +60,10 @@ public final class RenderHelper {
         float az = (float) (center.z-size/2f);
         float bz = (float) (center.z+size/2f);
 
-        //X+ face
-        quads.add(QUAD(consumer, sprite,
-                ax, by, az,0,0,1f,1f,1f,1f,
-                ax, ay, az,0,1,1f,1f,1f,1f,
-                ax, ay, bz,1,1,1f,1f,1f,1f,
-                ax, by, bz,1,0,1f,1f,1f,1f
-        ));
-        //Z+ face
-        quads.add(QUAD(consumer, sprite,
-                bx, by, az,0,0,1f,1f,1f,1f,
-                bx, ay, az,0,1,1f,1f,1f,1f,
-                ax, ay, az,1,1,1f,1f,1f,1f,
-                ax, by, az,1,0,1f,1f,1f,1f
-        ));
-        //Y+DOWN face
-        quads.add(QUAD(consumer, sprite,
-                ax, ay, bz,0,0,1f,1f,1f,1f,
-                ax, ay, az,0,1,1f,1f,1f,1f,
-                bx, ay, az,1,1,1f,1f,1f,1f,
-                bx, ay, bz,1,0,1f,1f,1f,1f
-        ));
-        //X- face
-        quads.add(QUAD(consumer, sprite,
-                bx, by, bz,0,0,1f,1f,1f,1f,
-                bx, ay, bz,0,1,1f,1f,1f,1f,
-                bx, ay, az,1,1,1f,1f,1f,1f,
-                bx, by, az,1,0,1f,1f,1f,1f
-        ));
-        //Z- face
-        quads.add(QUAD(consumer, sprite,
-                ax, by, bz,0,0,1f,1f,1f,1f,
-                ax, ay, bz,0,1,1f,1f,1f,1f,
-                bx, ay, bz,1,1,1f,1f,1f,1f,
-                bx, by, bz,1,0,1f,1f,1f,1f
-        ));
-        //Y-UP face
-        quads.add(QUAD(consumer, sprite,
-                ax, by, az,0,0,1f,1f,1f,1f,
-                ax, by, bz,0,1,1f,1f,1f,1f,
-                bx, by, bz,1,1,1f,1f,1f,1f,
-                bx, by, az,1,0,1f,1f,1f,1f
-        ));
-
-        return quads;
+        return FROM_AABB(consumer, sprite, Shapes.box(ax,ay,az,bx,by,bz).bounds());
     }
 
-    public static List<BakedQuad> AABB(
+    public static List<BakedQuad> FROM_AABB(
             QuadBakingVertexConsumer consumer,
             TextureAtlasSprite sprite,
             AABB aabb
@@ -115,9 +72,9 @@ public final class RenderHelper {
         float ax = (float) aabb.minX;
         float bx = (float) aabb.maxX;
         float ay = (float) aabb.minY;
-        float by = (float) aabb.maxX;
+        float by = (float) aabb.maxY;
         float az = (float) aabb.minZ;
-        float bz = (float) aabb.maxX;
+        float bz = (float) aabb.maxZ;
 
         //X+ face
         quads.add(QUAD(consumer, sprite,
