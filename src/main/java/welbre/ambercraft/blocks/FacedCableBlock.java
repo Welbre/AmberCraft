@@ -1,5 +1,6 @@
 package welbre.ambercraft.blocks;
 
+import com.mojang.math.Transformation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -17,11 +18,18 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import org.apache.logging.log4j.core.util.Transform;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FacedCableBlock extends Block implements EntityBlock {
     /**
@@ -39,7 +47,24 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.box(0.2,0.2,0.2,0.8,0.8,0.8);
+        VoxelShape shape = Shapes.empty();
+        if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
+        {
+            int center = faced.getConnection_mask() & 0b10000_10000_10000_10000_10000_10000;
+            if ((center & (1 << 4)) != 0)
+                shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, .2, 1), BooleanOp.OR);
+            if ((center & (1 << 4+5)) != 0)
+                shape = Shapes.join(shape, Shapes.box(0, 0.8, 0, 1, 1, 1), BooleanOp.OR);
+            if ((center & (1 << 4+10)) != 0)
+                shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, 1, .2), BooleanOp.OR);
+            if ((center & (1 << 4+15)) != 0)
+                shape = Shapes.join(shape, Shapes.box(0, 0, 0.8, 1, 1, 1), BooleanOp.OR);
+            if ((center & (1 << 4+20)) != 0)
+                shape = Shapes.join(shape, Shapes.box(0, 0, 0, .2, 1, 1), BooleanOp.OR);
+            if ((center & (1 << 4+25)) != 0)
+                shape = Shapes.join(shape, Shapes.box(0.8, 0, 0, 1, 1, 1), BooleanOp.OR);
+        }
+        return shape;
     }
 
     @Override
