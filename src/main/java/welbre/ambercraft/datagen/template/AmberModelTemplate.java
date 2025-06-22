@@ -166,5 +166,16 @@ public class AmberModelTemplate {
                             .build()
             ));
         }
+
+        public static void CREATE_FACED(@NotNull BlockModelGenerators g, Block block, ResourceLocation texture){
+            g.createTrivialBlock(block, TexturedModel.createDefault(
+                    block1 -> new TextureMapping()
+                            .put(FacedCableLoaderBuilder.CABLE, texture),
+                    ExtendedModelTemplateBuilder.builder()
+                            .customLoader(FacedCableLoaderBuilder::new, loader -> {})
+                            .requiredTextureSlot(FacedCableLoaderBuilder.CABLE)
+                            .build()
+            ));
+        }
     }
 }

@@ -1,6 +1,5 @@
 {
-  "loader": "ambercraft:cable_loader",
-  "radius": 0.0,
+  "loader": "ambercraft:centred_cable_loader",
   "textures": {
     "cable": "minecraft:block/iron_block"
   }

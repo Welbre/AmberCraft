@@ -22,6 +22,9 @@ public class AmberLanguageProvider extends LanguageProvider {
         addBlock(Main.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK, "Gold heat conductor");
         addBlock(Main.Blocks.HEAT_SINK_BLOCK, "Heat sink");
 
+        addBlock(Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK, "Abstract cable");
+
         addItem(Main.Items.MULTIMETER, "Multimeter");
+        addItem(Main.Items.FACED_CABLE_BLOCK_ITEM, "Faced cable");
     }
 }

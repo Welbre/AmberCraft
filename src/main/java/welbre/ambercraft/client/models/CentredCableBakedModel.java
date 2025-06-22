@@ -22,11 +22,9 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 import welbre.ambercraft.blocks.HeatConductorBlock;
 
 import static welbre.ambercraft.client.RenderHelper.*;
@@ -34,13 +32,13 @@ import static welbre.ambercraft.client.RenderHelper.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CableBakedModel implements IDynamicBakedModel {
+public class CentredCableBakedModel implements IDynamicBakedModel {
     ModelBaker baker;
     ItemTransforms transforms;
     TextureAtlasSprite sprite;
     TextureSlots slots;
 
-    public CableBakedModel(ModelBaker baker, ItemTransforms transforms, TextureSlots textureSlots) {
+    public CentredCableBakedModel(ModelBaker baker, ItemTransforms transforms, TextureSlots textureSlots) {
         this.baker = baker;
         this.transforms = transforms;
         this.slots = textureSlots;

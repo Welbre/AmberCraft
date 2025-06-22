@@ -14,6 +14,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import welbre.ambercraft.blockentity.*;
+import welbre.ambercraft.blockitem.FacedCableBlockItem;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 
@@ -48,6 +49,8 @@ public class Main {
         public static final DeferredHolder<Block, GoldHeatConductorBlock> GOLD_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("gold_heat_conductor", GoldHeatConductorBlock::new);
 
         public static final DeferredHolder<Block, HeatSinkBlock> HEAT_SINK_BLOCK = REGISTER.registerBlock("heat_sink", HeatSinkBlock::new);
+
+        public static final DeferredHolder<Block, FacedCableBlock> ABSTRACT_FACED_CABLE_BLOCK = REGISTER.registerBlock("faced_cable", FacedCableBlock::new);
     }
 
     public static final class Items{
@@ -65,6 +68,8 @@ public class Main {
         public static final DeferredItem<BlockItem> GOLD_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GOLD_HEAT_CONDUCTOR_BLOCK);
 
         public static final DeferredItem<BlockItem> HEAT_SINK_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_SINK_BLOCK);
+
+        public static final DeferredItem<FacedCableBlockItem> FACED_CABLE_BLOCK_ITEM = REGISTER.registerItem("faced_cable", FacedCableBlockItem::new);
     }
 
     public static final class Tiles {
@@ -76,6 +81,7 @@ public class Main {
         public static final Supplier<BlockEntityType<GoldHeatConductorBlockEntitty>> GOLD_HEAT_CONDUCTOR_TILE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorBlockEntitty::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
 
         public static final Supplier<BlockEntityType<HeatSinkBlockEntity>> HEAT_SINK_BLOCK_ENTITY = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBlockEntity::new,Blocks.HEAT_SINK_BLOCK.get()));
+        public static final Supplier<BlockEntityType<FacedCableBlockEntity>> FACED_CABLE_BLOCK_ENTITY = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBlockEntity::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
     }
 
     public static final class TABS {

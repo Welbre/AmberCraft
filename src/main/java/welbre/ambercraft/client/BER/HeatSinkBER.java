@@ -1,4 +1,4 @@
-package welbre.ambercraft.client.render;
+package welbre.ambercraft.client.BER;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -16,12 +16,8 @@ import welbre.ambercraft.client.ClientMain;
 
 import java.util.List;
 
-public class HeatSinkBER implements BlockEntityRenderer<HeatSinkBlockEntity> {
-    public final BlockEntityRendererProvider.Context context;
-
-    public HeatSinkBER(BlockEntityRendererProvider.Context context) {
-        this.context = context;
-    }
+public record HeatSinkBER(
+        BlockEntityRendererProvider.Context context) implements BlockEntityRenderer<HeatSinkBlockEntity> {
 
     @Override
     public void render(HeatSinkBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
@@ -30,11 +26,13 @@ public class HeatSinkBER implements BlockEntityRenderer<HeatSinkBlockEntity> {
         BlockState state = blockEntity.getBlockState();
         PoseStack.Pose pose = poseStack.last();
 
-        for (RenderType rt : ClientMain.HEAT_SINK_MODEL.getRenderTypes(state, RandomSource.create(42), ModelData.EMPTY)) {
+        for (RenderType rt : ClientMain.HEAT_SINK_MODEL.getRenderTypes(state, RandomSource.create(42), ModelData.EMPTY))
+        {
             VertexConsumer buffer = bufferSource.getBuffer(RenderTypeHelper.getEntityRenderType(rt));
             List<BakedQuad> quads = ClientMain.HEAT_SINK_MODEL.getQuads(state, null, RandomSource.create(42), ModelData.EMPTY, rt);
 
-            for (BakedQuad quad : quads) {
+            for (BakedQuad quad : quads)
+            {
                 buffer.putBulkData(
                         pose,
                         quad,

@@ -10,13 +10,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.UnbakedModelLoader;
-import welbre.ambercraft.Main;
 
-public class CableModelLoader implements UnbakedModelLoader<CableModelLoader.CableModelGeometry> {
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Main.MOD_ID,"cable_loader");
-
+public class CentredCableModelLoader implements UnbakedModelLoader<CentredCableModelLoader.CableModelGeometry> {
     @Override
     public CableModelGeometry read(JsonObject jsonObject, JsonDeserializationContext deserializationContext) throws JsonParseException {
         return new CableModelGeometry(jsonObject);
@@ -31,7 +27,7 @@ public class CableModelLoader implements UnbakedModelLoader<CableModelLoader.Cab
 
         @Override
         public BakedModel bake(TextureSlots textureSlots, ModelBaker baker, ModelState modelState, boolean hasAmbientOcclusion, boolean useBlockLight, ItemTransforms transforms) {
-            return new CableBakedModel(baker, transforms, textureSlots);
+            return new CentredCableBakedModel(baker, transforms, textureSlots);
         }
 
         @Override
