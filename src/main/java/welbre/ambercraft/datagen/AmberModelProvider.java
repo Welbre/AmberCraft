@@ -10,11 +10,14 @@ import net.minecraft.client.data.models.blockstates.VariantProperties;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TexturedModel;
+import net.minecraft.client.renderer.item.BlockModelWrapper;
+import net.minecraft.client.renderer.item.SpecialModelWrapper;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
+import welbre.ambercraft.client.item.CableSpecialRender;
 import welbre.ambercraft.datagen.template.CentredCableLoaderBuilder;
 
 import java.util.HashMap;
@@ -44,6 +47,9 @@ public class AmberModelProvider extends ModelProvider {
 
     private static void registerItems(@NotNull ItemModelGenerators itemModels) {
         itemModels.generateFlatItem(Main.Items.MULTIMETER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.itemModelOutput.accept(Main.Items.FACED_CABLE_BLOCK_ITEM.get(),new SpecialModelWrapper.Unbaked(ResourceLocation.parse("minecraft:block/white_wool"),new CableSpecialRender.UnBacked(
+                ResourceLocation.withDefaultNamespace("block/blue_wool"))
+        ));
     }
 
     private static void registerBlocks(@NotNull BlockModelGenerators blocks) {
@@ -65,6 +71,6 @@ public class AmberModelProvider extends ModelProvider {
         CABLES.CREATE_CENTRED(blocks, Main.Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/iron_block"));
         CABLES.CREATE_CENTRED(blocks, Main.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/gold_block"));
 
-        CABLES.CREATE_FACED(blocks, Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), ResourceLocation.parse("minecraft:block/black_wool"));
+        CABLES.CREATE_FACED(blocks, Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), ResourceLocation.parse("minecraft:block/white_wool"));
     }
 }

@@ -14,10 +14,13 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
 import welbre.ambercraft.blocks.FacedCableBlock;
+import welbre.ambercraft.cables.CableDataComponent;
 
 public class FacedCableBlockItem extends BlockItem {
     public FacedCableBlockItem(Item.Properties properties) {
-        super(Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), properties);
+        super(Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(),
+                properties.component(Main.Components.CABLE_DATA_COMPONENT.get(), new CableDataComponent(0, (byte) 0))
+        );
     }
     @Override
     public @NotNull InteractionResult place(BlockPlaceContext context) {
@@ -26,11 +29,15 @@ public class FacedCableBlockItem extends BlockItem {
         BlockEntity be = level.getBlockEntity(pos);
         Direction clickedFace = context.getClickedFace();
 
+        CableDataComponent component = context.getItemInHand().getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
+        component = component == null ? new CableDataComponent(0,(byte) 0) : component;
+
         if (be instanceof FacedCableBlockEntity faced){
-            if (!faced.hasCableAt(clickedFace.getOpposite())) {
-                faced.addCenter(clickedFace.getOpposite());
+            if (faced.getStatus().getFaceStatus(clickedFace.getOpposite()) == null) {
+                faced.getStatus().addCenter(clickedFace.getOpposite(),component.color() ,component.type());
                 faced.calculateState(level,pos);
                 //todo check if it will blowup all.
+                //todo fix not working while the cable is isolado de outros cabos
                 level.markAndNotifyBlock(pos,level.getChunkAt(pos),level.getBlockState(pos),level.getBlockState(pos),3,512);
                 return InteractionResult.SUCCESS;
             }
@@ -40,7 +47,7 @@ public class FacedCableBlockItem extends BlockItem {
         if (result.consumesAction()) {
             if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
             {
-                faced.addCenter(clickedFace.getOpposite());
+                faced.getStatus().addCenter(clickedFace.getOpposite(),component.color(),component.type());
                 faced.calculateState(level,pos);
             }
         }
@@ -61,4 +68,6 @@ public class FacedCableBlockItem extends BlockItem {
             return false;
         return super.canPlace(context, state);
     }
+
+
 }

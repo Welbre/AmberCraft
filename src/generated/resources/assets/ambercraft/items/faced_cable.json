@@ -1,6 +1,10 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "ambercraft:block/faced_cable"
+    "type": "minecraft:special",
+    "base": "minecraft:block/white_wool",
+    "model": {
+      "type": "ambercraft:cable_special_render",
+      "texture": "minecraft:block/blue_wool"
+    }
   }
 }

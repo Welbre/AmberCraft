@@ -1,4 +1,4 @@
-// 1.21.4	2025-06-20T12:43:51.210835	Model Definitions - ambercraft
+// 1.21.4	2025-06-23T17:21:24.3113847	Model Definitions - ambercraft
 9017b80459b2cdea1f854ac115816ace512e93f3 assets/ambercraft/blockstates/copper_heat_conductor.json
 d705d1e2ec195924e0875b6076311d75d08b57a6 assets/ambercraft/blockstates/creative_heat_furnace.json
 c29a913b9d8d5cc91cd7082e509e0617e7fe8c10 assets/ambercraft/blockstates/faced_cable.json
@@ -12,7 +12,7 @@ a17cf0d6fe4b2ba5d07a7e7a5c4cfd858dc2d438 assets/ambercraft/blockstates/resistor_
 58914927ea5e0ef992276a798a411d9a0edd9c12 assets/ambercraft/blockstates/voltage_source_block.json
 d579a423315bddba6c480a2bcbf39dab795eb98d assets/ambercraft/items/copper_heat_conductor.json
 5b51fb2eca6f5d1a73f305a7e6c702af1581148d assets/ambercraft/items/creative_heat_furnace.json
-7ed5bfc4ea0a34b8841b593df17eab81b670b337 assets/ambercraft/items/faced_cable.json
+0ece57125f769bf93461b2e6879f46867054598f assets/ambercraft/items/faced_cable.json
 7a95c1f1bbb9650b1d6c5bc742b35df0d17ae46e assets/ambercraft/items/gold_heat_conductor.json
 e2562d8d374d48df3432253f119f05c8d278646e assets/ambercraft/items/ground_block.json
 a10ccf38b27a2567f8a0a0868bd3c1e2e86a63f3 assets/ambercraft/items/heat_furnace.json
@@ -23,7 +23,7 @@ ede0603661e7c3717454c36062cdffb9c63e9a8c assets/ambercraft/items/iron_machine_ca
 54efa76eba8a184915ba4a4a4523f5b62c7a46f8 assets/ambercraft/items/resistor_block.json
 c703b3332f4201800a2d946c62df8e9e041855d3 assets/ambercraft/items/voltage_source_block.json
 639773698481a4c00ccb4ae294507b13d96e7f4f assets/ambercraft/models/block/copper_heat_conductor.json
-8f56d372e879133fefa8896bc10f0b0098ee40a6 assets/ambercraft/models/block/faced_cable.json
+b0e3f97003adcf1547d27dd3a284106a15e0acda assets/ambercraft/models/block/faced_cable.json
 91c44da1513e1a5c9ca72cd82f1c8cf27128b208 assets/ambercraft/models/block/gold_heat_conductor.json
 b7b6fba79cb5978c0bdd66d1c5505c5c72ff0521 assets/ambercraft/models/block/ground_block.json
 5c8a881f1998cb17f4f9dd577b24008b3e7c2f34 assets/ambercraft/models/block/heat_furnace.json

@@ -1,35 +1,32 @@
 package welbre.ambercraft.blocks;
 
-import com.mojang.math.Transformation;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import org.apache.logging.log4j.core.util.Transform;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
-
-import java.util.ArrayList;
-import java.util.List;
+import welbre.ambercraft.cables.CableDataComponent;
+import welbre.ambercraft.cables.CableStatus;
+import welbre.ambercraft.cables.FaceStatus;
 
 public class FacedCableBlock extends Block implements EntityBlock {
     /**
@@ -50,18 +47,18 @@ public class FacedCableBlock extends Block implements EntityBlock {
         VoxelShape shape = Shapes.empty();
         if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
         {
-            int center = faced.getConnection_mask() & 0b10000_10000_10000_10000_10000_10000;
-            if ((center & (1 << 4)) != 0)
+            CableStatus center = faced.getStatus();
+            if (center.getFaceStatus(Direction.DOWN) != null)
                 shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, .2, 1), BooleanOp.OR);
-            if ((center & (1 << 4+5)) != 0)
+            if (center.getFaceStatus(Direction.UP) != null)
                 shape = Shapes.join(shape, Shapes.box(0, 0.8, 0, 1, 1, 1), BooleanOp.OR);
-            if ((center & (1 << 4+10)) != 0)
+            if (center.getFaceStatus(Direction.NORTH) != null)
                 shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, 1, .2), BooleanOp.OR);
-            if ((center & (1 << 4+15)) != 0)
+            if (center.getFaceStatus(Direction.SOUTH) != null)
                 shape = Shapes.join(shape, Shapes.box(0, 0, 0.8, 1, 1, 1), BooleanOp.OR);
-            if ((center & (1 << 4+20)) != 0)
+            if (center.getFaceStatus(Direction.WEST) != null)
                 shape = Shapes.join(shape, Shapes.box(0, 0, 0, .2, 1, 1), BooleanOp.OR);
-            if ((center & (1 << 4+25)) != 0)
+            if (center.getFaceStatus(Direction.EAST) != null)
                 shape = Shapes.join(shape, Shapes.box(0.8, 0, 0, 1, 1, 1), BooleanOp.OR);
         }
         return shape;
@@ -91,9 +88,51 @@ public class FacedCableBlock extends Block implements EntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
         {
-            player.displayClientMessage(Component.literal(faced.getConnection_mask()+ " client: " + level.isClientSide),false);
+            player.displayClientMessage(Component.literal(faced.getStatus()+ " client: " + level.isClientSide),false);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.FAIL;
+    }
+
+
+
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData, Player player) {
+        if (Minecraft.getInstance().hitResult.getType() == HitResult.Type.BLOCK){
+            BlockHitResult block = (BlockHitResult) Minecraft.getInstance().hitResult;
+            if (level.getBlockEntity(block.getBlockPos()) instanceof FacedCableBlockEntity faced){
+                Vec3 start = player.getEyePosition(0);
+                Vec3 temp = player.getViewVector(0);
+                Vec3 end = start.add(temp.x * 5, temp.y * 5, temp.z * 5);
+
+                CableStatus center = faced.getStatus();
+                if (center.getFaceStatus(Direction.DOWN) != null)
+                    if (Shapes.box(0, 0, 0, 1, .2, 1).clip(start,end,pos) != null)
+                        return getStackFromFaceSatus(center.getFaceStatus(Direction.DOWN));
+                if (center.getFaceStatus(Direction.UP) != null)
+                    if (Shapes.box(0, 0.8, 0, 1, 1, 1).clip(start,end,pos) != null)
+                        return getStackFromFaceSatus(center.getFaceStatus(Direction.UP));
+                if (center.getFaceStatus(Direction.NORTH) != null)
+                    if (Shapes.box(0, 0, 0, 1, 1, .2).clip(start,end,pos) != null)
+                        return getStackFromFaceSatus(center.getFaceStatus(Direction.NORTH));
+                if (center.getFaceStatus(Direction.SOUTH) != null)
+                    if (Shapes.box(0, 0, 0.8, 1, 1, 1).clip(start,end,pos) != null)
+                        return getStackFromFaceSatus(center.getFaceStatus(Direction.SOUTH));
+                if (center.getFaceStatus(Direction.WEST) != null)
+                    if (Shapes.box(0, 0, 0, .2, 1, 1).clip(start,end,pos) != null)
+                        return getStackFromFaceSatus(center.getFaceStatus(Direction.WEST));
+                if (center.getFaceStatus(Direction.EAST) != null)
+                    if (Shapes.box(0.8, 0, 0, 1, 1, 1).clip(start,end,pos) != null)
+                        return getStackFromFaceSatus(center.getFaceStatus(Direction.EAST));
+            }
+        }
+        System.out.println();
+        return super.getCloneItemStack(level, pos, state, includeData, player);
+    }
+
+    private static ItemStack getStackFromFaceSatus(FaceStatus faceStatus){
+        var stack = new ItemStack(Main.Items.FACED_CABLE_BLOCK_ITEM.get());
+        stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), new CableDataComponent(faceStatus.color, faceStatus.type));
+        return stack;
     }
 }

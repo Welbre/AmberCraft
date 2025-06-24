@@ -1,16 +1,14 @@
 package welbre.ambercraft;
 
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,7 +16,10 @@ import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blockitem.FacedCableBlockItem;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
+import welbre.ambercraft.cables.CableDataComponent;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,6 +34,8 @@ public class Main {
         Blocks.REGISTER.register(modBus);
         Items.REGISTER.register(modBus);
         Tiles.REGISTER.register(modBus);
+        Components.REGISTER.register(modBus);
+
         TABS.REGISTER.register(modBus);
     }
 
@@ -70,6 +73,7 @@ public class Main {
 
         public static final DeferredItem<BlockItem> HEAT_SINK_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_SINK_BLOCK);
 
+        @TABS.SKIP
         public static final DeferredItem<FacedCableBlockItem> FACED_CABLE_BLOCK_ITEM = REGISTER.registerItem("faced_cable", FacedCableBlockItem::new);
     }
 
@@ -85,8 +89,25 @@ public class Main {
         public static final Supplier<BlockEntityType<FacedCableBlockEntity>> FACED_CABLE_BLOCK_ENTITY = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBlockEntity::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
     }
 
+    public static final class Components {
+        public static final DeferredRegister.DataComponents REGISTER = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE,MOD_ID);
+
+        public static final Supplier<DataComponentType<CableDataComponent>> CABLE_DATA_COMPONENT = REGISTER.registerComponentType(
+                "cable_data",
+                builder -> builder.persistent(CableDataComponent.CODEC).networkSynchronized(CableDataComponent.STREAM_CODEC)
+        );
+    }
+
     public static final class TABS {
+        /**
+         * Skips the automatic tab insertion.
+         */
+        @Retention(RetentionPolicy.RUNTIME)
+        public @interface SKIP {}
+
+
         public static final DeferredRegister<CreativeModeTab> REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
+
         public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = REGISTER.register("ambercraft_tab", () -> CreativeModeTab.builder()
                 .title(Component.literal("AmberCraft"))
                 .icon(Items.MULTIMETER::toStack)
@@ -96,16 +117,31 @@ public class Main {
                         for (Field field : Items.class.getDeclaredFields()) {
                             if (field.get(null) instanceof DeferredItem<?> register)
                                 if (register.get() instanceof Item item)
-                                    itemList.add(item);
+                                    if (!field.isAnnotationPresent(SKIP.class))
+                                        itemList.add(item);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                     itemList.sort(Comparator.comparing(item -> item.getName().getString()));//sort using name
+
+
+                    output.acceptAll(FACED_CABLES());
                     for (Item item : itemList)
                         output.accept(item);
                 })
                 .build()
         );
+
+        public static List<ItemStack> FACED_CABLES(){
+            var list = new ArrayList<ItemStack>();
+            for (DyeColor color : DyeColor.values())
+            {
+                var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0));
+                list.add(stack);
+            }
+            return list;
+        }
     }
 }

@@ -9,7 +9,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import welbre.ambercraft.Main;
+import welbre.ambercraft.client.item.CableSpecialRender;
 import welbre.ambercraft.client.models.CentredCableModelLoader;
 import welbre.ambercraft.client.models.FacedCableBakedModel;
 import welbre.ambercraft.client.models.FacedCableModelLoader;
@@ -45,5 +47,10 @@ public class ClientMain {
     public static void modelInit(ModelEvent.RegisterLoaders event) {
         event.register(CentredCableLoaderBuilder.ID, new CentredCableModelLoader());
         event.register(FacedCableLoaderBuilder.ID, new FacedCableModelLoader());
+    }
+
+    @SubscribeEvent
+    public static void specialModels(RegisterSpecialModelRendererEvent event){
+        event.register(ResourceLocation.fromNamespaceAndPath(MOD_ID,"cable_special_render"), CableSpecialRender.UnBacked.CODEC);
     }
 }
