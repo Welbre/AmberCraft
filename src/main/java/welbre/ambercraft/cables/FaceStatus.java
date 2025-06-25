@@ -2,6 +2,7 @@ package welbre.ambercraft.cables;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
 
@@ -61,6 +62,17 @@ public class FaceStatus {
         data |= ((color & 0xffffffffL) << 8);
         data |= (type & 0xffL) << 8+32;
         return data;
+    }
+
+    public boolean canConnect(@NotNull FaceStatus other){
+        if (other.type == -1 && type == -1)
+            return true;
+        else {
+            if (other.type == -1 || type == -1)
+                return other.color == color;
+            else
+                return other.color == color && other.type == type;
+        }
     }
 
     public static FaceStatus fromRawData(long data) {

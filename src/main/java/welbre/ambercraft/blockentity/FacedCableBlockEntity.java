@@ -93,32 +93,51 @@ public class FacedCableBlockEntity extends BlockEntity {
 
                 {
                     //check internal connections
-                    FaceStatus status = this.status.getFaceStatus(dir);
-                    if (status != null && status.color == faceStatus.color && status.type == faceStatus.type)
-                    {
-                        CONNECT(this, face, dir, this, dir, face, FaceStatus.Connection.INTERNAL);
-                        break;
-                    }
+                    var face_status = status.getFaceStatus(dir);
+                    if (face_status != null)
+                        if (faceStatus.canConnect(face_status))
+                        {
+                            CONNECT(this, face, dir, this, dir, face, FaceStatus.Connection.INTERNAL);
+                            continue;
+                        } else
+                        {
+                            {
+                                CONNECT(this, face, dir, this, dir, face, FaceStatus.Connection.EMPTY);
+                                continue;
+                            }
+                        }
                 }
 
+                BlockPos neighbor = pos.relative(dir);
                 //check for blocks on the same plane
-                if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBlockEntity faced)
+                if (level.getBlockEntity(neighbor) instanceof FacedCableBlockEntity faced)
                 {
-
-                    FaceStatus status = faced.status.getFaceStatus(face);
-                    if (status != null && status.color == faceStatus.color && status.type == faceStatus.type)
-                        CONNECT(this, face, dir, faced, face, dir.getOpposite(), FaceStatus.Connection.EXTERNAl);
+                    var status = faced.status.getFaceStatus(face);
+                    if (status != null)
+                        if (faceStatus.canConnect(status))
+                            CONNECT(this, face, dir, faced, face, dir.getOpposite(), FaceStatus.Connection.EXTERNAl);
+                        else
+                            CONNECT(this, face, dir, faced, face, dir.getOpposite(), FaceStatus.Connection.EMPTY);
                 }
+                {
+                    BlockState state = level.getBlockState(neighbor);
+                    if (state.canOcclude() && state.getBlock() != Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get())
+                        continue;
+                }
+
                 //check for block on diagonals
-                BlockPos diagonal = pos.relative(dir).relative(face);
+                BlockPos diagonal = neighbor.relative(face);
                 if (level.getBlockEntity(diagonal) instanceof FacedCableBlockEntity faced)//diagonal connections
                 {
                     BlockPos dia_face_vec = anchor.subtract(diagonal);
                     Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
 
-                    FaceStatus status = faced.status.getFaceStatus(dia_face);
-                    if (status != null && status.color == faceStatus.color && status.type == faceStatus.type)
-                        CONNECT(this, face, dir, faced, dia_face, face.getOpposite(), FaceStatus.Connection.DIAGONAL);
+                    var status = faced.status.getFaceStatus(dia_face);
+                    if (status != null)
+                        if (faceStatus.canConnect(faced.status.getFaceStatus(dia_face)))
+                            CONNECT(this, face, dir, faced, dia_face, face.getOpposite(), FaceStatus.Connection.DIAGONAL);
+                        else
+                            CONNECT(this, face, dir, faced, dia_face, face.getOpposite(), FaceStatus.Connection.EMPTY);
                 }
             }
         }
