@@ -49,17 +49,17 @@ public class FacedCableBlock extends Block implements EntityBlock {
         {
             CableStatus center = faced.getStatus();
             if (center.getFaceStatus(Direction.DOWN) != null)
-                shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, .2, 1), BooleanOp.OR);
+                shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, .25/2f, 1), BooleanOp.OR);
             if (center.getFaceStatus(Direction.UP) != null)
-                shape = Shapes.join(shape, Shapes.box(0, 0.8, 0, 1, 1, 1), BooleanOp.OR);
+                shape = Shapes.join(shape, Shapes.box(0, 1-0.25/2f, 0, 1, 1, 1), BooleanOp.OR);
             if (center.getFaceStatus(Direction.NORTH) != null)
-                shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, 1, .2), BooleanOp.OR);
+                shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, 1, .25/2f), BooleanOp.OR);
             if (center.getFaceStatus(Direction.SOUTH) != null)
-                shape = Shapes.join(shape, Shapes.box(0, 0, 0.8, 1, 1, 1), BooleanOp.OR);
+                shape = Shapes.join(shape, Shapes.box(0, 0, 1-0.25/2f, 1, 1, 1), BooleanOp.OR);
             if (center.getFaceStatus(Direction.WEST) != null)
-                shape = Shapes.join(shape, Shapes.box(0, 0, 0, .2, 1, 1), BooleanOp.OR);
+                shape = Shapes.join(shape, Shapes.box(0, 0, 0, .25/2f, 1, 1), BooleanOp.OR);
             if (center.getFaceStatus(Direction.EAST) != null)
-                shape = Shapes.join(shape, Shapes.box(0.8, 0, 0, 1, 1, 1), BooleanOp.OR);
+                shape = Shapes.join(shape, Shapes.box(1-0.25/2f, 0, 0, 1, 1, 1), BooleanOp.OR);
         }
         return shape;
     }

@@ -1,15 +1,23 @@
 package welbre.ambercraft.blockitem;
 
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
@@ -34,8 +42,32 @@ public class FacedCableBlockItem extends BlockItem {
 
         if (be instanceof FacedCableBlockEntity faced){
             if (faced.getStatus().getFaceStatus(clickedFace.getOpposite()) == null) {
+                ItemStack item = context.getItemInHand();
+                Block block = getBlock();
+                BlockState state = block.defaultBlockState();
+                Player player = context.getPlayer();
+
+                faced.applyComponentsFromItemStack(item);
+                block.setPlacedBy(level,pos, state, player, item);
+                if (player instanceof ServerPlayer)
+                    CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer) player,pos, item);
+
+                SoundType soundtype = state.getSoundType(level, pos, player);
+                level.playSound(
+                        player,
+                        pos,
+                        this.getPlaceSound(state, level, pos, player),
+                        SoundSource.BLOCKS,
+                        (soundtype.getVolume() + 1.0F) / 2.0F,
+                        soundtype.getPitch() * 0.8F
+                );
+                level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, state));
+                item.consume(1, player);
+
                 faced.getStatus().addCenter(clickedFace.getOpposite(),component.color() ,component.type());
                 faced.calculateState(level,pos);
+                faced.requestModelDataUpdate();
+                faced.setChanged();
                 //todo check if it will blowup all.
                 //todo fix not working while the cable is isolado de outros cabos
                 level.markAndNotifyBlock(pos,level.getChunkAt(pos),level.getBlockState(pos),level.getBlockState(pos),3,512);
@@ -49,6 +81,8 @@ public class FacedCableBlockItem extends BlockItem {
             {
                 faced.getStatus().addCenter(clickedFace.getOpposite(),component.color(),component.type());
                 faced.calculateState(level,pos);
+                faced.requestModelDataUpdate();
+                faced.setChanged();
             }
         }
 

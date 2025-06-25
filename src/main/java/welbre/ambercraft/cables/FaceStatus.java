@@ -3,9 +3,11 @@ package welbre.ambercraft.cables;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.util.function.Function;
+
 public class FaceStatus {
     public static final Codec<FaceStatus> CODEC = RecordCodecBuilder.create(data -> data.group(
-            Codec.LONG.fieldOf("data").forGetter(FaceStatus::getRawData)
+            Codec.LONG.fieldOf("data").forGetter(FaceStatus::toRawData)
     ).apply(data, FaceStatus::fromRawData));
 
     /// Represents the connection arrangement in the face.
@@ -31,30 +33,6 @@ public class FaceStatus {
         this(0, 0);
     }
 
-    public long getRawData() {
-        long data = 0;
-        int shift = 0;
-        for (Connection c : connection)
-        {
-            data |= (long) c.bit << shift;
-            shift += 2;
-        }
-        data |= ((long) color << 2*4);
-        data |= ((long) type << 2*4 + 24);
-        return data;
-    }
-
-    public static FaceStatus fromRawData(long data) {
-        Connection[] connections = new Connection[4];
-        for (int i = 0; i < 4; i++)
-        {
-            connections[i] = Connection.values()[(int) ((data >> (i * 2)) & 0b11)];
-        }
-        int color = (int) (data >> 2*4) & 0xffffff;
-        byte type = (byte) ((data >> 24+2*4) & 0xff);
-        return new FaceStatus(connections, color, type);
-    }
-
     public FaceStatus connectTo(int dir, Connection connection) {
         this.connection[dir] = connection;
         return this;
@@ -62,8 +40,38 @@ public class FaceStatus {
 
     @Override
     public String toString() {
-        long data = getRawData();
-        return "Connection:0x%x color:0x%x type:%d ".formatted(data & 0b111111111111,color,type);
+        return "Connection:0x%x color:0x%x type:%d ".formatted(connectionAsByte() & 0b11111111,color,type);
+    }
+
+    private byte connectionAsByte() {
+        byte data = 0;
+        int shift = 0;
+        for (Connection c : connection)
+        {
+            data |= (byte) (c.bit << shift);
+            shift += 2;
+        }
+        return data;
+    }
+
+    public long toRawData(){
+        long data = 0;
+        byte connection = connectionAsByte();
+        data |= (connection & 0xff);
+        data |= ((color & 0xffffffffL) << 8);
+        data |= (type & 0xffL) << 8+32;
+        return data;
+    }
+
+    public static FaceStatus fromRawData(long data) {
+        Connection[] connections = new Connection[4];
+        int shift = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            connections[i] = Connection.values()[(int) ((data >> shift) & 0b11)];
+            shift += 2;
+        }
+        return new FaceStatus(connections, (int) ((data >> 8) & 0xffffffffL), (byte) ((data >> 8+32) & 0xff));
     }
 
     public enum Connection {

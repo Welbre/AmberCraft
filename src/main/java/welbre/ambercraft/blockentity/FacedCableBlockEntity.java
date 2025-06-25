@@ -86,52 +86,55 @@ public class FacedCableBlockEntity extends BlockEntity {
         for (Direction face : status.getCenterDirections())
         {
             BlockPos anchor = pos.relative(face);
+            FaceStatus faceStatus = status.getFaceStatus(face);
             //check a possible connection in this face
             for (Direction dir : GET_FACE_DIRECTIONS(face))
             {
-                //check internal connections
-                if (status.getFaceStatus(dir) != null){
-                    status.rawConnectionSet(face,dir,FaceStatus.Connection.INTERNAL);
-                    status.rawConnectionSet(dir,face,FaceStatus.Connection.INTERNAL);
-                }
-                else
+
                 {
-                    //check for blocks on the same plane
-                    if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBlockEntity faced)
+                    //check internal connections
+                    FaceStatus status = this.status.getFaceStatus(dir);
+                    if (status != null && status.color == faceStatus.color && status.type == faceStatus.type)
                     {
-                        // check if the center of faced contains a cable in the face
-                        if (faced.status.getFaceStatus(face) != null)
-                        {
-                            faced.status.rawConnectionSet(face,dir.getOpposite(), FaceStatus.Connection.EXTERNAl);
-                            faced.requestModelDataUpdate();
-                            faced.setChanged();
-
-                            status.rawConnectionSet(face,dir, FaceStatus.Connection.EXTERNAl);
-                            requestModelDataUpdate();
-                            setChanged();
-                        }
+                        CONNECT(this, face, dir, this, dir, face, FaceStatus.Connection.INTERNAL);
+                        break;
                     }
-                    //check for block on diagonals
-                    BlockPos diagonal = pos.relative(dir).relative(face);
-                    if (level.getBlockEntity(diagonal) instanceof FacedCableBlockEntity faced)//diagonal connections
-                    {
-                        BlockPos dia_face_vec = anchor.subtract(diagonal);
-                        Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
-                        // check if the center of faced contains a cable in the face
-                        if (faced.status.getFaceStatus(dia_face) != null)
-                        {
-                            faced.status.rawConnectionSet(dia_face, face.getOpposite(), FaceStatus.Connection.DIAGONAL);
-                            faced.requestModelDataUpdate();
-                            faced.setChanged();
+                }
 
-                            status.rawConnectionSet(face, dir, FaceStatus.Connection.DIAGONAL);
-                            requestModelDataUpdate();
-                            setChanged();
-                        }
-                    }
+                //check for blocks on the same plane
+                if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBlockEntity faced)
+                {
+
+                    FaceStatus status = faced.status.getFaceStatus(face);
+                    if (status != null && status.color == faceStatus.color && status.type == faceStatus.type)
+                        CONNECT(this, face, dir, faced, face, dir.getOpposite(), FaceStatus.Connection.EXTERNAl);
+                }
+                //check for block on diagonals
+                BlockPos diagonal = pos.relative(dir).relative(face);
+                if (level.getBlockEntity(diagonal) instanceof FacedCableBlockEntity faced)//diagonal connections
+                {
+                    BlockPos dia_face_vec = anchor.subtract(diagonal);
+                    Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
+
+                    FaceStatus status = faced.status.getFaceStatus(dia_face);
+                    if (status != null && status.color == faceStatus.color && status.type == faceStatus.type)
+                        CONNECT(this, face, dir, faced, dia_face, face.getOpposite(), FaceStatus.Connection.DIAGONAL);
                 }
             }
         }
+    }
+
+    private static void CONNECT(
+            FacedCableBlockEntity self, Direction self_face, Direction self_dir,
+            FacedCableBlockEntity faced, Direction faced_face, Direction faced_dir, FaceStatus.Connection connection)
+    {
+        faced.status.rawConnectionSet(faced_face, faced_dir, connection);
+        faced.requestModelDataUpdate();
+        faced.setChanged();
+
+        self.status.rawConnectionSet(self_face, self_dir, connection);
+        self.requestModelDataUpdate();
+        self.setChanged();
     }
 
     public void removeCable(@NotNull LevelReader level, BlockPos pos){//todo instead force all others the recalculate all, just create a function to remove a specified connection

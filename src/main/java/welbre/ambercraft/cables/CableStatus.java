@@ -6,7 +6,6 @@ import net.minecraft.core.Direction;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
 import welbre.ambercraft.cables.FaceStatus.Connection;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +95,7 @@ public class CableStatus {
     }
 
     public long[] toRawData() {
-        return new long[]{up == null ? -1 : up.getRawData(), down == null ? -1 : down.getRawData(),north == null ? -1 : north.getRawData(),south == null ? -1 : south.getRawData(),west == null ? -1 : west.getRawData(),east == null ? -1 : east.getRawData()};
+        return new long[]{up == null ? -1 : up.toRawData(), down == null ? -1 : down.toRawData(),north == null ? -1 : north.toRawData(),south == null ? -1 : south.toRawData(),west == null ? -1 : west.toRawData(),east == null ? -1 : east.toRawData()};
     }
 
     public static CableStatus fromRawData(long[] data){
