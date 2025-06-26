@@ -27,13 +27,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.cables.CableDataComponent;
 import welbre.ambercraft.cables.CableStatus;
 import welbre.ambercraft.cables.FaceStatus;
 import welbre.ambercraft.client.models.FacedCableBakedModel;
 
-public record CableSpecialRender() implements SpecialModelRenderer<Integer> {
+public record CableSpecialRender() implements SpecialModelRenderer<CableDataComponent> {
     @Override
-    public void render(@Nullable Integer color, ItemDisplayContext displayContext, PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+    public void render(@NotNull CableDataComponent data, ItemDisplayContext displayContext, PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         BakedModel model = new FacedCableBakedModel(
                 new Material(
                         TextureAtlas.LOCATION_BLOCKS,
@@ -42,9 +43,7 @@ public record CableSpecialRender() implements SpecialModelRenderer<Integer> {
                 null
         );
         CableStatus status = new CableStatus();
-
-        color = color == null ? -1 : color;
-        status.addCenter(Direction.DOWN, color,0);
+        status.addCenter(Direction.DOWN, data);
 
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.SOLID);
         var pose = poseStack.last();
@@ -53,8 +52,8 @@ public record CableSpecialRender() implements SpecialModelRenderer<Integer> {
     }
 
     @Override
-    public @NotNull Integer extractArgument(ItemStack stack) {
-        return stack.getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get()).color();
+    public @NotNull CableDataComponent extractArgument(ItemStack stack) {
+        return stack.getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
     }
 
     public record UnBacked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {

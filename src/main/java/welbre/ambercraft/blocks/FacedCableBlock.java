@@ -151,7 +151,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
     private static ItemStack GET_ITEM_STACK_FROM_FACE_STATUS(FaceStatus faceStatus){
         var stack = new ItemStack(Main.Items.FACED_CABLE_BLOCK_ITEM.get());
-        stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), new CableDataComponent(faceStatus.color, faceStatus.type));
+        stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), new CableDataComponent(faceStatus.color, faceStatus.type, faceStatus.packed_size));
         return stack;
     }
 }

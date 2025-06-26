@@ -72,14 +72,14 @@ public class CableStatus {
      * Sets the bit CENTER(5) in corresponded face bits in connection_mask.
      * @param face FacedCable face
      */
-    public void addCenter(Direction face, int color, int type){
+    public void addCenter(Direction face, CableDataComponent component){
         switch (face){
-            case UP -> up = new FaceStatus(color, type);
-            case DOWN -> down = new FaceStatus(color, type);
-            case NORTH -> north = new FaceStatus(color, type);
-            case SOUTH -> south = new FaceStatus(color, type);
-            case EAST -> east = new FaceStatus(color, type);
-            case WEST -> west = new FaceStatus(color, type);
+            case UP -> up = new FaceStatus(component);
+            case DOWN -> down = new FaceStatus(component);
+            case NORTH -> north = new FaceStatus(component);
+            case SOUTH -> south = new FaceStatus(component);
+            case EAST -> east = new FaceStatus(component);
+            case WEST -> west = new FaceStatus(component);
         }
     }
 

@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
 import welbre.ambercraft.blocks.FacedCableBlock;
 import welbre.ambercraft.blocks.HeatConductorBlock;
+import welbre.ambercraft.cables.CableDataComponent;
 import welbre.ambercraft.cables.CableStatus;
 import welbre.ambercraft.cables.FaceStatus;
 import welbre.ambercraft.cables.FaceStatus.Connection;
@@ -65,8 +66,6 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         QuadBakingVertexConsumer consumer = new QuadBakingVertexConsumer();
         consumer.setSprite(sprite);
 
-        float o = 0.25f;
-
         if (side != null)
             return List.of();
         CableStatus status = extraData.get(FacedCableBlockEntity.CONNECTION_MASK_PROPERTY);
@@ -78,7 +77,8 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         if (state == null)
         {
             int color = status.getFaceStatus(Direction.DOWN).color;
-            return new ArrayList<>(RenderHelper.FROM_AABB(consumer,sprite,AABB.ofSize(new Vec3(.5,.5,.5),o,o/2f,o), color));
+            float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.DOWN).packed_size);
+            return new ArrayList<>(RenderHelper.FROM_AABB(consumer,sprite,AABB.ofSize(new Vec3(.5,.5,.5),s[0],s[1],s[0]), color));
         }
 
 
@@ -86,78 +86,81 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         if (down != null)
         {
             final int color = down.color;
-            AABB c = AABB.ofSize(new Vec3(.5, o/4f, .5), o, o/2f, o);//center
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.DOWN).packed_size);
+            AABB c = AABB.ofSize(new Vec3(.5, s[1]/2f, .5), s[0], s[1], s[0]);//center
             quads.addAll(RenderHelper.FROM_AABB(consumer,sprite, c,color));
 
             //up
             if (down.connection[0] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, -o/2f, c.maxX, c.maxY, c.minZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, -s[1], c.maxX, c.maxY, c.minZ).bounds(),color));
             else if (down.connection[0] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, 0, c.maxX, c.maxY, c.minZ).bounds(),color));
             else if (down.connection[0] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, o/2f, c.maxX, c.maxY, c.minZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, s[1], c.maxX, c.maxY, c.minZ).bounds(),color));
             //left
             if (down.connection[1] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-o/2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (down.connection[1] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(0, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (down.connection[1] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(o/2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                    quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             //down
             if (down.connection[2] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f+o/2f).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f+s[1]).bounds(),color));
             else if (down.connection[2] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f).bounds(),color));
             else if (down.connection[2] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f-o/2f).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f-s[1]).bounds(),color));
             //right
             if (down.connection[3] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+o/2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+s[1], c.maxY, c.maxZ).bounds(),color));
             else if (down.connection[3] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f, c.maxY, c.maxZ).bounds(),color));
             else if (down.connection[3] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-o/2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-s[1], c.maxY, c.maxZ).bounds(),color));
         }
         FaceStatus up = status.getFaceStatus(Direction.UP);
         if (up != null)
         {
             final int color = up.color;
-            AABB c = AABB.ofSize(new Vec3(.5, 1-o/4f, .5), o, o/2f, o);//center
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.UP).packed_size);
+            AABB c = AABB.ofSize(new Vec3(.5, 1-s[1]/2f, .5), s[0], s[1], s[0]);//center
             quads.addAll(FROM_AABB(consumer, sprite, c, color));
             //up south
             if (up.connection[0] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f+o/2f).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f+s[1]).bounds(),color));
             else if (up.connection[0] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f).bounds(),color));
             else if (up.connection[0] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f-o/2f).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, c.maxZ, c.maxX, c.maxY, 1f-s[1]).bounds(),color));
             //left west
             if (up.connection[1] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-o/2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (up.connection[1] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(0, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (up.connection[1] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(o/2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             //down north
             if (up.connection[2] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, -o/2f, c.maxX, c.maxY, c.minZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, -s[1], c.maxX, c.maxY, c.minZ).bounds(),color));
             else if (up.connection[2] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, 0, c.maxX, c.maxY, c.minZ).bounds(),color));
             else if (up.connection[2] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, o/2f, c.maxX, c.maxY, c.minZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, s[1], c.maxX, c.maxY, c.minZ).bounds(),color));
             //right east
             if (up.connection[3] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+o/2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+s[1], c.maxY, c.maxZ).bounds(),color));
             else if (up.connection[3] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f, c.maxY, c.maxZ).bounds(),color));
             else if (up.connection[3] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-o/2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-s[1], c.maxY, c.maxZ).bounds(),color));
         }
         FaceStatus north = status.getFaceStatus(Direction.NORTH);
         if (north != null)
         {
             final int color = north.color;
-            AABB c = AABB.ofSize(new Vec3(.5, .5, o/4f), o, o, o/2f);//center
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.NORTH).packed_size);
+            AABB c = AABB.ofSize(new Vec3(.5, .5, s[1]/2f), s[0], s[0], s[1]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
 
             if (north.connection[0] != Connection.EMPTY)//up
@@ -166,9 +169,9 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             if (north.connection[1] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(0, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (north.connection[1] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-o/2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (north.connection[1] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(o/2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             //down
             if (north.connection[2] != Connection.EMPTY)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, 0, c.minZ, c.maxX, c.minY, c.maxZ).bounds(),color));
@@ -176,15 +179,16 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             if (north.connection[3] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f, c.maxY, c.maxZ).bounds(),color));
             else if (north.connection[3] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+o/2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+s[1], c.maxY, c.maxZ).bounds(),color));
             else if (north.connection[3] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f - o / 2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-s[1], c.maxY, c.maxZ).bounds(),color));
         }
         FaceStatus south = status.getFaceStatus(Direction.SOUTH);
         if (south != null)
         {
             final int color = south.color;
-            AABB c = AABB.ofSize(new Vec3(.5, .5, 1-o/4f), o, o, o/2f);//center
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.SOUTH).packed_size);
+            AABB c = AABB.ofSize(new Vec3(.5, .5, 1-s[1]/2f), s[0],s[0],s[1]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
             if (south.connection[0] != Connection.EMPTY)//up
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.maxY, c.minZ, c.maxX, 1f, c.maxZ).bounds(),color));
@@ -192,9 +196,9 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             if (south.connection[1] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f, c.maxY, c.maxZ).bounds(),color));
             else if (south.connection[1] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+o/2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f+s[1], c.maxY, c.maxZ).bounds(),color));
             else if (south.connection[1] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-o/2f, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-s[1], c.maxY, c.maxZ).bounds(),color));
             //down
             if (south.connection[2] != Connection.EMPTY)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, 0, c.minZ, c.maxX, c.minY, c.maxZ).bounds(),color));
@@ -202,15 +206,16 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             if (south.connection[3] == Connection.EXTERNAl)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(0, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (south.connection[3] == Connection.DIAGONAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-o/2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(-s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
             else if (south.connection[3] == Connection.INTERNAL)
-                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(o / 2f, c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
+                quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
         }
         FaceStatus west = status.getFaceStatus(Direction.WEST);
         if (west != null)
         {
             final int color = west.color;
-            AABB c = AABB.ofSize(new Vec3(o/4f, .5, 0.5),o/2f,o,o);//center
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.WEST).packed_size);
+            AABB c = AABB.ofSize(new Vec3(s[1]/2f, .5, 0.5), s[1],s[0],s[0]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
             if (west.connection[0] != Connection.EMPTY)//up
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.maxY, c.minZ, c.maxX, 1f, c.maxZ).bounds(),color));
@@ -225,7 +230,8 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         if (east != null)
         {
             final int color = east.color;
-            AABB c = AABB.ofSize(new Vec3(1-o/4f, .5, 0.5),o/2f,o,o);//center
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.EAST).packed_size);
+            AABB c = AABB.ofSize(new Vec3(1-s[1]/2f, .5, 0.5),s[1],s[0],s[0]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
 
             if (east.connection[0] != Connection.EMPTY)//up

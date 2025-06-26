@@ -138,9 +138,27 @@ public class Main {
             for (DyeColor color : DyeColor.values())
             {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0));
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0, CableDataComponent.PACK_SIZE(0.25,0.25/2)));
                 list.add(stack);
             }
+            for (DyeColor color : DyeColor.values())
+            {
+                var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0, CableDataComponent.PACK_SIZE(0.2,0.2/3)));
+                list.add(stack);
+            }
+            for (DyeColor color : DyeColor.values())
+            {
+                var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0, CableDataComponent.PACK_SIZE(0.4,0.2)));
+                list.add(stack);
+            }
+            int _x = (int) Math.floor(0.4*255 + 0.5);
+            int _y = (int) Math.floor(0.22*255 + 0.5);
+            var data =  (short) (_x | (_y << 8));
+            var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
+            stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(DyeColor.CYAN.getTextureDiffuseColor(),(byte) 0, data));
+            list.add(stack);
             return list;
         }
     }

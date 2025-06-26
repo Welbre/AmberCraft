@@ -101,10 +101,8 @@ public class FacedCableBlockEntity extends BlockEntity {
                             continue;
                         } else
                         {
-                            {
-                                CONNECT(this, face, dir, this, dir, face, FaceStatus.Connection.EMPTY);
-                                continue;
-                            }
+                            CONNECT(this, face, dir, this, dir, face, FaceStatus.Connection.EMPTY);
+                            continue;
                         }
                 }
 
