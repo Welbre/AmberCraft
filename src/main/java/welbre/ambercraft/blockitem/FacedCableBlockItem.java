@@ -26,9 +26,7 @@ import welbre.ambercraft.cables.CableDataComponent;
 
 public class FacedCableBlockItem extends BlockItem {
     public FacedCableBlockItem(Item.Properties properties) {
-        super(Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(),
-                properties.component(Main.Components.CABLE_DATA_COMPONENT.get(), new CableDataComponent(0, (byte) 0))
-        );
+        super(Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(),properties);
     }
     @Override
     public @NotNull InteractionResult place(BlockPlaceContext context) {
@@ -38,7 +36,9 @@ public class FacedCableBlockItem extends BlockItem {
         Direction clickedFace = context.getClickedFace();
 
         CableDataComponent component = context.getItemInHand().getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
-        component = component == null ? new CableDataComponent(0,(byte) 0) : component;
+        if (component == null)
+            return InteractionResult.FAIL;
+
 
         if (be instanceof FacedCableBlockEntity faced){
             if (faced.getStatus().getFaceStatus(clickedFace.getOpposite()) == null) {

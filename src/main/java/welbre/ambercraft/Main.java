@@ -1,22 +1,25 @@
 package welbre.ambercraft;
 
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.*;
 import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blockitem.FacedCableBlockItem;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.cables.CableDataComponent;
+import welbre.ambercraft.cables.CableType;
+import welbre.ambercraft.cables.TestCableType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,6 +34,10 @@ public class Main {
     public static final String MOD_ID = "ambercraft";
 
     public Main(IEventBus modBus, ModContainer container) {
+        modBus.addListener(AmberRegisters::registerRegistries);
+
+        CableTypes.REGISTER.register(modBus);
+
         Blocks.REGISTER.register(modBus);
         Items.REGISTER.register(modBus);
         Tiles.REGISTER.register(modBus);
@@ -89,6 +96,27 @@ public class Main {
         public static final Supplier<BlockEntityType<FacedCableBlockEntity>> FACED_CABLE_BLOCK_ENTITY = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBlockEntity::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
     }
 
+    public static final class AmberRegisters {
+        public static final ResourceKey<Registry<CableType>> CABLE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "cable_type_register"));
+        public static final Registry<CableType>  CABLE_TYPE_REGISTRY = new RegistryBuilder<>(CABLE_TYPE_REGISTER_KEY).create();
+
+        public static void registerRegistries(NewRegistryEvent event) {
+            event.register(CABLE_TYPE_REGISTRY);
+        }
+    }
+
+    public static final class CableTypes {
+        public static final DeferredRegister<CableType> REGISTER = DeferredRegister.create(AmberRegisters.CABLE_TYPE_REGISTRY, "cable_register");
+
+        public static final Supplier<TestCableType> TEST_CABLE_TYPE = REGISTER.register("test_cable_type", TestCableType::new);
+        public static final Supplier<TestCableType> TEST_CABLE_TYPE_2 = REGISTER.register("test_cable_type2", () -> new TestCableType(){
+            @Override
+            public double getHeight() {
+                return 0.1;
+            }
+        });
+    }
+
     public static final class Components {
         public static final DeferredRegister.DataComponents REGISTER = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE,MOD_ID);
 
@@ -138,27 +166,15 @@ public class Main {
             for (DyeColor color : DyeColor.values())
             {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0, CableDataComponent.PACK_SIZE(0.25,0.25/2)));
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),CableTypes.TEST_CABLE_TYPE.get().getData(color.getTextureDiffuseColor()));
                 list.add(stack);
             }
             for (DyeColor color : DyeColor.values())
             {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0, CableDataComponent.PACK_SIZE(0.2,0.2/3)));
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),CableTypes.TEST_CABLE_TYPE_2.get().getData(color.getTextureDiffuseColor()));
                 list.add(stack);
             }
-            for (DyeColor color : DyeColor.values())
-            {
-                var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(color.getTextureDiffuseColor(),(byte) 0, CableDataComponent.PACK_SIZE(0.4,0.2)));
-                list.add(stack);
-            }
-            int _x = (int) Math.floor(0.4*255 + 0.5);
-            int _y = (int) Math.floor(0.22*255 + 0.5);
-            var data =  (short) (_x | (_y << 8));
-            var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-            stack.set(Components.CABLE_DATA_COMPONENT.get(),new CableDataComponent(DyeColor.CYAN.getTextureDiffuseColor(),(byte) 0, data));
-            list.add(stack);
             return list;
         }
     }

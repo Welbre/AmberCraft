@@ -5,34 +5,26 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
-import welbre.ambercraft.blocks.FacedCableBlock;
-import welbre.ambercraft.blocks.HeatConductorBlock;
 import welbre.ambercraft.cables.CableDataComponent;
-import welbre.ambercraft.cables.CableStatus;
-import welbre.ambercraft.cables.FaceStatus;
-import welbre.ambercraft.cables.FaceStatus.Connection;
+import welbre.ambercraft.cables.CableState;
+import welbre.ambercraft.cables.FaceState;
+import welbre.ambercraft.cables.FaceState.Connection;
 import welbre.ambercraft.client.RenderHelper;
 
 import java.util.ArrayList;
@@ -68,7 +60,7 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
 
         if (side != null)
             return List.of();
-        CableStatus status = extraData.get(FacedCableBlockEntity.CONNECTION_MASK_PROPERTY);
+        CableState status = extraData.get(FacedCableBlockEntity.CONNECTION_MASK_PROPERTY);
         if (status == null)
         {
             return List.of();
@@ -76,17 +68,17 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         //render the item
         if (state == null)
         {
-            int color = status.getFaceStatus(Direction.DOWN).color;
-            float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.DOWN).packed_size);
+            int color = status.getFaceStatus(Direction.DOWN).data.color();
+            float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.DOWN).data.packed_size());
             return new ArrayList<>(RenderHelper.FROM_AABB(consumer,sprite,AABB.ofSize(new Vec3(.5,.5,.5),s[0],s[1],s[0]), color));
         }
 
 
-        FaceStatus down = status.getFaceStatus(Direction.DOWN);
+        FaceState down = status.getFaceStatus(Direction.DOWN);
         if (down != null)
         {
-            final int color = down.color;
-            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.DOWN).packed_size);
+            final int color = down.data.color();
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.DOWN).data.packed_size());
             AABB c = AABB.ofSize(new Vec3(.5, s[1]/2f, .5), s[0], s[1], s[0]);//center
             quads.addAll(RenderHelper.FROM_AABB(consumer,sprite, c,color));
 
@@ -119,11 +111,11 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             else if (down.connection[3] == Connection.INTERNAL)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-s[1], c.maxY, c.maxZ).bounds(),color));
         }
-        FaceStatus up = status.getFaceStatus(Direction.UP);
+        FaceState up = status.getFaceStatus(Direction.UP);
         if (up != null)
         {
-            final int color = up.color;
-            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.UP).packed_size);
+            final int color = up.data.color();
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.UP).data.packed_size());
             AABB c = AABB.ofSize(new Vec3(.5, 1-s[1]/2f, .5), s[0], s[1], s[0]);//center
             quads.addAll(FROM_AABB(consumer, sprite, c, color));
             //up south
@@ -155,11 +147,11 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             else if (up.connection[3] == Connection.INTERNAL)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-s[1], c.maxY, c.maxZ).bounds(),color));
         }
-        FaceStatus north = status.getFaceStatus(Direction.NORTH);
+        FaceState north = status.getFaceStatus(Direction.NORTH);
         if (north != null)
         {
-            final int color = north.color;
-            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.NORTH).packed_size);
+            final int color = north.data.color();
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.NORTH).data.packed_size());
             AABB c = AABB.ofSize(new Vec3(.5, .5, s[1]/2f), s[0], s[0], s[1]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
 
@@ -183,11 +175,11 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             else if (north.connection[3] == Connection.INTERNAL)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.maxX, c.minY, c.minZ, 1f-s[1], c.maxY, c.maxZ).bounds(),color));
         }
-        FaceStatus south = status.getFaceStatus(Direction.SOUTH);
+        FaceState south = status.getFaceStatus(Direction.SOUTH);
         if (south != null)
         {
-            final int color = south.color;
-            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.SOUTH).packed_size);
+            final int color = south.data.color();
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.SOUTH).data.packed_size());
             AABB c = AABB.ofSize(new Vec3(.5, .5, 1-s[1]/2f), s[0],s[0],s[1]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
             if (south.connection[0] != Connection.EMPTY)//up
@@ -210,11 +202,11 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             else if (south.connection[3] == Connection.INTERNAL)
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(s[1], c.minY, c.minZ, c.minX, c.maxY, c.maxZ).bounds(),color));
         }
-        FaceStatus west = status.getFaceStatus(Direction.WEST);
+        FaceState west = status.getFaceStatus(Direction.WEST);
         if (west != null)
         {
-            final int color = west.color;
-            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.WEST).packed_size);
+            final int color = west.data.color();
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.WEST).data.packed_size());
             AABB c = AABB.ofSize(new Vec3(s[1]/2f, .5, 0.5), s[1],s[0],s[0]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
             if (west.connection[0] != Connection.EMPTY)//up
@@ -226,11 +218,11 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
             if (west.connection[3] != Connection.EMPTY)//right
                 quads.addAll(FROM_AABB(consumer, sprite, Shapes.box(c.minX, c.minY, 0, c.maxX, c.maxY, c.minZ).bounds(),color));
         }
-        FaceStatus east = status.getFaceStatus(Direction.EAST);
+        FaceState east = status.getFaceStatus(Direction.EAST);
         if (east != null)
         {
-            final int color = east.color;
-            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.EAST).packed_size);
+            final int color = east.data.color();
+            final float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.EAST).data.packed_size());
             AABB c = AABB.ofSize(new Vec3(1-s[1]/2f, .5, 0.5),s[1],s[0],s[0]);//center
             quads.addAll(FROM_AABB(consumer,sprite, c, color));
 

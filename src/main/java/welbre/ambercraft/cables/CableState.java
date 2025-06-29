@@ -1,34 +1,28 @@
 package welbre.ambercraft.cables;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
-import welbre.ambercraft.cables.FaceStatus.Connection;
+import welbre.ambercraft.cables.FaceState.Connection;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CableStatus {
-    public static final Codec<CableStatus> CODEC = RecordCodecBuilder.create( data -> data.group(
-            FaceStatus.CODEC.listOf().fieldOf("faces").forGetter(status -> List.of(status.up, status.down, status.north, status.south, status.west, status.east))
-    ).apply(data, CableStatus::new));
+public class CableState {
+    private FaceState up= null;
+    private FaceState down= null;
+    private FaceState north= null;
+    private FaceState south= null;
+    private FaceState west= null;
+    private FaceState east= null;
 
-    private FaceStatus up= null;
-    private FaceStatus down= null;
-    private FaceStatus north= null;
-    private FaceStatus south= null;
-    private FaceStatus west= null;
-    private FaceStatus east= null;
-
-    private CableStatus(List<FaceStatus> faces){
+    private CableState(List<FaceState> faces){
         this(faces.getFirst(), faces.get(1), faces.get(2), faces.get(3), faces.get(4), faces.get(5));
     }
 
-    public CableStatus() {
+    public CableState() {
     }
 
-    public CableStatus(FaceStatus up, FaceStatus down, FaceStatus north, FaceStatus south, FaceStatus west, FaceStatus east) {
+    public CableState(FaceState up, FaceState down, FaceState north, FaceState south, FaceState west, FaceState east) {
         this.up = up;
         this.down = down;
         this.north = north;
@@ -63,7 +57,7 @@ public class CableStatus {
      * @param globalDir uses the default directions documented in {@link FacedCableBlockEntity FacedCableBlockEntity}.
      */
     public void rawConnectionSet(Direction face, Direction globalDir, Connection connection){
-        FaceStatus status = getFaceStatus(face);
+        FaceState status = getFaceStatus(face);
         status.connection[getConnectionIndexByGlobalDir(face,globalDir)] = connection;
     }
 
@@ -74,16 +68,16 @@ public class CableStatus {
      */
     public void addCenter(Direction face, CableDataComponent component){
         switch (face){
-            case UP -> up = new FaceStatus(component);
-            case DOWN -> down = new FaceStatus(component);
-            case NORTH -> north = new FaceStatus(component);
-            case SOUTH -> south = new FaceStatus(component);
-            case EAST -> east = new FaceStatus(component);
-            case WEST -> west = new FaceStatus(component);
+            case UP -> up = new FaceState(component);
+            case DOWN -> down = new FaceState(component);
+            case NORTH -> north = new FaceState(component);
+            case SOUTH -> south = new FaceState(component);
+            case EAST -> east = new FaceState(component);
+            case WEST -> west = new FaceState(component);
         }
     }
 
-    public FaceStatus getFaceStatus(Direction face){
+    public FaceState getFaceStatus(Direction face){
         return switch (face){
             case UP -> up;
             case DOWN -> down;
@@ -98,14 +92,14 @@ public class CableStatus {
         return new long[]{up == null ? -1 : up.toRawData(), down == null ? -1 : down.toRawData(),north == null ? -1 : north.toRawData(),south == null ? -1 : south.toRawData(),west == null ? -1 : west.toRawData(),east == null ? -1 : east.toRawData()};
     }
 
-    public static CableStatus fromRawData(long[] data){
-        return new CableStatus(
-                data[0] == -1 ? null : FaceStatus.fromRawData(data[0]),
-                data[1] == -1 ? null : FaceStatus.fromRawData(data[1]),
-                data[2] == -1 ? null : FaceStatus.fromRawData(data[2]),
-                data[3] == -1 ? null : FaceStatus.fromRawData(data[3]),
-                data[4] == -1 ? null : FaceStatus.fromRawData(data[4]),
-                data[5] == -1 ? null : FaceStatus.fromRawData(data[5])
+    public static CableState fromRawData(long[] data){
+        return new CableState(
+                data[0] == -1 ? null : FaceState.fromRawData(data[0]),
+                data[1] == -1 ? null : FaceState.fromRawData(data[1]),
+                data[2] == -1 ? null : FaceState.fromRawData(data[2]),
+                data[3] == -1 ? null : FaceState.fromRawData(data[3]),
+                data[4] == -1 ? null : FaceState.fromRawData(data[4]),
+                data[5] == -1 ? null : FaceState.fromRawData(data[5])
         );
     }
 
@@ -114,7 +108,7 @@ public class CableStatus {
         StringBuilder builder = new StringBuilder("{");
         for (Direction dir : Direction.values())
         {
-            FaceStatus status = getFaceStatus(dir);
+            FaceState status = getFaceStatus(dir);
             if (status != null)
             {
                 builder.append("%s: %s".formatted(dir.name().toLowerCase(), status.toString()));

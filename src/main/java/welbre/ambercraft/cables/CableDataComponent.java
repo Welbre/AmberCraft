@@ -7,27 +7,34 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public record CableDataComponent(int color, byte type, short packed_size) implements DataComponentType<CableDataComponent> {
+/**
+ * @param cable_type_index Internal index to retriever the CableType instance.
+ * @param color Represents the cable color(RGB).
+ * @param type The type used to check different cable connection.
+ * @param packed_size Uses an integer to represent the width and height size of the cable model.
+ */
+public record CableDataComponent(byte cable_type_index, int color, byte type, short packed_size, boolean ignore_color) implements DataComponentType<CableDataComponent> {
     public static final short DEFAULT_PACKED_SIZE = PACK_SIZE(.4,.4/2);
-
-    public CableDataComponent(int color, byte type) {
-        this(color, type, DEFAULT_PACKED_SIZE);
-    }
 
     public static final Codec<CableDataComponent> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
+                    Codec.BYTE.fieldOf("index").forGetter(CableDataComponent::cable_type_index),
                     Codec.INT.fieldOf("color").forGetter(CableDataComponent::color),
                     Codec.BYTE.fieldOf("type").forGetter(CableDataComponent::type),
-                    Codec.SHORT.fieldOf("packed_size").orElse(DEFAULT_PACKED_SIZE).forGetter(CableDataComponent::packed_size)
+                    Codec.SHORT.fieldOf("pkd_size").orElse(DEFAULT_PACKED_SIZE).forGetter(CableDataComponent::packed_size),
+                    Codec.BOOL.fieldOf("ign_c").orElse(false).forGetter(CableDataComponent::ignore_color)
             ).apply(instance, CableDataComponent::new)
     );
 
     public static final StreamCodec<ByteBuf, CableDataComponent> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BYTE, CableDataComponent::cable_type_index,
             ByteBufCodecs.INT, CableDataComponent::color,
             ByteBufCodecs.BYTE, CableDataComponent::type,
             ByteBufCodecs.SHORT, CableDataComponent::packed_size,
+            ByteBufCodecs.BOOL, CableDataComponent::ignore_color,
             CableDataComponent::new
     );
 
@@ -50,7 +57,62 @@ public record CableDataComponent(int color, byte type, short packed_size) implem
     }
 
     @Override
-    public StreamCodec<? super RegistryFriendlyByteBuf, CableDataComponent> streamCodec() {
+    public @NotNull StreamCodec<? super RegistryFriendlyByteBuf, CableDataComponent> streamCodec() {
         return STREAM_CODEC;
+    }
+
+    public static final class Builder {
+        private byte cable_type_index;
+        private int color;
+        private byte type;
+        private short packed_size;
+        private boolean ignore_color;
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static Builder builder(CableDataComponent data) {
+            var builder = new Builder();
+            builder.cable_type_index = data.cable_type_index();
+            builder.color = data.color();
+            builder.type = data.type();
+            builder.packed_size = data.packed_size();
+            return builder;
+        }
+
+        public Builder setCable_type_index(byte cable_type_index) {
+            this.cable_type_index = cable_type_index;
+            return this;
+        }
+
+        public Builder setColor(int color) {
+            this.color = color;
+            return this;
+        }
+
+        public Builder setType(byte type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder setPackedSize(short packed_size) {
+            this.packed_size = packed_size;
+            return this;
+        }
+
+        public Builder setIgnoreColor(boolean ignore_color) {
+            this.ignore_color = ignore_color;
+            return this;
+        }
+
+        public CableDataComponent build(){
+            return new CableDataComponent(cable_type_index, color, type, packed_size, ignore_color);
+        }
+
+        public Builder toggleIgnoreColor() {
+            ignore_color = !ignore_color;
+            return this;
+        }
     }
 }

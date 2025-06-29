@@ -1,15 +1,12 @@
 package welbre.ambercraft.client.item;
 
-import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
@@ -19,17 +16,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
 import welbre.ambercraft.cables.CableDataComponent;
-import welbre.ambercraft.cables.CableStatus;
-import welbre.ambercraft.cables.FaceStatus;
+import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.client.models.FacedCableBakedModel;
 
 public record CableSpecialRender() implements SpecialModelRenderer<CableDataComponent> {
@@ -42,7 +35,7 @@ public record CableSpecialRender() implements SpecialModelRenderer<CableDataComp
                 ),
                 null
         );
-        CableStatus status = new CableStatus();
+        CableState status = new CableState();
         status.addCenter(Direction.DOWN, data);
 
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.SOLID);
