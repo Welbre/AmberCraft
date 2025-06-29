@@ -29,7 +29,7 @@ public class FacedCableModelLoader implements UnbakedModelLoader<FacedCableModel
 
         @Override
         public BakedModel bake(TextureSlots textureSlots, ModelBaker baker, ModelState modelState, boolean hasAmbientOcclusion, boolean useBlockLight, ItemTransforms transforms) {
-            return new FacedCableBakedModel(textureSlots.getMaterial("cable"), transforms);
+            return new FacedCableBakedModel(transforms);
         }
 
         @Override

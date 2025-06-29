@@ -1,5 +1,7 @@
 package welbre.ambercraft;
 
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -8,6 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -113,6 +116,12 @@ public class Main {
             @Override
             public double getHeight() {
                 return 0.1;
+            }
+
+            @Override
+            public Material getInsulationMaterial() {
+
+                return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse("minecraft:block/white_terracotta"));
             }
         });
     }

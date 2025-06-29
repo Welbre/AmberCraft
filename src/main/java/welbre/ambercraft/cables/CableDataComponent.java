@@ -61,6 +61,10 @@ public record CableDataComponent(byte cable_type_index, int color, byte type, sh
         return STREAM_CODEC;
     }
 
+    public CableType getType(){
+        return CableType.FromCableTypeIndex(cable_type_index);
+    }
+
     public static final class Builder {
         private byte cable_type_index;
         private int color;
@@ -74,10 +78,10 @@ public record CableDataComponent(byte cable_type_index, int color, byte type, sh
 
         public static Builder builder(CableDataComponent data) {
             var builder = new Builder();
-            builder.cable_type_index = data.cable_type_index();
-            builder.color = data.color();
-            builder.type = data.type();
-            builder.packed_size = data.packed_size();
+            builder.cable_type_index = data.cable_type_index;
+            builder.color = data.color;
+            builder.type = data.type;
+            builder.packed_size = data.packed_size;
             return builder;
         }
 

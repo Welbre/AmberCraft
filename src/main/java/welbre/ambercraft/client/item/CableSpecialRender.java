@@ -29,10 +29,6 @@ public record CableSpecialRender() implements SpecialModelRenderer<CableDataComp
     @Override
     public void render(@NotNull CableDataComponent data, ItemDisplayContext displayContext, PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         BakedModel model = new FacedCableBakedModel(
-                new Material(
-                        TextureAtlas.LOCATION_BLOCKS,
-                        ResourceLocation.parse("minecraft:block/white_wool")
-                ),
                 null
         );
         CableState status = new CableState();

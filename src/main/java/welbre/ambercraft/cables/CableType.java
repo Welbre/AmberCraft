@@ -1,5 +1,6 @@
 package welbre.ambercraft.cables;
 
+import net.minecraft.client.resources.model.Material;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public abstract class CableType{
 
     public abstract double getWidth();
     public abstract double getHeight();
-
+    public abstract Material getInsulationMaterial();
     /**
      * The cable type system is a single byte value that defines if a cable can connect with another of the same type.<br>
      * Ex: The electric cable has type 0, so this cable can connect only to other cables with type 0.<br>
