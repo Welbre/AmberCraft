@@ -26,6 +26,7 @@ public abstract class CableType{
     public abstract double getWidth();
     public abstract double getHeight();
     public abstract Material getInsulationMaterial();
+    public abstract Material getCableMaterial();
     /**
      * The cable type system is a single byte value that defines if a cable can connect with another of the same type.<br>
      * Ex: The electric cable has type 0, so this cable can connect only to other cables with type 0.<br>

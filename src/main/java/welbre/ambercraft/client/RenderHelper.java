@@ -12,6 +12,7 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 @OnlyIn(Dist.CLIENT)
 public final class RenderHelper {
@@ -145,6 +146,71 @@ public final class RenderHelper {
                 ax, by, bz,0,1,rgba,
                 bx, by, bz,1,1,rgba,
                 bx, by, az,1,0,rgba
+        ));
+
+        return quads;
+    }
+
+    public static List<BakedQuad> FROM_AABB_SIDE_TEXTURED(
+            QuadBakingVertexConsumer consumer,
+            Function<Direction,TextureAtlasSprite> sprite_getter,
+            AABB aabb,
+            Function<Direction,Integer> rgba_getter
+    ){
+        List<BakedQuad> quads = new ArrayList<>();
+        float ax = (float) aabb.minX;
+        float bx = (float) aabb.maxX;
+        float ay = (float) aabb.minY;
+        float by = (float) aabb.maxY;
+        float az = (float) aabb.minZ;
+        float bz = (float) aabb.maxZ;
+        int rgba_e = rgba_getter.apply(Direction.EAST);
+        int rgba_s = rgba_getter.apply(Direction.SOUTH);
+        int rgba_u = rgba_getter.apply(Direction.UP);
+        int rgba_w = rgba_getter.apply(Direction.WEST);
+        int rgba_n = rgba_getter.apply(Direction.NORTH);
+        int rgba_d = rgba_getter.apply(Direction.DOWN);
+        //X+ face
+        quads.add(QUAD(consumer, sprite_getter.apply(Direction.EAST),
+                ax, by, az,0,0,rgba_e,
+                ax, ay, az,0,1 ,rgba_e,
+                ax, ay, bz,1,1,rgba_e,
+                ax, by, bz,1,0,rgba_e
+        ));
+        //Z+ face
+        quads.add(QUAD(consumer, sprite_getter.apply(Direction.SOUTH),
+                bx, by, az,0,0,rgba_s,
+                bx, ay, az,0,1,rgba_s,
+                ax, ay, az,1,1,rgba_s,
+                ax, by, az,1,0,rgba_s
+        ));
+        //Y+DOWN face
+        quads.add(QUAD(consumer, sprite_getter.apply(Direction.UP),
+                ax, ay, bz,0,0,rgba_u,
+                ax, ay, az,0,1,rgba_u,
+                bx, ay, az,1,1,rgba_u,
+                bx, ay, bz,1,0,rgba_u
+        ));
+        //X- face
+        quads.add(QUAD(consumer, sprite_getter.apply(Direction.WEST),
+                bx, by, bz,0,0,rgba_w,
+                bx, ay, bz,0,1,rgba_w,
+                bx, ay, az,1,1,rgba_w,
+                bx, by, az,1,0,rgba_w
+        ));
+        //Z- face
+        quads.add(QUAD(consumer, sprite_getter.apply(Direction.NORTH),
+                ax, by, bz,0,0,rgba_n,
+                ax, ay, bz,0,1,rgba_n,
+                bx, ay, bz,1,1,rgba_n,
+                bx, by, bz,1,0,rgba_n
+        ));
+        //Y-UP face
+        quads.add(QUAD(consumer, sprite_getter.apply(Direction.DOWN),
+                ax, by, az,0,0,rgba_d,
+                ax, by, bz,0,1,rgba_d,
+                bx, by, bz,1,1,rgba_d,
+                bx, by, az,1,0,rgba_d
         ));
 
         return quads;

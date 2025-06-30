@@ -12,6 +12,11 @@ public class TestCableType extends CableType{
     }
 
     @Override
+    public Material getCableMaterial() {
+        return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/copper_block"));
+    }
+
+    @Override
     public double getWidth() {
         return 0.3;
     }

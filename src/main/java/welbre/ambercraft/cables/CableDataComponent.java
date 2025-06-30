@@ -82,6 +82,7 @@ public record CableDataComponent(byte cable_type_index, int color, byte type, sh
             builder.color = data.color;
             builder.type = data.type;
             builder.packed_size = data.packed_size;
+            builder.ignore_color = data.ignore_color;
             return builder;
         }
 

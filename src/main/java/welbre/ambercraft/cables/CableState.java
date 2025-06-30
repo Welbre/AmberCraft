@@ -132,7 +132,7 @@ public class CableState {
      * Gets the face shift using the block face and a global direction.<br>
      * @return returns the amount of shift in the face mask to modify a specified faceDirection bit, or -1 if it can't get a direction.
      */
-    private static int getConnectionIndexByGlobalDir(Direction face, Direction globalDir){
+    public static int getConnectionIndexByGlobalDir(Direction face, Direction globalDir){
         return switch (face)
         {
             case DOWN -> switch (globalDir)
