@@ -13,7 +13,7 @@ public class HeatConductorTile extends HeatBlockEntity {
     public HeatConductorTile(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
 
-        this.heatModule = new HeatModule()
+        this.heatModule = new HeatModule(this)
         {
             @Override
             public void transferHeatToNeighbor(Level level, BlockPos pos) {

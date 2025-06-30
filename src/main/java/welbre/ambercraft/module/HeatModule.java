@@ -154,6 +154,6 @@ public class HeatModule implements Module {
     public static double getAmbientTemperature(Level level, BlockPos pos){
         Holder<Biome> biome = level.getBiomeManager().getBiome(pos);
         float baseTemperature = biome.value().getBaseTemperature();
-        return baseTemperature * 40f;
+        return Math.min(baseTemperature,1.0f) * 40f;
     }
 }
