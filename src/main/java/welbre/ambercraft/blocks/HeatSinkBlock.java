@@ -26,25 +26,12 @@ import welbre.ambercraft.blockentity.HeatSinkBlockEntity;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.*;
 
-public class HeatSinkBlock extends AmberBasicBlock implements ModularBlock, EntityBlock {
+public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
     public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition();
 
     public HeatSinkBlock(Properties p) {
         super(p);
-    }
-
-    @Override
-    public ModuleDefinition[] getModuleDefinition() {
-        return new ModuleDefinition[]{heatModuleDefinition};
-    }
-
-    @Override
-    public ModuleDefinition[] getModuleDefinition(BlockState state, Direction direction) {
-        if (direction == Direction.DOWN)
-            return new ModuleDefinition[]{heatModuleDefinition};
-        else
-            return new ModuleDefinition[0];
     }
 
     @Override
@@ -54,13 +41,14 @@ public class HeatSinkBlock extends AmberBasicBlock implements ModularBlock, Enti
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return this::tick;
+        return HeatSinkBlockEntity::TICK;
     }
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (stack.getItem() == Items.WATER_BUCKET) {
-            if (level.getBlockEntity(pos) instanceof HeatSinkBlockEntity sink) {
+        if (level.getBlockEntity(pos) instanceof HeatSinkBlockEntity sink)
+        {
+            if (stack.getItem() == Items.WATER_BUCKET) {
                 if (sink.heatModule.getTemperature() >= 100) {
                     if (!player.isCreative()) {
                         player.getInventory().removeItem(stack);
@@ -77,8 +65,9 @@ public class HeatSinkBlock extends AmberBasicBlock implements ModularBlock, Enti
                 }
                 return InteractionResult.CONSUME;
             }
+            return heatModuleDefinition.useItemOn(sink.heatModule, stack,state,level,pos,player,hand, hitResult);
         }
-        return heatModuleDefinition.useItemOn(stack,state,level,pos,player,hand, hitResult);
+        return super.useItemOn(stack,state,level,pos,player,hand,hitResult);
     }
 
     @Override

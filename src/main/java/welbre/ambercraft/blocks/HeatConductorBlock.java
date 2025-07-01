@@ -35,12 +35,14 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.blockentity.HeatConductorTile;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
+import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.HeatModuleDefinition;
-import welbre.ambercraft.module.ModularBlock;
 import welbre.ambercraft.module.ModuleDefinition;
+import welbre.ambercraft.module.ModulesHolder;
 
-public abstract class HeatConductorBlock extends AmberBasicBlock implements ModularBlock, EntityBlock {
+public abstract class HeatConductorBlock extends AmberBasicBlock implements EntityBlock {
     public final float model_radius;
     public static final ModelProperty<Float> RADIUS_PROPERTY = new ModelProperty<>();
 
@@ -51,7 +53,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Modu
     public static final BooleanProperty WEST = BooleanProperty.create("west");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
 
-    private final HeatModuleDefinition heatModule = new HeatModuleDefinition();
+    private final HeatModuleDefinition heatDef = new HeatModuleDefinition();
 
     public HeatConductorBlock(Properties p, float modelRadius) {
         super(p);
@@ -69,23 +71,19 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Modu
     }
 
     @Override
-    public ModuleDefinition[] getModuleDefinition() {
-        return new ModuleDefinition[]{heatModule};
-    }
-
-    @Override
-    public ModuleDefinition[] getModuleDefinition(BlockState state, Direction direction) {
-        return new ModuleDefinition[]{heatModule};
-    }
-
-    @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        return heatModule.useItemOn(stack,state,level,pos,player,hand,hitResult);
+        if (level.getBlockEntity(pos) instanceof HeatConductorTile heat)
+            return heatDef.useItemOn(heat.heatModule,stack,state,level,pos,player,hand,hitResult);
+
+        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        heatModule.stepOn(level,pos,state,entity);
+        if (level.getBlockEntity(pos) instanceof HeatConductorTile heat)
+            heatDef.stepOn(heat.heatModule,level,pos,state,entity);
+
+        super.stepOn(level,pos,state,entity);
     }
 
     @Override
@@ -101,7 +99,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Modu
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return this::tick;
+        return HeatConductorTile::TICK;
     }
 
     @Override
@@ -138,21 +136,19 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Modu
                 case WEST -> property = WEST;
                 case EAST -> property = EAST;
             }
-            BlockState relative = level.getBlockState(pos.relative(dir));
-            if (relative.getBlock() instanceof ModularBlock modular)
+            BlockEntity relative = level.getBlockEntity(pos.relative(dir));
+            if (relative instanceof ModulesHolder holder)
             {
-                for (ModuleDefinition definition : modular.getModuleDefinition(relative, dir.getOpposite()))
-                {
-                    if (definition instanceof HeatModuleDefinition)
-                        state = state.setValue(property, Boolean.TRUE);
-                }
+                HeatModule[] module = holder.getModule(HeatModule.class, dir.getOpposite());
+                if (module.length != 0)
+                    state = state.setValue(property, Boolean.TRUE);
             }
         }
         return state;
     }
 
     @Override
-    protected VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+    protected @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         AABB c = AABB.ofSize(new Vec3(.5, .5, .5), model_radius, model_radius, model_radius);//center
         VoxelShape shape = Shapes.create(c);
         if (state.getValue(HeatConductorBlock.UP))

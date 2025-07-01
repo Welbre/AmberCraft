@@ -24,13 +24,6 @@ public class AmberFreeBlock extends AmberSidedBasicBlock {
         builder.add(ROTATION);
     }
 
-    @Override
-    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
-        //todo create a method to placement
-        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
-    }
-
-
 
     /**
      * Uses an anti_clock_wise notation to represent a cube rotation.

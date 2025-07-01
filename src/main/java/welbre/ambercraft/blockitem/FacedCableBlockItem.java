@@ -68,8 +68,6 @@ public class FacedCableBlockItem extends BlockItem {
                 faced.calculateState(level,pos);
                 faced.requestModelDataUpdate();
                 faced.setChanged();
-                //todo check if it will blowup all.
-                //todo fix not working while the cable is isolado de outros cabos
                 level.markAndNotifyBlock(pos,level.getChunkAt(pos),level.getBlockState(pos),level.getBlockState(pos),3,512);
                 return InteractionResult.SUCCESS;
             }

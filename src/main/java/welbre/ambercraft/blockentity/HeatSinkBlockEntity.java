@@ -14,10 +14,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.module.HeatModule;
-import welbre.ambercraft.module.ModularBlockEntity;
+import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
 
-public class HeatSinkBlockEntity extends BlockEntity implements ModularBlockEntity {
+public class HeatSinkBlockEntity extends BlockEntity implements ModulesHolder {
     public HeatModule heatModule = new HeatModule(this){
         @Override
         public void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
@@ -74,5 +74,10 @@ public class HeatSinkBlockEntity extends BlockEntity implements ModularBlockEnti
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
+    }
+
+    public static <T extends BlockEntity> void TICK(Level level, BlockPos pos, BlockState state, T t) {
+        if (t instanceof HeatSinkBlockEntity sink)
+            sink.heatModule.tick(level, pos, state, sink);
     }
 }

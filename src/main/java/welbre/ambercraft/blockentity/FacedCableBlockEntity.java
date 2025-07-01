@@ -154,7 +154,7 @@ public class FacedCableBlockEntity extends BlockEntity {
         self.setChanged();
     }
 
-    public void removeCable(@NotNull LevelReader level, BlockPos pos){//todo instead force all others the recalculate all, just create a function to remove a specified connection
+    public void removeCable(@NotNull LevelReader level, BlockPos pos){
         //for each block face
         for (Direction face : status.getCenterDirections())
         {

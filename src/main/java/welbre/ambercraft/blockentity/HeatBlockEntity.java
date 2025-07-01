@@ -13,10 +13,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.module.HeatModule;
-import welbre.ambercraft.module.ModularBlockEntity;
+import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
 
-public class HeatBlockEntity extends BlockEntity implements ModularBlockEntity {
+public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
     public HeatModule heatModule = new HeatModule(this);
 
     @Override

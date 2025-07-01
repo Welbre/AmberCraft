@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -24,27 +25,13 @@ import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatFurnaceTile;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
 import welbre.ambercraft.module.HeatModuleDefinition;
-import welbre.ambercraft.module.ModularBlock;
 import welbre.ambercraft.module.ModuleDefinition;
 
-public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock, ModularBlock {
+public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
     public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition();
 
     public HeatFurnace(Properties p) {
         super(p);
-    }
-
-    @Override
-    public ModuleDefinition[] getModuleDefinition() {
-        return new ModuleDefinition[]{heatModuleDefinition};
-    }
-
-    @Override
-    public ModuleDefinition[] getModuleDefinition(BlockState state, Direction direction) {
-        if (direction == state.getValue(AmberHorizontalBlock.FACING).getOpposite())
-            return new ModuleDefinition[]{heatModuleDefinition};
-        else
-            return new ModuleDefinition[0];
     }
 
     @Override
@@ -53,7 +40,7 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock, Mo
             if (stack.getItem() == Items.LEVER){
                 BlockEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof HeatFurnaceTile furnace) {
-                    ((ServerPlayer) player).sendSystemMessage(Component.literal(furnace.heatModule.getTemperature() + "ºC"), false);
+                    player.displayClientMessage(Component.literal(furnace.heatModule.getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
                     return InteractionResult.SUCCESS;
                 }
             } else if (stack.getItem() == Items.COAL) {

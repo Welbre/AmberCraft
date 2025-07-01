@@ -35,7 +35,7 @@ public class HeatModule implements Module {
     public void transferHeatToNeighbor(Level level, BlockPos pos){
         for (Direction d : Direction.values()) {
             BlockEntity entity = level.getBlockEntity(pos.relative(d));
-            if (entity instanceof ModularBlockEntity modular)
+            if (entity instanceof ModulesHolder modular)
             {
                 HeatModule[] modules = modular.getModule(HeatModule.class, d.getOpposite());
                 if (modules != null)
@@ -48,13 +48,13 @@ public class HeatModule implements Module {
     public void transferHeat(HeatModule target, double dt){
         if (target.temperature > this.temperature)//can only transfer energy from this to target
             return;
-        double resistence = (1.0/thermal_conductivity) + (1.0/ target.thermal_conductivity);
+        double resistance = (1.0/thermal_conductivity) + (1.0/ target.thermal_conductivity);
         double power, heat;
 
         double step = dt;
         while (dt > 0 && this.temperature != target.temperature)
         {
-            power = (this.temperature - target.temperature) / resistence;
+            power = (this.temperature - target.temperature) / resistance;
             heat = power * step;
             if //check if the corp contains half of energy transited.
             (
@@ -63,10 +63,10 @@ public class HeatModule implements Module {
                 this.temperature -= heat / thermal_mass;
                 target.temperature += heat / thermal_mass;
                 dt -= step;
-                step = resistence / 2.01;
+                step = resistance / 2.01;
             } else {
                 //todo check if this works in a environment with different heat capacity
-                step = resistence / 2.01;
+                step = resistance / 2.01;
                 //step = (this.temperature - target.temperature) / (2.01 * power);
             }
         }
