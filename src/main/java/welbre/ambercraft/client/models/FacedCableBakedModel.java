@@ -21,7 +21,6 @@ import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
-import welbre.ambercraft.cables.CableDataComponent;
 import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.cables.FaceState;
 import welbre.ambercraft.cables.FaceState.Connection;
@@ -29,7 +28,6 @@ import welbre.ambercraft.client.RenderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import static welbre.ambercraft.client.RenderHelper.FROM_AABB;
 
@@ -54,9 +52,10 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         //render the item
         if (state == null)
         {
-            int color = status.getFaceStatus(Direction.DOWN).data.color();
-            var sprite = status.getFaceStatus(Direction.DOWN).data.getType().getInsulationMaterial().sprite();
-            float[] s = CableDataComponent.UNPACK_SIZE(status.getFaceStatus(Direction.DOWN).data.packed_size());
+            FaceState faceState = status.getFaceStatus(Direction.DOWN);
+            int color = faceState.data.color;
+            var sprite = faceState.type.getInsulationMaterial().sprite();
+            final double[] s = new double[]{faceState.type.getWidth(), faceState.type.getHeight()};
             return new ArrayList<>(RenderHelper.FROM_AABB(consumer,sprite,AABB.ofSize(new Vec3(.5,.5,.5),s[0],s[1],s[0]), color));
         }
 
@@ -64,10 +63,10 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         FaceState down = status.getFaceStatus(Direction.DOWN);
         if (down != null)
         {
-            final int color = down.data.color();
-            var ins = down.data.getType().getInsulationMaterial().sprite();
-            var core = down.data.getType().getCableMaterial().sprite();
-            final float[] s = CableDataComponent.UNPACK_SIZE(down.data.packed_size());
+            final int color = down.data.color;
+            var ins = down.type.getInsulationMaterial().sprite();
+            var core = down.type.getCableMaterial().sprite();
+            final double[] s = new double[]{down.type.getWidth(), down.type.getHeight()};
             AABB c = AABB.ofSize(new Vec3(.5, s[1]/2f, .5), s[0], s[1], s[0]);//center
 
             RENDER_CENTER(quads,consumer,Direction.DOWN,down,c,ins,core,color);
@@ -103,10 +102,10 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         FaceState up = status.getFaceStatus(Direction.UP);
         if (up != null)
         {
-            final int color = up.data.color();
-            var ins = up.data.getType().getInsulationMaterial().sprite();
-            var core = up.data.getType().getCableMaterial().sprite();
-            final float[] s = CableDataComponent.UNPACK_SIZE(up.data.packed_size());
+            final int color = up.data.color;
+            var ins = up.type.getInsulationMaterial().sprite();
+            var core = up.type.getCableMaterial().sprite();
+            final double[] s = new double[]{up.type.getWidth(), up.type.getHeight()};
             AABB c = AABB.ofSize(new Vec3(.5, 1-s[1]/2f, .5), s[0], s[1], s[0]);//center
 
             RENDER_CENTER(quads,consumer,Direction.UP,up,c,ins,core,color);
@@ -142,10 +141,10 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         FaceState north = status.getFaceStatus(Direction.NORTH);
         if (north != null)
         {
-            final int color = north.data.color();
-            var ins = north.data.getType().getInsulationMaterial().sprite();
-            var core = north.data.getType().getCableMaterial().sprite();
-            final float[] s = CableDataComponent.UNPACK_SIZE(north.data.packed_size());
+            final int color = north.data.color;
+            var ins = north.type.getInsulationMaterial().sprite();
+            var core = north.type.getCableMaterial().sprite();
+            final double[] s = new double[]{north.type.getWidth(), north.type.getHeight()};
             AABB c = AABB.ofSize(new Vec3(.5, .5, s[1]/2f), s[0], s[0], s[1]);//center
 
             RENDER_CENTER(quads,consumer,Direction.NORTH,north,c,ins,core,color);
@@ -173,10 +172,10 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         FaceState south = status.getFaceStatus(Direction.SOUTH);
         if (south != null)
         {
-            final int color = south.data.color();
-            var ins = south.data.getType().getInsulationMaterial().sprite();
-            var core = south.data.getType().getCableMaterial().sprite();
-            final float[] s = CableDataComponent.UNPACK_SIZE(south.data.packed_size());
+            final int color = south.data.color;
+            var ins = south.type.getInsulationMaterial().sprite();
+            var core = south.type.getCableMaterial().sprite();
+            final double[] s = new double[]{south.type.getWidth(), south.type.getHeight()};
             AABB c = AABB.ofSize(new Vec3(.5, .5, 1-s[1]/2f), s[0],s[0],s[1]);//center
 
             RENDER_CENTER(quads,consumer,Direction.SOUTH,south,c,ins,core,color);
@@ -203,10 +202,10 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         FaceState west = status.getFaceStatus(Direction.WEST);
         if (west != null)
         {
-            final int color = west.data.color();
-            var ins = west.data.getType().getInsulationMaterial().sprite();
-            var core = west.data.getType().getCableMaterial().sprite();
-            final float[] s = CableDataComponent.UNPACK_SIZE(west.data.packed_size());
+            final int color = west.data.color;
+            var ins = west.type.getInsulationMaterial().sprite();
+            var core = west.type.getCableMaterial().sprite();
+            final double[] s = new double[]{west.type.getWidth(), west.type.getHeight()};
             AABB c = AABB.ofSize(new Vec3(s[1]/2f, .5, 0.5), s[1],s[0],s[0]);//center
 
             RENDER_CENTER(quads,consumer,Direction.WEST,west,c,ins,core,color);
@@ -222,10 +221,10 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
         FaceState east = status.getFaceStatus(Direction.EAST);
         if (east != null)
         {
-            final int color = east.data.color();
-            var ins = east.data.getType().getInsulationMaterial().sprite();
-            var core = east.data.getType().getCableMaterial().sprite();
-            final float[] s = CableDataComponent.UNPACK_SIZE(east.data.packed_size());
+            final int color = east.data.color;
+            var ins = east.type.getInsulationMaterial().sprite();
+            var core = east.type.getCableMaterial().sprite();
+            final double[] s = new double[]{east.type.getWidth(), east.type.getHeight()};
             AABB c = AABB.ofSize(new Vec3(1-s[1]/2f, .5, 0.5),s[1],s[0],s[0]);//center
 
             RENDER_CENTER(quads,consumer,Direction.EAST,east,c,ins,core,color);

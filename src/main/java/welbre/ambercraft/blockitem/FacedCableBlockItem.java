@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
 import welbre.ambercraft.blocks.FacedCableBlock;
-import welbre.ambercraft.cables.CableDataComponent;
+import welbre.ambercraft.cables.AmberFCableComponent;
 
 public class FacedCableBlockItem extends BlockItem {
     public FacedCableBlockItem(Item.Properties properties) {
@@ -35,13 +35,13 @@ public class FacedCableBlockItem extends BlockItem {
         BlockEntity be = level.getBlockEntity(pos);
         Direction clickedFace = context.getClickedFace();
 
-        CableDataComponent component = context.getItemInHand().getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
+        AmberFCableComponent component = context.getItemInHand().getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
         if (component == null)
             return InteractionResult.FAIL;
 
 
         if (be instanceof FacedCableBlockEntity faced){
-            if (faced.getStatus().getFaceStatus(clickedFace.getOpposite()) == null) {
+            if (faced.getState().getFaceStatus(clickedFace.getOpposite()) == null) {
                 ItemStack item = context.getItemInHand();
                 Block block = getBlock();
                 BlockState state = block.defaultBlockState();
@@ -64,7 +64,7 @@ public class FacedCableBlockItem extends BlockItem {
                 level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, state));
                 item.consume(1, player);
 
-                faced.getStatus().addCenter(clickedFace.getOpposite(),component);
+                faced.getState().addCenter(clickedFace.getOpposite(),component);
                 faced.calculateState(level,pos);
                 faced.requestModelDataUpdate();
                 faced.setChanged();
@@ -77,7 +77,7 @@ public class FacedCableBlockItem extends BlockItem {
         if (result.consumesAction()) {
             if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
             {
-                faced.getStatus().addCenter(clickedFace.getOpposite(),component);
+                faced.getState().addCenter(clickedFace.getOpposite(),component);
                 faced.calculateState(level,pos);
                 faced.requestModelDataUpdate();
                 faced.setChanged();

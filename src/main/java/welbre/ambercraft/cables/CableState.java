@@ -3,7 +3,6 @@ package welbre.ambercraft.cables;
 import net.minecraft.core.Direction;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
 import welbre.ambercraft.cables.FaceState.Connection;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +65,7 @@ public class CableState {
      * Sets the bit CENTER(5) in corresponded face bits in connection_mask.
      * @param face FacedCable face
      */
-    public void addCenter(Direction face, CableDataComponent component){
+    public void addCenter(Direction face, AmberFCableComponent component){
         switch (face){
             case UP -> up = new FaceState(component);
             case DOWN -> down = new FaceState(component);

@@ -1,9 +1,11 @@
 package welbre.ambercraft.cables;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
+import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.module.HeatModule;
+import welbre.ambercraft.module.Module;
 
 public class TestCableType extends CableType{
     @Override
@@ -29,5 +31,11 @@ public class TestCableType extends CableType{
     @Override
     public byte getType() {
         return Types.HEAT.get();
+    }
+
+
+    @Override
+    public Module[] createModules(FacedCableBlockEntity entity) {
+        return new Module[]{new HeatModule(entity)};
     }
 }

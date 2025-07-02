@@ -10,7 +10,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -20,8 +19,9 @@ import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blockitem.FacedCableBlockItem;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
-import welbre.ambercraft.cables.CableDataComponent;
+import welbre.ambercraft.cables.CableData;
 import welbre.ambercraft.cables.CableType;
+import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.TestCableType;
 
 import java.lang.annotation.Retention;
@@ -129,9 +129,9 @@ public class Main {
     public static final class Components {
         public static final DeferredRegister.DataComponents REGISTER = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE,MOD_ID);
 
-        public static final Supplier<DataComponentType<CableDataComponent>> CABLE_DATA_COMPONENT = REGISTER.registerComponentType(
+        public static final Supplier<DataComponentType<AmberFCableComponent>> CABLE_DATA_COMPONENT = REGISTER.registerComponentType(
                 "cable_data",
-                builder -> builder.persistent(CableDataComponent.CODEC).networkSynchronized(CableDataComponent.STREAM_CODEC)
+                builder -> builder.persistent(AmberFCableComponent.CODEC).networkSynchronized(AmberFCableComponent.STREAM_CODEC)
         );
     }
 
@@ -175,13 +175,15 @@ public class Main {
             for (DyeColor color : DyeColor.values())
             {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),CableTypes.TEST_CABLE_TYPE.get().getData(color.getTextureDiffuseColor()));
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),
+                        new AmberFCableComponent(CableTypes.TEST_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
                 list.add(stack);
             }
             for (DyeColor color : DyeColor.values())
             {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),CableTypes.TEST_CABLE_TYPE_2.get().getData(color.getTextureDiffuseColor()));
+                stack.set(Components.CABLE_DATA_COMPONENT.get(),
+                    new AmberFCableComponent(CableTypes.TEST_CABLE_TYPE_2.get(), color.getTextureDiffuseColor()));
                 list.add(stack);
             }
             return list;

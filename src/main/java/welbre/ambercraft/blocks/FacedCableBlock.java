@@ -26,7 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
-import welbre.ambercraft.cables.CableDataComponent;
+import welbre.ambercraft.cables.AmberFCableComponent;
+import welbre.ambercraft.cables.CableData;
 import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.cables.FaceState;
 
@@ -49,7 +50,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
         VoxelShape shape = Shapes.empty();
         if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
         {
-            CableState center = faced.getStatus();
+            CableState center = faced.getState();
             if (center.getFaceStatus(Direction.DOWN) != null)
                 shape = Shapes.join(shape, Shapes.box(0, 0, 0, 1, .25/2f, 1), BooleanOp.OR);
             if (center.getFaceStatus(Direction.UP) != null)
@@ -93,7 +94,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
             if (player.isCrouching())
             {
                 FaceState status = GET_FACE_STATUS_USING_RAY_CAST(faced, pos, player);
-                status.data = CableDataComponent.Builder.builder(status.data).toggleIgnoreColor().build();
+                status.data.ignoreColor = !status.data.ignoreColor;
                 faced.setChanged();
                 faced.calculateState(level, pos);
                 level.markAndNotifyBlock(pos,level.getChunkAt(pos),level.getBlockState(pos),level.getBlockState(pos),3,512);
@@ -102,7 +103,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
             }
             else
             {
-                player.displayClientMessage(Component.literal(faced.getStatus() + " client: " + level.isClientSide), false);
+                player.displayClientMessage(Component.literal(faced.getState() + " client: " + level.isClientSide), false);
                 return InteractionResult.SUCCESS;
             }
         }
@@ -128,7 +129,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
         Vec3 temp = entity.getViewVector(0);
         Vec3 end = start.add(temp.x * 5, temp.y * 5, temp.z * 5);
 
-        CableState center = cable.getStatus();
+        CableState center = cable.getState();
         if (center.getFaceStatus(Direction.DOWN) != null)
             if (Shapes.box(0, 0, 0, 1, .2, 1).clip(start,end,pos) != null)
                 return center.getFaceStatus(Direction.DOWN);
@@ -152,7 +153,11 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
     private static ItemStack GET_ITEM_STACK_FROM_FACE_STATUS(FaceState faceState){
         var stack = new ItemStack(Main.Items.FACED_CABLE_BLOCK_ITEM.get());
-        stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), CableDataComponent.Builder.builder(faceState.data).setIgnoreColor(false).build());
+        var data = new CableData(faceState.data);
+        data.ignoreColor = false;
+        var comp = new AmberFCableComponent(faceState.type.cable_type_index, data);
+
+        stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), comp);
         return stack;
     }
 }

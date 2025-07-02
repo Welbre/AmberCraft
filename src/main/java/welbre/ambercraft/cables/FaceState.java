@@ -5,20 +5,22 @@ import org.jetbrains.annotations.NotNull;
 public class FaceState {
     /// Represents the connection arrangement in the face.
     public Connection[] connection;
-    public CableDataComponent data;
+    public CableType type;
+    public CableData data;
 
-    public FaceState(Connection[] connection, CableDataComponent data) {
+    public FaceState(Connection[] connection, AmberFCableComponent component) {
         this.connection = connection;
-        this.data = data;
+        this.type = component.getType();
+        this.data = component.get();
     }
 
-    public FaceState(CableDataComponent data) {
-        this(new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY}, data);
+    public FaceState(AmberFCableComponent component) {
+        this(new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY}, component);
     }
 
     @Override
     public String toString() {
-        return "Connection:0x%x color:0x%x type:%d ignoreColor:%s".formatted(connectionAsByte() & 0b111111,data.color(),data.type(), data.ignore_color() ? "true" : "false");
+        return "Connection:0x%x color:0x%x type:%d ignoreColor:%s".formatted(connectionAsByte() & 0b111111,data.color,data.type, data.ignoreColor ? "true" : "false");
     }
 
     private byte connectionAsByte() {
@@ -36,9 +38,9 @@ public class FaceState {
         long data = 0;
         byte connection = connectionAsByte();
         data |= (connection & 0xff);//1 byte
-        data |= ((this.data.cable_type_index() & 0xffL) << 8);//1 byte
-        data |= ((this.data.color() & 0xffffffL) << 8+8);//3 byte
-        data |= (this.data.ignore_color() ? 1L : 0L) << 8+8+24+1;
+        data |= ((this.type.cable_type_index & 0xffL) << 8);//1 byte
+        data |= ((this.data.color & 0xffffffL) << 8+8);//3 byte
+        data |= (this.data.ignoreColor ? 1L : 0L) << 8+8+24+1;
         //2 bytes 7 bits left
         return data;
     }
@@ -52,16 +54,21 @@ public class FaceState {
             connections[i] = Connection.values()[(int) ((data >> shift) & 0b11)];
             shift += 2;
         }
+        //todo check if is working.
         CableType type = CableType.FromCableTypeIndex((byte) ((data >> 8) & 0xFF));
-        return new FaceState(connections, type.getData((int) ((data >> 8+8) & 0xffffff), (data & (1L<<41)) != 0));
+        return new FaceState(connections, new AmberFCableComponent(type.cable_type_index, new CableData(
+                (int) ((data >> 16) & 0xffffff),
+                type.getType(),
+                ((data >> 8+8+24+1) & 0x1) == 1
+        )));
     }
 
     public boolean canConnect(@NotNull FaceState other){
-        if (other.data.type() == data.type())
-            if (other.data.ignore_color() && data.ignore_color())
+        if (other.data.type == data.type)
+            if (other.data.ignoreColor && data.ignoreColor)
                 return true;
             else
-                return other.data.color() == data.color();
+                return other.data.color == data.color;
         return false;
     }
 

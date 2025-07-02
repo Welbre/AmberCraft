@@ -8,9 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -21,13 +19,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
-import welbre.ambercraft.cables.CableDataComponent;
+import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.client.models.FacedCableBakedModel;
 
-public record CableSpecialRender() implements SpecialModelRenderer<CableDataComponent> {
+public record CableSpecialRender() implements SpecialModelRenderer<AmberFCableComponent> {
     @Override
-    public void render(@NotNull CableDataComponent data, ItemDisplayContext displayContext, PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+    public void render(@NotNull AmberFCableComponent data, ItemDisplayContext displayContext, PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         BakedModel model = new FacedCableBakedModel(
                 null
         );
@@ -41,7 +39,7 @@ public record CableSpecialRender() implements SpecialModelRenderer<CableDataComp
     }
 
     @Override
-    public @NotNull CableDataComponent extractArgument(ItemStack stack) {
+    public @NotNull AmberFCableComponent extractArgument(ItemStack stack) {
         return stack.getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
     }
 
