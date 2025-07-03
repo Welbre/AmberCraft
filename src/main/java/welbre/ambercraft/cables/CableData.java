@@ -18,7 +18,7 @@ public class CableData {
     }
 
     public CableData(CableData data) {
-        this.color = data.color;
+        this.color = data.color & 0xffffff;//only the rgb
         this.type = data.type;
         this.ignoreColor = data.ignoreColor;
     }

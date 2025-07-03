@@ -76,6 +76,17 @@ public class CableState {
         }
     }
 
+    public void removeCenter(Direction face) {
+        switch (face){
+            case UP -> up = null;
+            case DOWN -> down = null;
+            case NORTH -> north = null;
+            case SOUTH -> south = null;
+            case EAST -> east = null;
+            case WEST -> west = null;
+        }
+    }
+
     public FaceState getFaceStatus(Direction face){
         return switch (face){
             case UP -> up;
@@ -85,6 +96,10 @@ public class CableState {
             case EAST -> east;
             case WEST -> west;
         };
+    }
+
+    public boolean isEmpty(){
+        return up == null && down == null && north == null && south == null && east == null && west == null;
     }
 
     public long[] toRawData() {

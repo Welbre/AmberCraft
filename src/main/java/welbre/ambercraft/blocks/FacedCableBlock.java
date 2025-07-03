@@ -1,5 +1,6 @@
 package welbre.ambercraft.blocks;
 
+import com.mojang.authlib.minecraft.TelemetrySession;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,10 +12,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -70,16 +73,31 @@ public class FacedCableBlock extends Block implements EntityBlock {
     @Override
     public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
         super.destroy(level, pos, state);
-
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
         if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)//neighbor removed
         {
-            faced.removeCable(level, pos);
+            Direction dir = GET_FACE_DIRECTION_USING_RAY_CAST(faced, pos, player);
+            faced.removeCable(level, pos, dir);
+            if (faced.getState().isEmpty())//remove the cable if is empty
+                if (level.isClientSide)
+                    return level.setBlock(pos, fluid.createLegacyBlock(), 11);
+                else
+                    return level.removeBlock(pos, false);
+            else
+            {
+                level.markAndNotifyBlock(pos,level.getChunkAt(pos),level.getBlockState(pos),level.getBlockState(pos),3,512);
+                return false;
+            }
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+    }
+
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState bstate, Player player) {
+        return super.playerWillDestroy(level, pos, bstate, player);
     }
 
     @Override
@@ -125,6 +143,11 @@ public class FacedCableBlock extends Block implements EntityBlock {
     }
 
     public static @NotNull FaceState GET_FACE_STATUS_USING_RAY_CAST(FacedCableBlockEntity cable, BlockPos pos, Entity entity){
+        return cable.getState().getFaceStatus(GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, entity));
+    }
+
+    public static Direction GET_FACE_DIRECTION_USING_RAY_CAST(FacedCableBlockEntity cable, BlockPos pos, Entity entity)
+    {
         Vec3 start = entity.getEyePosition(0);
         Vec3 temp = entity.getViewVector(0);
         Vec3 end = start.add(temp.x * 5, temp.y * 5, temp.z * 5);
@@ -132,22 +155,22 @@ public class FacedCableBlock extends Block implements EntityBlock {
         CableState center = cable.getState();
         if (center.getFaceStatus(Direction.DOWN) != null)
             if (Shapes.box(0, 0, 0, 1, .2, 1).clip(start,end,pos) != null)
-                return center.getFaceStatus(Direction.DOWN);
+                return Direction.DOWN;
         if (center.getFaceStatus(Direction.UP) != null)
             if (Shapes.box(0, 0.8, 0, 1, 1, 1).clip(start,end,pos) != null)
-                return center.getFaceStatus(Direction.UP);
+                return Direction.UP;
         if (center.getFaceStatus(Direction.NORTH) != null)
             if (Shapes.box(0, 0, 0, 1, 1, .2).clip(start,end,pos) != null)
-                return center.getFaceStatus(Direction.NORTH);
+                return Direction.NORTH;
         if (center.getFaceStatus(Direction.SOUTH) != null)
             if (Shapes.box(0, 0, 0.8, 1, 1, 1).clip(start,end,pos) != null)
-                return center.getFaceStatus(Direction.SOUTH);
+                return Direction.SOUTH;
         if (center.getFaceStatus(Direction.WEST) != null)
             if (Shapes.box(0, 0, 0, .2, 1, 1).clip(start,end,pos) != null)
-                return center.getFaceStatus(Direction.WEST);
+                return Direction.WEST;
         if (center.getFaceStatus(Direction.EAST) != null)
             if (Shapes.box(0.8, 0, 0, 1, 1, 1).clip(start,end,pos) != null)
-                return center.getFaceStatus(Direction.EAST);
+                return Direction.EAST;
         throw new IllegalStateException("Faced not Raycasted!");
     }
 

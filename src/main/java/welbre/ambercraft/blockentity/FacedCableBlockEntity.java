@@ -143,37 +143,49 @@ public class FacedCableBlockEntity extends BlockEntity {
         self.setChanged();
     }
 
-    public void removeCable(@NotNull LevelReader level, BlockPos pos){
+    /**
+     * Removes a cable from cable face.
+     */
+    public void removeCable(@NotNull LevelReader level, BlockPos pos, Direction face){
         //for each block face
-        for (Direction face : state.getCenterDirections())
+        BlockPos anchor = pos.relative(face);
+        //check a possible connection in this face
+        for (Direction dir : GET_FACE_DIRECTIONS(face))
         {
-            BlockPos anchor = pos.relative(face);
-            //check a possible connection in this face
-            for (Direction dir : GET_FACE_DIRECTIONS(face))
             {
-                if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBlockEntity faced)//find a connectable
+                //check internal connections
+                var faceState = this.state.getFaceStatus(dir);
+                if (faceState != null)
                 {
-                    // check if the center of faced contains a cable in the face
-                    if (faced.state.getFaceStatus(face) != null)
-                    {
-                        faced.state.rawConnectionSet(face, dir.getOpposite(), FaceState.Connection.EMPTY);
-                        faced.requestModelDataUpdate();
-                        faced.setChanged();
-                    }
+                    CONNECT(this, face, dir, this, dir, face, FaceState.Connection.EMPTY);
+                    continue;
                 }
-                BlockPos diagonal = pos.relative(dir).relative(face);
-                if (level.getBlockEntity(diagonal) instanceof FacedCableBlockEntity faced)//diagonal connections
+            }
+            if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBlockEntity faced)//find a connectable
+            {
+                // check if the center of faced contains a cable in the face
+                if (faced.state.getFaceStatus(face) != null)
                 {
-                    BlockPos dia_face_vec = anchor.subtract(diagonal);
-                    Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
-                    if (faced.state.getFaceStatus(dia_face) != null)// check if the center of faced contains a cable in the face
-                    {
-                        faced.state.rawConnectionSet(dia_face, face.getOpposite(), FaceState.Connection.EMPTY);
-                        faced.requestModelDataUpdate();
-                        faced.setChanged();
-                    }
+                    faced.state.rawConnectionSet(face, dir.getOpposite(), FaceState.Connection.EMPTY);
+                    faced.requestModelDataUpdate();
+                    faced.setChanged();
+                }
+            }
+            BlockPos diagonal = pos.relative(dir).relative(face);
+            if (level.getBlockEntity(diagonal) instanceof FacedCableBlockEntity faced)//diagonal connections
+            {
+                BlockPos dia_face_vec = anchor.subtract(diagonal);
+                Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
+                if (faced.state.getFaceStatus(dia_face) != null)// check if the center of faced contains a cable in the face
+                {
+                    faced.state.rawConnectionSet(dia_face, face.getOpposite(), FaceState.Connection.EMPTY);
+                    faced.requestModelDataUpdate();
+                    faced.setChanged();
                 }
             }
         }
+        state.removeCenter(face);
+        requestModelDataUpdate();
+        setChanged();
     }
 }
