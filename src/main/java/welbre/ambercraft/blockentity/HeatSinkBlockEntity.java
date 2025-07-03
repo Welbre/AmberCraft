@@ -77,7 +77,7 @@ public class HeatSinkBlockEntity extends BlockEntity implements ModulesHolder {
     }
 
     public static <T extends BlockEntity> void TICK(Level level, BlockPos pos, BlockState state, T t) {
-        if (t instanceof HeatSinkBlockEntity sink)
+        if (t instanceof HeatSinkBlockEntity sink && !level.isClientSide)
             sink.heatModule.tick(level, pos, state, sink);
     }
 }

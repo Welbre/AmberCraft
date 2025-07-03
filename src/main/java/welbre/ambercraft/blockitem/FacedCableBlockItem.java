@@ -64,7 +64,7 @@ public class FacedCableBlockItem extends BlockItem {
                 level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, state));
                 item.consume(1, player);
 
-                faced.getState().addCenter(clickedFace.getOpposite(),component);
+                faced.addCenter(clickedFace.getOpposite(),component);
                 faced.calculateState(level,pos);
                 faced.requestModelDataUpdate();
                 faced.setChanged();
@@ -77,7 +77,7 @@ public class FacedCableBlockItem extends BlockItem {
         if (result.consumesAction()) {
             if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
             {
-                faced.getState().addCenter(clickedFace.getOpposite(),component);
+                faced.addCenter(clickedFace.getOpposite(),component);
                 faced.calculateState(level,pos);
                 faced.requestModelDataUpdate();
                 faced.setChanged();

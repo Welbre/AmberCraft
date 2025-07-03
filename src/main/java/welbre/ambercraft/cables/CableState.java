@@ -21,6 +21,16 @@ public class CableState {
     public CableState() {
     }
 
+    public CableState(CableState state)
+    {
+        this.up = new FaceState(state.up);
+        this.down = new FaceState(state.down);
+        this.north = new FaceState(state.north);
+        this.south = new FaceState(state.south);
+        this.west = new FaceState(state.west);
+        this.east = new FaceState(state.east);
+    }
+
     public CableState(FaceState up, FaceState down, FaceState north, FaceState south, FaceState west, FaceState east) {
         this.up = up;
         this.down = down;
@@ -132,8 +142,8 @@ public class CableState {
         return builder.toString();
     }
 
-    public static Direction[] GET_FACE_DIRECTIONS(Direction dir){
-        switch (dir)
+    public static Direction[] GET_FACE_DIRECTIONS(Direction face){
+        switch (face)
         {
             case Direction.UP, Direction.DOWN -> {return new Direction[]{Direction.NORTH, Direction.WEST,Direction.SOUTH,Direction.EAST};}
             case Direction.NORTH, Direction.SOUTH -> {return new Direction[]{Direction.UP, Direction.WEST,Direction.DOWN,Direction.EAST};}

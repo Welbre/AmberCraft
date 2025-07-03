@@ -2,6 +2,8 @@ package welbre.ambercraft.cables;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+
 public class FaceState {
     /// Represents the connection arrangement in the face.
     public Connection[] connection;
@@ -16,6 +18,13 @@ public class FaceState {
 
     public FaceState(AmberFCableComponent component) {
         this(new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY}, component);
+    }
+
+    public FaceState(FaceState state)
+    {
+        this.connection = Arrays.copyOf(state.connection, state.connection.length);
+        this.type = state.type;
+        this.data = new CableData(state.data);
     }
 
     @Override

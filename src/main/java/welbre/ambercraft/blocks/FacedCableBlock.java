@@ -6,16 +6,21 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -29,10 +34,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBlockEntity;
-import welbre.ambercraft.cables.AmberFCableComponent;
-import welbre.ambercraft.cables.CableData;
-import welbre.ambercraft.cables.CableState;
-import welbre.ambercraft.cables.FaceState;
+import welbre.ambercraft.cables.*;
+import welbre.ambercraft.module.HeatModule;
+import welbre.ambercraft.module.Module;
 
 public class FacedCableBlock extends Block implements EntityBlock {
     /**
@@ -96,13 +100,22 @@ public class FacedCableBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState bstate, Player player) {
-        return super.playerWillDestroy(level, pos, bstate, player);
-    }
-
-    @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
-        return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
+    protected InteractionResult useItemOn(ItemStack stack, BlockState bstate, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.getItem() == Items.LEVER)
+        {
+            if (!level.isClientSide)
+                if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity cable)
+                {
+                    Direction dir = GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, player);
+                    FaceBrain brain = cable.getBrain().getFaceBrain(dir);
+                    if (brain != null)
+                        for (Module module : brain.getModules())
+                            if (module instanceof HeatModule heat)
+                                player.displayClientMessage(Component.literal("Temperature %.2fºC".formatted(heat.getTemperature())).withColor(DyeColor.ORANGE.getTextColor()), false);
+                }
+            return InteractionResult.SUCCESS;
+        }
+        return super.useItemOn(stack, bstate, level, pos, player, hand, hitResult);
     }
 
     @Override
@@ -182,5 +195,15 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
         stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), comp);
         return stack;
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+        if (level.isClientSide)
+            return null;
+        return (level1, pos, state1, blockEntity) -> {
+            if (blockEntity instanceof FacedCableBlockEntity cable)
+                cable.getBrain().tick(level1, pos, state1, cable);
+        };
     }
 }

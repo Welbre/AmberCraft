@@ -1,0 +1,95 @@
+package welbre.ambercraft.cables;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class CableBrain {
+    private FaceBrain up = null;
+    private FaceBrain down = null;
+    private FaceBrain north = null;
+    private FaceBrain south = null;
+    private FaceBrain west = null;
+    private FaceBrain east = null;
+    private final List<FaceBrain> activeFaces = new ArrayList<>();
+
+    public CableBrain() {
+    }
+
+    private CableBrain(FaceBrain up, FaceBrain down, FaceBrain north, FaceBrain south, FaceBrain west, FaceBrain east) {
+        this.up = up;
+        this.down = down;
+        this.north = north;
+        this.south = south;
+        this.west = west;
+        this.east = east;
+    }
+
+    public void addCenter(Direction face, AmberFCableComponent component, FacedCableBlockEntity cable){
+        FaceBrain brain = new FaceBrain(component.getType(), cable);
+        activeFaces.add(brain);
+        switch (face){
+            case UP -> up = brain;
+            case DOWN -> down = brain;
+            case NORTH -> north = brain;
+            case SOUTH -> south = brain;
+            case EAST -> east = brain;
+            case WEST -> west = brain;
+        }
+    }
+
+    public void removeCenter(Direction face) {
+        switch (face){
+            case UP -> {
+                activeFaces.remove(up);
+                up = null;
+            }
+            case DOWN -> {
+                activeFaces.remove(down);
+                down = null;
+            }
+            case NORTH -> {
+                activeFaces.remove(north);
+                north = null;
+            }
+            case SOUTH -> {
+                activeFaces.remove(south);
+                south = null;
+            }
+            case EAST -> {
+                activeFaces.remove(east);
+                east = null;
+            }
+            case WEST -> {
+                activeFaces.remove(west);
+                west = null;
+            }
+        }
+    }
+
+    public @Nullable FaceBrain getFaceBrain(Direction face){
+        return switch (face){
+            case UP -> up;
+            case DOWN -> down;
+            case NORTH -> north;
+            case SOUTH -> south;
+            case EAST -> east;
+            case WEST -> west;
+        };
+    }
+
+    public void tick(Level level,BlockPos pos, BlockState state, FacedCableBlockEntity entity)
+    {
+        for (FaceBrain brain : activeFaces)
+            brain.tick(level, pos, state, entity);
+    }
+}
