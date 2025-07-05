@@ -34,7 +34,7 @@ public class HeatModuleDefinition implements ModuleDefinition<HeatModule, BlockE
     public InteractionResult useItemOn(HeatModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide){
             if (stack.getItem() == Items.LEVER){
-                player.displayClientMessage(Component.literal(module.getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
+                player.displayClientMessage(Component.literal(module.getHeatNode().getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
                 return InteractionResult.SUCCESS;
             }
         } else {
@@ -48,7 +48,7 @@ public class HeatModuleDefinition implements ModuleDefinition<HeatModule, BlockE
     public void stepOn(HeatModule module, Level level, BlockPos pos, BlockState state, Entity entity) {
         if (!level.isClientSide)
             return;
-        if (module.temperature > 100)
-            entity.hurtServer((ServerLevel) level, level.damageSources().inFire(), (float) (module.getTemperature() / 100f));
+        if (module.getHeatNode().getTemperature() > 100)
+            entity.hurtServer((ServerLevel) level, level.damageSources().inFire(), (float) (module.getHeatNode().getTemperature() / 100f));
     }
 }

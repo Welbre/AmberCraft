@@ -19,8 +19,6 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -35,11 +33,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.HeatConductorTile;
+import welbre.ambercraft.blockentity.HeatBlockEntity;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.HeatModuleDefinition;
-import welbre.ambercraft.module.ModuleDefinition;
 import welbre.ambercraft.module.ModulesHolder;
 
 public abstract class HeatConductorBlock extends AmberBasicBlock implements EntityBlock {
@@ -72,7 +69,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (level.getBlockEntity(pos) instanceof HeatConductorTile heat)
+        if (level.getBlockEntity(pos) instanceof HeatBlockEntity heat)
             return heatDef.useItemOn(heat.heatModule,stack,state,level,pos,player,hand,hitResult);
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -80,7 +77,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        if (level.getBlockEntity(pos) instanceof HeatConductorTile heat)
+        if (level.getBlockEntity(pos) instanceof HeatBlockEntity heat)
             heatDef.stepOn(heat.heatModule,level,pos,state,entity);
 
         super.stepOn(level,pos,state,entity);
@@ -95,11 +92,6 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         return calculateState(context.getLevel(), context.getClickedPos());
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return HeatConductorTile::TICK;
     }
 
     @Override

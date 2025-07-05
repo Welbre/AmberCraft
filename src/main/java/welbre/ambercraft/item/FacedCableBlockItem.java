@@ -1,4 +1,4 @@
-package welbre.ambercraft.blockitem;
+package welbre.ambercraft.item;
 
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;

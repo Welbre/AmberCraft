@@ -1,7 +1,5 @@
 package welbre.ambercraft.cables;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -11,7 +9,6 @@ import welbre.ambercraft.blockentity.FacedCableBlockEntity;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class CableBrain {
     private FaceBrain up = null;
@@ -85,11 +82,5 @@ public class CableBrain {
             case EAST -> east;
             case WEST -> west;
         };
-    }
-
-    public void tick(Level level,BlockPos pos, BlockState state, FacedCableBlockEntity entity)
-    {
-        for (FaceBrain brain : activeFaces)
-            brain.tick(level, pos, state, entity);
     }
 }

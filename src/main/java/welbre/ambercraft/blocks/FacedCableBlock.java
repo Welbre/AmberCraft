@@ -111,7 +111,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
                     if (brain != null)
                         for (Module module : brain.getModules())
                             if (module instanceof HeatModule heat)
-                                player.displayClientMessage(Component.literal("Temperature %.2fºC".formatted(heat.getTemperature())).withColor(DyeColor.ORANGE.getTextColor()), false);
+                                player.displayClientMessage(Component.literal("Temperature %.2fºC".formatted(heat.getHeatNode().getTemperature())).withColor(DyeColor.ORANGE.getTextColor()), false);
                 }
             return InteractionResult.SUCCESS;
         }
@@ -195,15 +195,5 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
         stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), comp);
         return stack;
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        if (level.isClientSide)
-            return null;
-        return (level1, pos, state1, blockEntity) -> {
-            if (blockEntity instanceof FacedCableBlockEntity cable)
-                cable.getBrain().tick(level1, pos, state1, cable);
-        };
     }
 }

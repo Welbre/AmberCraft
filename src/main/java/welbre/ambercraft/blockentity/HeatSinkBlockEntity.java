@@ -18,19 +18,13 @@ import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
 
 public class HeatSinkBlockEntity extends BlockEntity implements ModulesHolder {
-    public HeatModule heatModule = new HeatModule(this){
-        @Override
-        public void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-            super.tick(level, pos, state, blockEntity);
-            level.sendBlockUpdated(pos, state,state, 0);
-        }
-    };
+    public HeatModule heatModule = new HeatModule(this);
 
     public HeatSinkBlockEntity(BlockPos pos, BlockState blockState) {
         super(Main.Tiles.HEAT_SINK_BLOCK_ENTITY.get(), pos, blockState);
-        heatModule.setEnvThermalConductivity(2.0);
-        heatModule.setThermalMass(10.0);
-        heatModule.setThermalConductivity(100.0);
+        heatModule.getHeatNode().setEnvThermalConductivity(2.0);
+        heatModule.getHeatNode().setThermalMass(10.0);
+        heatModule.getHeatNode().setThermalConductivity(100.0);
     }
 
     @Override
@@ -74,10 +68,5 @@ public class HeatSinkBlockEntity extends BlockEntity implements ModulesHolder {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
-    }
-
-    public static <T extends BlockEntity> void TICK(Level level, BlockPos pos, BlockState state, T t) {
-        if (t instanceof HeatSinkBlockEntity sink && !level.isClientSide)
-            sink.heatModule.tick(level, pos, state, sink);
     }
 }

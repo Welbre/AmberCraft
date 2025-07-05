@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.HeatSinkBlockEntity;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.*;
+import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
@@ -40,16 +41,11 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return HeatSinkBlockEntity::TICK;
-    }
-
-    @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof HeatSinkBlockEntity sink)
         {
             if (stack.getItem() == Items.WATER_BUCKET) {
-                if (sink.heatModule.getTemperature() >= 100) {
+                if (sink.heatModule.getHeatNode().getTemperature() >= 100) {
                     if (!player.isCreative()) {
                         player.getInventory().removeItem(stack);
                         player.getInventory().add(new ItemStack(Items.BUCKET));
@@ -59,7 +55,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
                             SoundEvents.FIRE_EXTINGUISH,
                             SoundSource.BLOCKS, 0.5f, 1f, false
                     );
-                    sink.heatModule.transferHeatToEnvironment(HeatModule.getAmbientTemperature(level, pos), 30.0, HeatModule.DEFAULT_TIME_STEP);
+                    sink.heatModule.getHeatNode().transferHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
                     return InteractionResult.SUCCESS;
 
                 }
