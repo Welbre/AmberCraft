@@ -1,30 +1,20 @@
 package welbre.ambercraft;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.registries.*;
 import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.item.FacedCableBlockItem;
@@ -33,7 +23,6 @@ import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.TestCableType;
-import welbre.ambercraft.sim.network.Network;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -49,8 +38,9 @@ public class Main {
 
     public Main(IEventBus modBus, ModContainer container) {
         modBus.addListener(AmberRegisters::registerRegistries);
-        NeoForge.EVENT_BUS.addListener(Main::LEVEL_TICK_EVENT);
-        NeoForge.EVENT_BUS.addListener(Main::CommandRegister);
+        NeoForge.EVENT_BUS.addListener(ServerEvents::LEVEL_TICK_EVENT);
+        NeoForge.EVENT_BUS.addListener(ServerEvents::CommandRegister);
+        NeoForge.EVENT_BUS.addListener(ServerEvents::CLOSE_THE_WORLD);
 
         CableTypes.REGISTER.register(modBus);
 
@@ -106,7 +96,7 @@ public class Main {
         public static final Supplier<BlockEntityType<HeatFurnaceTile>> HEAT_FURNACE_TILE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceTile::new, Blocks.HEAT_FURNACE_BLOCK.get()));
         public static final Supplier<BlockEntityType<CopperHeatConductorTile>> COPPER_HEAT_CONDUCTOR_TILE = REGISTER.register("copper_heat_conductor", () -> new BlockEntityType<>(CopperHeatConductorTile::new, Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()));
         public static final Supplier<BlockEntityType<IronHeatConductorTile>> IRON_HEAT_CONDUCTOR_TILE = REGISTER.register("iron_heat_conductor", () -> new BlockEntityType<>(IronHeatConductorTile::new, Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get()));
-        public static final Supplier<BlockEntityType<GoldHeatConductorBlockEntitty>> GOLD_HEAT_CONDUCTOR_TILE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorBlockEntitty::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<GoldHeatConductorBlockEntity>> GOLD_HEAT_CONDUCTOR_TILE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorBlockEntity::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
 
         public static final Supplier<BlockEntityType<HeatSinkBlockEntity>> HEAT_SINK_BLOCK_ENTITY = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBlockEntity::new,Blocks.HEAT_SINK_BLOCK.get()));
         public static final Supplier<BlockEntityType<FacedCableBlockEntity>> FACED_CABLE_BLOCK_ENTITY = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBlockEntity::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
@@ -146,11 +136,6 @@ public class Main {
                 "cable_data",
                 builder -> builder.persistent(AmberFCableComponent.CODEC).networkSynchronized(AmberFCableComponent.STREAM_CODEC)
         );
-    }
-
-    public static void CommandRegister(RegisterCommandsEvent event)
-    {
-
     }
 
     public static final class TABS {
@@ -206,12 +191,5 @@ public class Main {
             }
             return list;
         }
-    }
-
-    public static void LEVEL_TICK_EVENT(LevelTickEvent.Pre event)
-    {
-        Level level = event.getLevel();
-        if (!level.isClientSide)
-            Network.TICK_ALL();
     }
 }

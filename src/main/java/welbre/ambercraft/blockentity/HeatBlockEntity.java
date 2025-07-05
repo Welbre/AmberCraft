@@ -15,22 +15,22 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
+import welbre.ambercraft.sim.heat.HeatNode;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
-    public HeatModule heatModule = new HeatModule(this);
-
-    @Override
-    public Module[] getModules() {
-        return new Module[]{heatModule};
-    }
-
-    @Override
-    public Module[] getModule(Direction direction) {
-        return new Module[]{heatModule};
-    }
+    public HeatModule heatModule;
 
     public HeatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
+        this.heatModule = new HeatModule(this);
+    }
+
+    public HeatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState, Consumer<HeatNode> setter) {
+        super(type, pos, blockState);
+        this.heatModule = new HeatModule(this, setter);
     }
 
     @Override
@@ -62,5 +62,15 @@ public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
+    }
+
+    @Override
+    public Module[] getModules() {
+        return new Module[]{heatModule};
+    }
+
+    @Override
+    public Module[] getModule(Direction direction) {
+        return new Module[]{heatModule};
     }
 }

@@ -3,6 +3,7 @@ package welbre.ambercraft.sim.network;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.OutputStream;
 import java.util.*;
 
 import static welbre.ambercraft.sim.network.Network.*;
@@ -20,6 +21,12 @@ public class Network implements Iterable<Node> {
 
         this.root = root;
         nodes.add(root);
+    }
+
+    /// Save all data in the output stream and clear the network map if the clear flag is true.
+    public static void FLUSH_DATA(OutputStream writer, boolean shouldClear) {
+        if (shouldClear)
+            NETWORK_LIST.clear();
     }
 
     public Node getRoot() {

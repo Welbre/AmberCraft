@@ -128,6 +128,8 @@ public class HeatNode extends Network.TickableNode {
     }
 
     public static double GET_AMBIENT_TEMPERATURE(LevelAccessor level, BlockPos pos){
+        if (level == null)
+            return 0;
         Holder<Biome> biome = level.getBiomeManager().getBiome(pos);
         float baseTemperature = biome.value().getBaseTemperature();
         return Math.min(baseTemperature,1.0f) * 40f;

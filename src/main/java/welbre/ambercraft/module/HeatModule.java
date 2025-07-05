@@ -8,16 +8,23 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.sim.heat.HeatNode;
 import welbre.ambercraft.sim.network.Network;
 
+import java.util.function.Consumer;
+
 public class HeatModule implements Module {
     Network.NPointer<HeatNode> pointer;
 
-    public HeatModule(BlockEntity entity) {
+    public HeatModule(BlockEntity entity, Consumer<HeatNode> starter) {
         Level level;
         if ((level = Minecraft.getInstance().level) != null)
         {
             HeatNode node = new HeatNode(HeatNode.GET_AMBIENT_TEMPERATURE(level, entity.getBlockPos()));
+            starter.accept(node);
             pointer = Network.CREATE(node);
         }
+    }
+
+    public HeatModule(BlockEntity entity) {
+        this(entity, heatNode -> {});
     }
 
     public HeatNode getHeatNode(){
