@@ -16,10 +16,10 @@ import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
 
-public class HeatBE extends BlockEntity implements ModulesHolder {
+public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     public HeatModule heatModule = new HeatModule();
 
-    public HeatBE(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
+    public HeatConductorBE(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
     }
 

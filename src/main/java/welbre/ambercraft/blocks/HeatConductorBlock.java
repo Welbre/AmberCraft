@@ -33,7 +33,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.HeatBE;
+import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.HeatModuleDefinition;
@@ -71,7 +71,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (level.getBlockEntity(pos) instanceof HeatBE heat)
+        if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
             return heatDef.useItemOn(heat.heatModule,stack,state,level,pos,player,hand,hitResult);
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
@@ -79,7 +79,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        if (level.getBlockEntity(pos) instanceof HeatBE heat)
+        if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
             heatDef.stepOn(heat.heatModule,level,pos,state,entity);
 
         super.stepOn(level,pos,state,entity);
@@ -106,7 +106,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public void setPlacedBy(Level level, BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
 
-        if (level.getBlockEntity(pos) instanceof HeatBE entity)
+        if (level.getBlockEntity(pos) instanceof HeatConductorBE entity)
         {
             entity.heatModule = this.heatDef.createModule(entity);
             if (!level.isClientSide)

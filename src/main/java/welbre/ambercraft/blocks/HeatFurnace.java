@@ -20,7 +20,7 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
-import welbre.ambercraft.blockentity.HeatFurnaceBE;
+import welbre.ambercraft.blockentity.HeatFurnaceConductorBE;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
 import welbre.ambercraft.module.HeatModuleDefinition;
 
@@ -36,13 +36,13 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
         if (!level.isClientSide){
             if (stack.getItem() == Items.LEVER){
                 BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof HeatFurnaceBE furnace) {
+                if (entity instanceof HeatFurnaceConductorBE furnace) {
                     player.displayClientMessage(Component.literal(furnace.heatModule.getHeatNode().getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
                     return InteractionResult.SUCCESS;
                 }
             } else if (stack.getItem() == Items.COAL) {
                 BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof HeatFurnaceBE furnace) {
+                if (entity instanceof HeatFurnaceConductorBE furnace) {
                     furnace.addBoost();
                     stack.consume(10, player);
                     return InteractionResult.SUCCESS;
@@ -57,19 +57,19 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new HeatFurnaceBE(pos, state);
+        return new HeatFurnaceConductorBE(pos, state);
     }
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return type == Main.BlockEntity.HEAT_FURNACE_BE.get() ? HeatFurnaceBE::tick : null;
+        return type == Main.BlockEntity.HEAT_FURNACE_BE.get() ? HeatFurnaceConductorBE::tick : null;
     }
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
         super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
         BlockEntity entity = level.getBlockEntity(pos);
-        if (entity instanceof HeatFurnaceBE tile) {
+        if (entity instanceof HeatFurnaceConductorBE tile) {
             tile.setOverCharged(level.getBlockState(pos.below()).getBlock() == Blocks.LAVA);
         }
     }

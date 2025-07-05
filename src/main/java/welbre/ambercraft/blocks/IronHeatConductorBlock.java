@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.IronHeatConductorBE;
+import welbre.ambercraft.blockentity.IronHeatConductorConductorBE;
 import welbre.ambercraft.module.HeatModuleDefinition;
 
 public class IronHeatConductorBlock extends HeatConductorBlock {
@@ -15,6 +15,6 @@ public class IronHeatConductorBlock extends HeatConductorBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new IronHeatConductorBE(pos, state);
+        return new IronHeatConductorConductorBE(pos, state);
     }
 }
