@@ -2,7 +2,7 @@ package welbre.ambercraft.cables;
 
 import net.minecraft.client.resources.model.Material;
 import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.module.Module;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public abstract class CableType {
      * Therefore, an electric(0) cable can't connect to a heat(1) cable, and a redstone cable can't connect either.<br>
      */
     public abstract byte getType();
-    public abstract Module[] createModules(FacedCableBlockEntity entity);
+    public abstract Module[] createModules(FacedCableBE entity);
 
     public enum Types implements Supplier<Byte> {
         ELECTRIC(0),

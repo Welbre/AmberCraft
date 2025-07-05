@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
-import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.blocks.FacedCableBlock;
 import welbre.ambercraft.cables.AmberFCableComponent;
 
@@ -40,7 +40,7 @@ public class FacedCableBlockItem extends BlockItem {
             return InteractionResult.FAIL;
 
 
-        if (be instanceof FacedCableBlockEntity faced){
+        if (be instanceof FacedCableBE faced){
             if (faced.getState().getFaceStatus(clickedFace.getOpposite()) == null) {
                 ItemStack item = context.getItemInHand();
                 Block block = getBlock();
@@ -75,7 +75,7 @@ public class FacedCableBlockItem extends BlockItem {
         InteractionResult result = super.place(context);
         //put the cable if don't have on the block.
         if (result.consumesAction()) {
-            if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
+            if (level.getBlockEntity(pos) instanceof FacedCableBE faced)
             {
                 faced.addCenter(clickedFace.getOpposite(),component);
                 faced.calculateState(level,pos);

@@ -1,12 +1,9 @@
 package welbre.ambercraft.blockentity;
 
-import com.mojang.serialization.DataResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -34,16 +31,16 @@ import static welbre.ambercraft.cables.CableState.GET_FACE_DIRECTIONS;
  * mens that the DOWN and RIGHT sides is connected. Because of UP is off so 1*0, LEFT is off so 2*0, DOWN is on so 4 * 1 and RIGHT is on 8 * 1, resulting in 4 + 8 = 12.<br>
  * The center should be rendered if any bit is up, so 0x10001 produce the same model that 0x00001, the CENTER(4) bit is used only in a special case, when a cable is created and don't connect to anything.
  * So the center needs to be rendered, but the other parts don't.<br><br>
- * In total, the FacedCable uses 30 bits. 5 bits per face, and is all stored in the {@link FacedCableBlockEntity#state status} field in the following order.
+ * In total, the FacedCable uses 30 bits. 5 bits per face, and is all stored in the {@link FacedCableBE#state status} field in the following order.
  * <b>DOWN(0), UP(5), NORTH(10), SOUTH(15), WEST(20), EAST(25)</b>, the number in parentheses mens where the data start of each face.
  */
-public class FacedCableBlockEntity extends BlockEntity implements ModulesHolder {
+public class FacedCableBE extends BlockEntity implements ModulesHolder {
     public static final ModelProperty<CableState> CONNECTION_MASK_PROPERTY = new ModelProperty<>();
     private CableState state = new CableState();
     private CableBrain brain = new CableBrain();
 
-    public FacedCableBlockEntity(BlockPos pos, BlockState blockState) {
-        super(Main.Tiles.FACED_CABLE_BLOCK_ENTITY.get(), pos, blockState);
+    public FacedCableBE(BlockPos pos, BlockState blockState) {
+        super(Main.BlockEntity.FACED_CABLE_BLOCK_BE.get(), pos, blockState);
     }
 
     public CableState getState(){
@@ -114,7 +111,7 @@ public class FacedCableBlockEntity extends BlockEntity implements ModulesHolder 
 
                 BlockPos neighbor = pos.relative(dir);
                 //check for blocks on the same plane
-                if (level.getBlockEntity(neighbor) instanceof FacedCableBlockEntity faced)
+                if (level.getBlockEntity(neighbor) instanceof FacedCableBE faced)
                 {
                     var status = faced.state.getFaceStatus(face);
                     if (status != null)
@@ -141,7 +138,7 @@ public class FacedCableBlockEntity extends BlockEntity implements ModulesHolder 
 
                 //check for block on diagonals
                 BlockPos diagonal = neighbor.relative(face);
-                if (level.getBlockEntity(diagonal) instanceof FacedCableBlockEntity faced)//diagonal connections
+                if (level.getBlockEntity(diagonal) instanceof FacedCableBE faced)//diagonal connections
                 {
                     BlockPos dia_face_vec = anchor.subtract(diagonal);
                     Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
@@ -158,8 +155,8 @@ public class FacedCableBlockEntity extends BlockEntity implements ModulesHolder 
     }
 
     private static void CONNECT(
-            FacedCableBlockEntity self, Direction self_face, Direction self_dir,
-            FacedCableBlockEntity faced, Direction faced_face, Direction faced_dir, FaceState.Connection connection)
+            FacedCableBE self, Direction self_face, Direction self_dir,
+            FacedCableBE faced, Direction faced_face, Direction faced_dir, FaceState.Connection connection)
     {
         faced.state.rawConnectionSet(faced_face, faced_dir, connection);
         faced.requestModelDataUpdate();
@@ -188,7 +185,7 @@ public class FacedCableBlockEntity extends BlockEntity implements ModulesHolder 
                     continue;
                 }
             }
-            if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBlockEntity faced)//find a connectable
+            if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBE faced)//find a connectable
             {
                 // check if the center of faced contains a cable in the face
                 if (faced.state.getFaceStatus(face) != null)
@@ -199,7 +196,7 @@ public class FacedCableBlockEntity extends BlockEntity implements ModulesHolder 
                 }
             }
             BlockPos diagonal = pos.relative(dir).relative(face);
-            if (level.getBlockEntity(diagonal) instanceof FacedCableBlockEntity faced)//diagonal connections
+            if (level.getBlockEntity(diagonal) instanceof FacedCableBE faced)//diagonal connections
             {
                 BlockPos dia_face_vec = anchor.subtract(diagonal);
                 Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());

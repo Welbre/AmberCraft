@@ -1,7 +1,7 @@
 package welbre.ambercraft.cables;
 
 import net.minecraft.core.Direction;
-import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.FaceState.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +63,7 @@ public class CableState {
     /**
      * Raw sets a direction bit in the corresponded face in the connection_mask.<br>
      * This method doesn't check the connection conditions.
-     * @param globalDir uses the default directions documented in {@link FacedCableBlockEntity FacedCableBlockEntity}.
+     * @param globalDir uses the default directions documented in {@link FacedCableBE FacedCableBlockEntity}.
      */
     public void rawConnectionSet(Direction face, Direction globalDir, Connection connection){
         FaceState status = getFaceStatus(face);

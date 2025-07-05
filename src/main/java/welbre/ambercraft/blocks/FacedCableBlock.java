@@ -1,11 +1,9 @@
 package welbre.ambercraft.blocks;
 
-import com.mojang.authlib.minecraft.TelemetrySession;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -15,12 +13,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,7 +28,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
-import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.*;
 import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.Module;
@@ -49,13 +44,13 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new FacedCableBlockEntity(pos, state);
+        return new FacedCableBE(pos, state);
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape shape = Shapes.empty();
-        if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
+        if (level.getBlockEntity(pos) instanceof FacedCableBE faced)
         {
             CableState center = faced.getState();
             if (center.getFaceStatus(Direction.DOWN) != null)
@@ -81,7 +76,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-        if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)//neighbor removed
+        if (level.getBlockEntity(pos) instanceof FacedCableBE faced)//neighbor removed
         {
             Direction dir = GET_FACE_DIRECTION_USING_RAY_CAST(faced, pos, player);
             faced.removeCable(level, pos, dir);
@@ -104,7 +99,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
         if (stack.getItem() == Items.LEVER)
         {
             if (!level.isClientSide)
-                if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity cable)
+                if (level.getBlockEntity(pos) instanceof FacedCableBE cable)
                 {
                     Direction dir = GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, player);
                     FaceBrain brain = cable.getBrain().getFaceBrain(dir);
@@ -120,7 +115,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level.getBlockEntity(pos) instanceof FacedCableBlockEntity faced)
+        if (level.getBlockEntity(pos) instanceof FacedCableBE faced)
         {
             if (player.isCrouching())
             {
@@ -147,7 +142,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData, Player player) {
         if (Minecraft.getInstance().hitResult.getType() == HitResult.Type.BLOCK){
             BlockHitResult block = (BlockHitResult) Minecraft.getInstance().hitResult;
-            if (level.getBlockEntity(block.getBlockPos()) instanceof FacedCableBlockEntity faced){
+            if (level.getBlockEntity(block.getBlockPos()) instanceof FacedCableBE faced){
                 return GET_ITEM_STACK_FROM_FACE_STATUS(GET_FACE_STATUS_USING_RAY_CAST(faced, pos, player));
             }
         }
@@ -155,11 +150,11 @@ public class FacedCableBlock extends Block implements EntityBlock {
         return super.getCloneItemStack(level, pos, state, includeData, player);
     }
 
-    public static @NotNull FaceState GET_FACE_STATUS_USING_RAY_CAST(FacedCableBlockEntity cable, BlockPos pos, Entity entity){
+    public static @NotNull FaceState GET_FACE_STATUS_USING_RAY_CAST(FacedCableBE cable, BlockPos pos, Entity entity){
         return cable.getState().getFaceStatus(GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, entity));
     }
 
-    public static Direction GET_FACE_DIRECTION_USING_RAY_CAST(FacedCableBlockEntity cable, BlockPos pos, Entity entity)
+    public static Direction GET_FACE_DIRECTION_USING_RAY_CAST(FacedCableBE cable, BlockPos pos, Entity entity)
     {
         Vec3 start = entity.getEyePosition(0);
         Vec3 temp = entity.getViewVector(0);

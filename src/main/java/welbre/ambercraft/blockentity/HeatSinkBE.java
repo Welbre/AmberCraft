@@ -1,6 +1,5 @@
 package welbre.ambercraft.blockentity;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -10,34 +9,42 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.Main;
 import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
-import welbre.ambercraft.sim.heat.HeatNode;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+public class HeatSinkBE extends BlockEntity implements ModulesHolder {
+    public HeatModule heatModule;
 
-public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
-    public HeatModule heatModule = new HeatModule();
-
-    public HeatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
-        super(type, pos, blockState);
+    public HeatSinkBE(BlockPos pos, BlockState blockState) {
+        super(Main.BlockEntity.HEAT_SINK_BLOCK_BE.get(), pos, blockState);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        loadData(tag,registries);
+    public Module[] getModules() {
+        return new Module[]{heatModule};
+    }
+
+    @Override
+    public Module[] getModule(Direction direction) {
+        if (direction == Direction.DOWN)
+            return new Module[]{heatModule};
+        return new Module[0];
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         saveData(tag, registries);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        loadData(tag,registries);
     }
 
     @Override
@@ -57,21 +64,5 @@ public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
-    }
-
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        heatModule.free();
-    }
-
-    @Override
-    public Module[] getModules() {
-        return new Module[]{heatModule};
-    }
-
-    @Override
-    public Module[] getModule(Direction direction) {
-        return new Module[]{heatModule};
     }
 }

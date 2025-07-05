@@ -18,7 +18,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
-import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.client.models.FacedCableBakedModel;
@@ -34,7 +34,7 @@ public record CableSpecialRender() implements SpecialModelRenderer<AmberFCableCo
 
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.SOLID);
         var pose = poseStack.last();
-        for (BakedQuad quad : model.getQuads(null, null, RandomSource.create(42), ModelData.of(FacedCableBlockEntity.CONNECTION_MASK_PROPERTY, status), RenderType.SOLID))
+        for (BakedQuad quad : model.getQuads(null, null, RandomSource.create(42), ModelData.of(FacedCableBE.CONNECTION_MASK_PROPERTY, status), RenderType.SOLID))
             buffer.putBulkData(pose,quad,1f,1f,1f,1f,packedLight,packedOverlay,true);
     }
 

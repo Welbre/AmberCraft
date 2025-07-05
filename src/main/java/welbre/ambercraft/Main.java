@@ -46,7 +46,7 @@ public class Main {
 
         Blocks.REGISTER.register(modBus);
         Items.REGISTER.register(modBus);
-        Tiles.REGISTER.register(modBus);
+        BlockEntity.REGISTER.register(modBus);
         Components.REGISTER.register(modBus);
 
         TABS.REGISTER.register(modBus);
@@ -90,20 +90,20 @@ public class Main {
         public static final DeferredItem<FacedCableBlockItem> FACED_CABLE_BLOCK_ITEM = REGISTER.registerItem("faced_cable", FacedCableBlockItem::new);
     }
 
-    public static final class Tiles {
+    public static final class BlockEntity {
         public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
 
-        public static final Supplier<BlockEntityType<HeatFurnaceTile>> HEAT_FURNACE_TILE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceTile::new, Blocks.HEAT_FURNACE_BLOCK.get()));
-        public static final Supplier<BlockEntityType<CopperHeatConductorTile>> COPPER_HEAT_CONDUCTOR_TILE = REGISTER.register("copper_heat_conductor", () -> new BlockEntityType<>(CopperHeatConductorTile::new, Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()));
-        public static final Supplier<BlockEntityType<IronHeatConductorTile>> IRON_HEAT_CONDUCTOR_TILE = REGISTER.register("iron_heat_conductor", () -> new BlockEntityType<>(IronHeatConductorTile::new, Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get()));
-        public static final Supplier<BlockEntityType<GoldHeatConductorBlockEntity>> GOLD_HEAT_CONDUCTOR_TILE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorBlockEntity::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<HeatFurnaceBE>> HEAT_FURNACE_BE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceBE::new, Blocks.HEAT_FURNACE_BLOCK.get()));
+        public static final Supplier<BlockEntityType<CopperHeatConductorBE>> COPPER_HEAT_CONDUCTOR_BE = REGISTER.register("copper_heat_conductor", () -> new BlockEntityType<>(CopperHeatConductorBE::new, Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<IronHeatConductorBE>> IRON_HEAT_CONDUCTOR_BE = REGISTER.register("iron_heat_conductor", () -> new BlockEntityType<>(IronHeatConductorBE::new, Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<GoldHeatConductorBE>> GOLD_HEAT_CONDUCTOR_BE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorBE::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
 
-        public static final Supplier<BlockEntityType<HeatSinkBlockEntity>> HEAT_SINK_BLOCK_ENTITY = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBlockEntity::new,Blocks.HEAT_SINK_BLOCK.get()));
-        public static final Supplier<BlockEntityType<FacedCableBlockEntity>> FACED_CABLE_BLOCK_ENTITY = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBlockEntity::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
+        public static final Supplier<BlockEntityType<HeatSinkBE>> HEAT_SINK_BLOCK_BE = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBE::new,Blocks.HEAT_SINK_BLOCK.get()));
+        public static final Supplier<BlockEntityType<FacedCableBE>> FACED_CABLE_BLOCK_BE = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBE::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
     }
 
     public static final class AmberRegisters {
-        public static final ResourceKey<Registry<CableType>> CABLE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "cable_type_register"));
+        public static final ResourceKey<Registry<CableType>> CABLE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "cable_type"));
         public static final Registry<CableType>  CABLE_TYPE_REGISTRY = new RegistryBuilder<>(CABLE_TYPE_REGISTER_KEY).create();
 
         public static void registerRegistries(NewRegistryEvent event) {
@@ -112,21 +112,9 @@ public class Main {
     }
 
     public static final class CableTypes {
-        public static final DeferredRegister<CableType> REGISTER = DeferredRegister.create(AmberRegisters.CABLE_TYPE_REGISTRY, "cable_register");
+        public static final DeferredRegister<CableType> REGISTER = DeferredRegister.create(AmberRegisters.CABLE_TYPE_REGISTRY, "cable_type");
 
         public static final Supplier<TestCableType> TEST_CABLE_TYPE = REGISTER.register("test_cable_type", TestCableType::new);
-        public static final Supplier<TestCableType> TEST_CABLE_TYPE_2 = REGISTER.register("test_cable_type2", () -> new TestCableType(){
-            @Override
-            public double getHeight() {
-                return 0.1;
-            }
-
-            @Override
-            public Material getInsulationMaterial() {
-
-                return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse("minecraft:block/white_terracotta"));
-            }
-        });
     }
 
     public static final class Components {
@@ -180,13 +168,6 @@ public class Main {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
                 stack.set(Components.CABLE_DATA_COMPONENT.get(),
                         new AmberFCableComponent(CableTypes.TEST_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
-                list.add(stack);
-            }
-            for (DyeColor color : DyeColor.values())
-            {
-                var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),
-                    new AmberFCableComponent(CableTypes.TEST_CABLE_TYPE_2.get(), color.getTextureDiffuseColor()));
                 list.add(stack);
             }
             return list;

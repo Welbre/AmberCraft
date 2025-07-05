@@ -9,15 +9,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import welbre.ambercraft.Main;
-import welbre.ambercraft.module.HeatModule;
 
-public class HeatFurnaceTile extends HeatBlockEntity {
+public class HeatFurnaceBE extends HeatBE {
     private int timer = 0;
     private int boost = 1;
     private boolean overcharged = false;
 
-    public HeatFurnaceTile(BlockPos pos, BlockState blockState) {
-        super(Main.Tiles.HEAT_FURNACE_TILE.get(), pos, blockState);
+    public HeatFurnaceBE(BlockPos pos, BlockState blockState) {
+        super(Main.BlockEntity.HEAT_FURNACE_BE.get(), pos, blockState);
     }
 
     @Override
@@ -25,7 +24,7 @@ public class HeatFurnaceTile extends HeatBlockEntity {
         super.onLoad();
         if (level != null) {
             BlockEntity entity = level.getBlockEntity(getBlockPos());
-            if (entity instanceof HeatFurnaceTile tile) {
+            if (entity instanceof HeatFurnaceBE tile) {
                 tile.setOverCharged(level.getBlockState(getBlockPos().below()).getBlock() == Blocks.LAVA);
             }
         }
@@ -33,7 +32,7 @@ public class HeatFurnaceTile extends HeatBlockEntity {
 
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
         if (!level.isClientSide) {
-            if (blockEntity instanceof HeatFurnaceTile furnace) {
+            if (blockEntity instanceof HeatFurnaceBE furnace) {
                 if (!furnace.overcharged)
                     return;
                 if (furnace.timer++ >= 5) {

@@ -1,10 +1,7 @@
 package welbre.ambercraft.cables;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.blockentity.FacedCableBE;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -31,7 +28,7 @@ public class CableBrain {
         this.east = east;
     }
 
-    public void addCenter(Direction face, AmberFCableComponent component, FacedCableBlockEntity cable){
+    public void addCenter(Direction face, AmberFCableComponent component, FacedCableBE cable){
         FaceBrain brain = new FaceBrain(component.getType(), cable);
         activeFaces.add(brain);
         switch (face){

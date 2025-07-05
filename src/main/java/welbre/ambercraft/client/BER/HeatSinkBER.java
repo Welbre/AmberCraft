@@ -11,16 +11,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import welbre.ambercraft.blockentity.HeatSinkBlockEntity;
+import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.client.ClientMain;
 
 import java.util.List;
 
 public record HeatSinkBER(
-        BlockEntityRendererProvider.Context context) implements BlockEntityRenderer<HeatSinkBlockEntity> {
+        BlockEntityRendererProvider.Context context) implements BlockEntityRenderer<HeatSinkBE> {
 
     @Override
-    public void render(HeatSinkBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public void render(HeatSinkBE blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         //todo to a better implemataion, with this code, the render hash the Network each time.
         double temperature = blockEntity.heatModule.getHeatNode().getTemperature();
         float fade = Math.max((float) (((300 - (Math.max(300, temperature))) / 300f) + 1f), 0f);

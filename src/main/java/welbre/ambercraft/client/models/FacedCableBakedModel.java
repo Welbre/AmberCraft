@@ -20,7 +20,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.FacedCableBlockEntity;
+import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.cables.FaceState;
 import welbre.ambercraft.cables.FaceState.Connection;
@@ -45,7 +45,7 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
 
         if (side != null)
             return List.of();
-        CableState status = extraData.get(FacedCableBlockEntity.CONNECTION_MASK_PROPERTY);
+        CableState status = extraData.get(FacedCableBE.CONNECTION_MASK_PROPERTY);
         if (status == null)
             return List.of();
 
