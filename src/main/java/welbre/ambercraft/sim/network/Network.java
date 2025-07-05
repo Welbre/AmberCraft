@@ -109,7 +109,7 @@ public class Network implements Iterable<Node> {
     {
         Network network = NETWORK_LIST.get(pointer.netAddr);
         if (network == null)
-            throw new IllegalArgumentException("Invalid pointer state, network not found!");
+            throw new NPointer.InvalidNetwork(pointer);
         return network.addNode(node, pointer.index);
     }
 
@@ -122,7 +122,7 @@ public class Network implements Iterable<Node> {
     {
         Network network = NETWORK_LIST.get(pointer.netAddr);
         if (network == null)
-            throw new IllegalArgumentException("Invalid pointer state, network not found!");
+            throw new NPointer.InvalidNetwork(pointer);
         Node node = network.remove(pointer.index);
         if (pointer.aClass.isInstance(node))
         {
@@ -137,7 +137,8 @@ public class Network implements Iterable<Node> {
     {
         Network network = NETWORK_LIST.get(pointer.netAddr);
         if (network == null)
-            throw new IllegalArgumentException("Invalid pointer state, network not found!");
+            throw new NPointer.InvalidNetwork(pointer);
+
         Node node = network.getNode(pointer.index);
         if (pointer.aClass().isInstance(node))
             return pointer.aClass.cast(node);
@@ -147,7 +148,7 @@ public class Network implements Iterable<Node> {
     {
         Network network = NETWORK_LIST.get(pointer.netAddr);
         if (network == null)
-            throw new IllegalArgumentException("Invalid pointer state, network not found!");
+            throw new NPointer.InvalidNetwork(pointer);
         return network;
     }
     @SuppressWarnings("unchecked")
@@ -193,7 +194,8 @@ public class Network implements Iterable<Node> {
             return tag;
         }
 
-        public static <T extends Node> NPointer<T> GET_FROM_TAG(CompoundTag tag){
+        public static <T extends Node> NPointer<T> GET_FROM_TAG(CompoundTag tag)
+        {
             final long most = tag.getLong("id_m");
             final long least = tag.getLong("id_l");
             final int idx = tag.getInt("idx");
@@ -206,6 +208,13 @@ public class Network implements Iterable<Node> {
                 throw new RuntimeException(e);
             }
             return new NPointer<>(new UUID(most,least),idx, (Class<T>) bClass);
+        }
+
+        public static final class InvalidNetwork extends RuntimeException {
+
+            public InvalidNetwork(NPointer<?> pointer) {
+                super("Invalid pointer, network(%s) not found!".formatted(pointer.netAddr.toString()));
+            }
         }
     }
 }

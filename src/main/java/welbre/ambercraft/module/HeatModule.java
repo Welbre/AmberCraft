@@ -13,6 +13,9 @@ import java.util.function.Consumer;
 public class HeatModule implements Module {
     Network.NPointer<HeatNode> pointer;
 
+    public HeatModule() {
+    }
+
     public HeatModule(BlockEntity entity, Consumer<HeatNode> starter) {
         Level level;
         if ((level = Minecraft.getInstance().level) != null)
@@ -47,6 +50,12 @@ public class HeatModule implements Module {
     }
 
     public void free() {
-        Network.REMOVE(pointer);
+        try
+        {
+            Network.REMOVE(pointer);
+        } catch (Network.NPointer.InvalidNetwork e)
+        {
+            e.printStackTrace(System.err);
+        }
     }
 }

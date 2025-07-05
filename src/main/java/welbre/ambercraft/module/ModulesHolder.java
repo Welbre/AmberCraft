@@ -3,6 +3,7 @@ package welbre.ambercraft.module;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Array;
@@ -26,19 +27,23 @@ public interface ModulesHolder {
     }
 
     default void loadData(CompoundTag tag, HolderLookup.Provider registries){
+        CompoundTag main = tag.getCompound("modules");
         for (Module module : getModules())
         {
-            CompoundTag _tag = tag.getCompound(module.getClass().getName());
+            CompoundTag _tag = main.getCompound(module.getClass().getName());
             module.readData(_tag, registries);
         }
     }
 
     default void saveData(CompoundTag tag, HolderLookup.Provider registries){
+        CompoundTag main = new CompoundTag();
         for (Module module : getModules())
         {
             var _tag = new CompoundTag();
             module.writeData(_tag, registries);
-            tag.put(module.getClass().getName(), _tag);
+
+            main.put(module.getClass().getName(), _tag);
         }
+        tag.put("modules", main);
     }
 }

@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
-    public HeatModule heatModule;
+    public HeatModule heatModule = new HeatModule();
 
     public HeatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
