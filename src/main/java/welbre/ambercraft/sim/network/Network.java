@@ -1,6 +1,7 @@
 package welbre.ambercraft.sim.network;
 
 import net.minecraft.nbt.CompoundTag;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.OutputStream;
@@ -37,7 +38,7 @@ public class Network implements Iterable<Node> {
     {
         nodes.get(index).add(node);
         nodes.add(node);
-        return new NPointer<T>(network_index, nodes.size()-1, (Class<T>) node.getClass());
+        return new NPointer<>(network_index, nodes.size() - 1, (Class<T>) node.getClass());
     }
 
     private Node getNode(int index)
@@ -112,6 +113,11 @@ public class Network implements Iterable<Node> {
         return network.addNode(node, pointer.index);
     }
 
+    public static <T extends Node> NPointer<T> ADD_NODE(NPointer<T> n_1, NPointer<T> n_2)
+    {
+        throw new NotImplementedException();
+    }
+
     public static <T extends Node> T REMOVE(NPointer<T> pointer)
     {
         Network network = NETWORK_LIST.get(pointer.netAddr);
@@ -119,7 +125,11 @@ public class Network implements Iterable<Node> {
             throw new IllegalArgumentException("Invalid pointer state, network not found!");
         Node node = network.remove(pointer.index);
         if (pointer.aClass.isInstance(node))
+        {
+            if (network.getNodes().isEmpty())//remove if the network is empty
+                NETWORK_LIST.remove(pointer.netAddr);
             return pointer.aClass.cast(node);
+        }
         return null;
     }
 
@@ -169,6 +179,10 @@ public class Network implements Iterable<Node> {
     public static abstract class TickableNode extends Node implements Runnable{}
 
     public record NPointer<T extends Node>(UUID netAddr, int index, Class<T> aClass) {
+        public <K extends Node> NPointer(NPointer<K> pointer) {
+            this(pointer.netAddr, pointer.index, (Class<T>) pointer.aClass);
+        }
+
         public CompoundTag getAsTag()
         {
             CompoundTag tag = new CompoundTag();

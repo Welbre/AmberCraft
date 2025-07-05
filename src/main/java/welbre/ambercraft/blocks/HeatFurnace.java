@@ -28,7 +28,7 @@ import welbre.ambercraft.module.HeatModuleDefinition;
 import welbre.ambercraft.module.ModuleDefinition;
 
 public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
-    public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition();
+    public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition(node -> node.setThermalConductivity(100.0));
 
     public HeatFurnace(Properties p) {
         super(p);

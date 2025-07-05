@@ -17,7 +17,7 @@ public class HeatFurnaceTile extends HeatBlockEntity {
     private boolean overcharged = false;
 
     public HeatFurnaceTile(BlockPos pos, BlockState blockState) {
-        super(Main.Tiles.HEAT_FURNACE_TILE.get(), pos, blockState, hold -> hold.setThermalConductivity(100.0));
+        super(Main.Tiles.HEAT_FURNACE_TILE.get(), pos, blockState);
     }
 
     @Override

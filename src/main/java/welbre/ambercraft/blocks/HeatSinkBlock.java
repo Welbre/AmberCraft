@@ -29,7 +29,7 @@ import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
-    public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition();
+    public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition(HeatSinkBlock::SETTER);
 
     public HeatSinkBlock(Properties p) {
         super(p);
@@ -69,5 +69,12 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     @Override
     protected @NotNull VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return shape;
+    }
+
+    private static void SETTER(HeatNode node)
+    {
+        node.setEnvThermalConductivity(2.0);
+        node.setThermalMass(10.0);
+        node.setThermalConductivity(100.0);
     }
 }

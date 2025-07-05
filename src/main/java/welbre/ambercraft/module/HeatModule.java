@@ -31,6 +31,11 @@ public class HeatModule implements Module {
         return Network.GET_NODE(pointer);
     }
 
+    /// Returns a copy of the pointer.
+    public Network.NPointer<HeatNode> getPointer() {
+        return new Network.NPointer<>(pointer);
+    }
+
     @Override
     public void writeData(CompoundTag tag, HolderLookup.Provider registries) {
         tag.put("np", pointer.getAsTag());

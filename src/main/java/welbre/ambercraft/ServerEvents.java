@@ -23,9 +23,16 @@ public class ServerEvents {
 
     public static void CLOSE_THE_WORLD(LevelEvent.Unload event)
     {
+        if (true)
+            return;
         try
+                //todo save extra data when the world close.
         {
-            File networkSave = new File("./amber/network.file");
+            File networkSave = new File(
+                    "saves/"+
+                    event.getLevel().getServer().getWorldData().getLevelName()
+                    +"/amber/network.file");
+            networkSave.createNewFile();
             var writer = new BufferedOutputStream(new FileOutputStream(networkSave));
 
             Network.FLUSH_DATA(writer,true);

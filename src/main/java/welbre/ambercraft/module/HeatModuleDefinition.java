@@ -17,8 +17,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import welbre.ambercraft.sim.heat.HeatNode;
 
-public class HeatModuleDefinition implements ModuleDefinition<HeatModule, BlockEntity> {
+import java.util.function.Consumer;
+
+public class HeatModuleDefinition extends NetworkModuleDefinition<HeatModule, BlockEntity, HeatNode> {
+
+    public HeatModuleDefinition(Consumer<HeatNode> setter) {
+        super(setter);
+    }
 
     @Override
     public InteractionResult useWithoutItem(HeatModule module, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
@@ -27,7 +34,7 @@ public class HeatModuleDefinition implements ModuleDefinition<HeatModule, BlockE
 
     @Override
     public HeatModule createModule(BlockEntity obj) {
-        return new HeatModule(obj);
+        return new HeatModule(obj, getSetter());
     }
 
     @Override

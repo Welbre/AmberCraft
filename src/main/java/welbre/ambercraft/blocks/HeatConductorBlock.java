@@ -38,6 +38,10 @@ import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.HeatModule;
 import welbre.ambercraft.module.HeatModuleDefinition;
 import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.sim.heat.HeatNode;
+import welbre.ambercraft.sim.network.Network;
+
+import java.util.function.Consumer;
 
 public abstract class HeatConductorBlock extends AmberBasicBlock implements EntityBlock {
     public final float model_radius;
@@ -50,7 +54,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public static final BooleanProperty WEST = BooleanProperty.create("west");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
 
-    private final HeatModuleDefinition heatDef = new HeatModuleDefinition();
+    protected HeatModuleDefinition heatDef = new HeatModuleDefinition(heatNode -> {});
 
     public HeatConductorBlock(Properties p, float modelRadius) {
         super(p);
@@ -103,6 +107,26 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     public void setPlacedBy(Level level, BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
+
+        if (level.getBlockEntity(pos) instanceof HeatBlockEntity entity)
+        {
+            entity.heatModule = this.heatDef.createModule(entity);
+            if (!level.isClientSide)
+            {
+                for (Direction dir : Direction.values())
+                    if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
+                    {
+                        Network.NPointer<HeatNode> pointer = entity.heatModule.getPointer();
+                        for (@NotNull HeatModule module : modular.getModule(HeatModule.class, dir.getOpposite()))
+                        {
+                            Network.NPointer<HeatNode> _pointer = module.getPointer();
+                            Network.ADD_NODE(Network.GET_NODE(pointer), _pointer);// add this to the neighbors.
+                            //todo convert to the (pointer pointer) method
+                        }
+                    }
+            }
+        }
+
         level.setBlockAndUpdate(pos, calculateState(level,pos));
     }
 

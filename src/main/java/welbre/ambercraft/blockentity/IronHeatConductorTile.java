@@ -6,6 +6,6 @@ import welbre.ambercraft.Main;
 
 public class IronHeatConductorTile extends HeatBlockEntity {
     public IronHeatConductorTile(BlockPos pos, BlockState blockState) {
-        super(Main.Tiles.IRON_HEAT_CONDUCTOR_TILE.get(), pos, blockState, heatNode -> heatNode.setThermalConductivity(22));
+        super(Main.Tiles.IRON_HEAT_CONDUCTOR_TILE.get(), pos, blockState);
     }
 }

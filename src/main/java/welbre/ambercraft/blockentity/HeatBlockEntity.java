@@ -1,5 +1,6 @@
 package welbre.ambercraft.blockentity;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -25,12 +26,6 @@ public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
 
     public HeatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
-        this.heatModule = new HeatModule(this);
-    }
-
-    public HeatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState, Consumer<HeatNode> setter) {
-        super(type, pos, blockState);
-        this.heatModule = new HeatModule(this, setter);
     }
 
     @Override
@@ -62,6 +57,12 @@ public class HeatBlockEntity extends BlockEntity implements ModulesHolder {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        heatModule.free();
     }
 
     @Override

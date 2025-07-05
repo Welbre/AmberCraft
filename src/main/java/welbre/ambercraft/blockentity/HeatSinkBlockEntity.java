@@ -18,13 +18,10 @@ import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
 
 public class HeatSinkBlockEntity extends BlockEntity implements ModulesHolder {
-    public HeatModule heatModule = new HeatModule(this);
+    public HeatModule heatModule;
 
     public HeatSinkBlockEntity(BlockPos pos, BlockState blockState) {
         super(Main.Tiles.HEAT_SINK_BLOCK_ENTITY.get(), pos, blockState);
-        heatModule.getHeatNode().setEnvThermalConductivity(2.0);
-        heatModule.getHeatNode().setThermalMass(10.0);
-        heatModule.getHeatNode().setThermalConductivity(100.0);
     }
 
     @Override

@@ -11,6 +11,6 @@ import java.util.function.Consumer;
 
 public class CopperHeatConductorTile extends HeatBlockEntity {
     public CopperHeatConductorTile(BlockPos pos, BlockState blockState) {
-        super(Main.Tiles.COPPER_HEAT_CONDUCTOR_TILE.get(), pos, blockState, node -> node.setThermalConductivity(10.0));
+        super(Main.Tiles.COPPER_HEAT_CONDUCTOR_TILE.get(), pos, blockState);
     }
 }
