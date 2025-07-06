@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
-import welbre.ambercraft.module.*;
+import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.heat.HeatModuleFactory;
 import welbre.ambercraft.sim.heat.HeatNode;

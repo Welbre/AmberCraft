@@ -27,10 +27,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blocks.HeatConductorBlock;
 
-import static welbre.ambercraft.client.RenderHelper.*;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static welbre.ambercraft.client.RenderHelper.CUBE_CENTRED;
+import static welbre.ambercraft.client.RenderHelper.FROM_AABB;
 
 public class CentredCableBakedModel implements IDynamicBakedModel {
     ModelBaker baker;

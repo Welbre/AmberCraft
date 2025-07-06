@@ -11,9 +11,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.Module;
+import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.heat.HeatModule;
 
 public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     public HeatModule heatModule = new HeatModule();

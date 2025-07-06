@@ -1,6 +1,5 @@
 package welbre.ambercraft.module.heat;
 
-import net.neoforged.neoforge.registries.DeferredHolder;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModuleType;

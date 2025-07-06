@@ -9,6 +9,11 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Used to represent a java object that can contains modules.<br>
+ * At the moment, only BlockEntity is compatible with this,
+ * and maybe this class will be reimplemented as a {@link net.neoforged.neoforge.capabilities.Capabilities}
+ */
 public interface ModulesHolder {
     /// Returns all modules that this instance holds.
     Module[] getModules();

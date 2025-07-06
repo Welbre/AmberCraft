@@ -3,6 +3,7 @@ package welbre.ambercraft.cables;
 import net.minecraft.core.Direction;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.FaceState.Connection;
+
 import java.util.ArrayList;
 import java.util.List;
 

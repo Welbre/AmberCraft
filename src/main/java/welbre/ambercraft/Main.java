@@ -14,14 +14,14 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.*;
 import welbre.ambercraft.blockentity.*;
-import welbre.ambercraft.item.FacedCableBlockItem;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
-import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.AmberFCableComponent;
+import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.TestCableType;
-import welbre.ambercraft.module.heat.HeatModuleType;
+import welbre.ambercraft.item.FacedCableBlockItem;
 import welbre.ambercraft.module.ModuleType;
+import welbre.ambercraft.module.heat.HeatModuleType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

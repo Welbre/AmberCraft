@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static welbre.ambercraft.sim.network.Network.*;
+import static welbre.ambercraft.sim.network.Network.Node;
 
 public class Network implements Iterable<Node> {
     private static final Map<UUID,Network> NETWORK_LIST = new HashMap<>();
