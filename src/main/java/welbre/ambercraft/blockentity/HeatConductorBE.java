@@ -48,12 +48,6 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     }
 
     @Override
-    public void setRemoved() {
-        super.setRemoved();
-        heatModule.free();
-    }
-
-    @Override
     public Module[] getModules() {
         return new Module[]{heatModule};
     }

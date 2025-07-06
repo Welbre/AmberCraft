@@ -38,9 +38,8 @@ public class Main {
 
     public Main(IEventBus modBus, ModContainer container) {
         modBus.addListener(AmberRegisters::registerRegistries);
-        NeoForge.EVENT_BUS.addListener(ServerEvents::LEVEL_TICK_EVENT);
-        NeoForge.EVENT_BUS.addListener(ServerEvents::CommandRegister);
-        NeoForge.EVENT_BUS.addListener(ServerEvents::CLOSE_THE_WORLD);
+        ServerEvents.register();
+
 
         Modules.REGISTER.register(modBus);
         CableTypes.REGISTER.register(modBus);

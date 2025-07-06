@@ -4,7 +4,6 @@ import net.minecraft.nbt.CompoundTag;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.OutputStream;
 import java.util.*;
 
 import static welbre.ambercraft.sim.network.Network.*;
@@ -13,19 +12,52 @@ public class Network implements Iterable<Node> {
     private static final Map<UUID,Network> NETWORK_LIST = new HashMap<>();
 
     private final Node root;
-    private final List<Node> nodes = new ArrayList<>();
+    private final List<Node> nodes;
     private final UUID network_index;
+
+    private Network(Node root,List<Node> nodes, UUID network_index) {
+        this.root = root;
+        this.network_index = network_index;
+        this.nodes = nodes;
+    }
 
     public Network(Node root) {
         network_index = UUID.randomUUID();
         NETWORK_LIST.put(network_index,this);
 
         this.root = root;
+        this.nodes = new ArrayList<>();
         nodes.add(root);
     }
 
+    public static void LOAD_DATA(CompoundTag tag)
+    {
+        CompoundTag main = tag.getCompound("net");
+        for (String key : main.getAllKeys())
+        {
+            CompoundTag self = main.getCompound(key);
+            UUID uuid = UUID.fromString(key);
+            Node root = Node.fromTag(self.getCompound("root"));
+
+            Network net = new Network(root, new ArrayList<>(), uuid);
+            NETWORK_LIST.put(uuid, net);
+        }
+    }
+
     /// Save all data in the output stream and clear the network map if the clear flag is true.
-    public static void FLUSH_DATA(OutputStream writer, boolean shouldClear) {
+    public static void SAVE_DATA(CompoundTag tag, boolean shouldClear) {
+        CompoundTag main = new CompoundTag();
+        for (Map.Entry<UUID, Network> entry : NETWORK_LIST.entrySet())
+        {
+            var net = entry.getValue();
+            CompoundTag self = new CompoundTag();
+            self.put("root", net.root.toTag());
+
+            main.put(net.network_index.toString(), self);
+        }
+
+        tag.put("net",main);
+
         if (shouldClear)
             NETWORK_LIST.clear();
     }
@@ -174,6 +206,24 @@ public class Network implements Iterable<Node> {
         @Override
         public @NotNull Iterator<Node> iterator() {
             return children.iterator();
+        }
+
+        public CompoundTag toTag() {
+            var tag = new CompoundTag();
+            for (int i = 0; i < children.size(); i++)
+            {
+                tag.put("c"+i, children.get(i).toTag());
+            }
+            return tag;
+        }
+
+        public static Node fromTag(CompoundTag tag){
+            Node node = new Node();
+
+            for (String allKey : tag.getAllKeys())
+                node.add(fromTag(tag.getCompound(allKey)));
+
+            return node;
         }
     }
 
