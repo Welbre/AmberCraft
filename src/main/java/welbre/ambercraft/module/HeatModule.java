@@ -23,12 +23,14 @@ public class HeatModule implements Module {
 
     @Override
     public void writeData(CompoundTag tag, HolderLookup.Provider registries) {
-        tag.put("np", pointer.getAsTag());
+        if (pointer != null)
+            tag.put("np", pointer.getAsTag());
     }
 
     @Override
     public void readData(CompoundTag tag, HolderLookup.Provider registries) {
-        pointer = NPointer.GET_FROM_TAG(tag.getCompound("np"));
+        if (tag.contains("np"))
+            pointer = NPointer.GET_FROM_TAG(tag.getCompound("np"));
     }
 
     @Override

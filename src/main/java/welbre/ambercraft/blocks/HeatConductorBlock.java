@@ -75,8 +75,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
-            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.heatModule,stack,state,level,pos,player,hand,hitResult);
-
+            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.heatModule, stack, state, level, pos, player, hand, hitResult);
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
@@ -111,9 +110,9 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
         if (level.getBlockEntity(pos) instanceof HeatConductorBE entity)
         {
-            entity.heatModule = this.heatDef.get();
             if (!level.isClientSide)
             {
+                entity.heatModule = this.heatDef.get();
                 for (Direction dir : Direction.values())
                     if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
                     {
