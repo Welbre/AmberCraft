@@ -1,11 +1,8 @@
 package welbre.ambercraft.module;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -14,27 +11,19 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import welbre.ambercraft.sim.heat.HeatNode;
 
-import java.util.function.Consumer;
+public class HeatModuleType implements ModuleType<HeatModule> {
 
-public class HeatModuleDefinition extends NetworkModuleDefinition<HeatModule, BlockEntity, HeatNode> {
-
-    public HeatModuleDefinition(Consumer<HeatNode> setter) {
-        super(setter);
+    @Override
+    public HeatModule createModule() {
+        return new HeatModule();
     }
 
     @Override
     public InteractionResult useWithoutItem(HeatModule module, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         return null;
-    }
-
-    @Override
-    public HeatModule createModule(BlockEntity obj) {
-        return new HeatModule(obj, getSetter());
     }
 
     @Override

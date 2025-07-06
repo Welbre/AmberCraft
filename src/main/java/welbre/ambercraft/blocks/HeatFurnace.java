@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -20,12 +21,16 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
-import welbre.ambercraft.blockentity.HeatFurnaceConductorBE;
+import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
-import welbre.ambercraft.module.HeatModuleDefinition;
+import welbre.ambercraft.module.HeatModule;
+import welbre.ambercraft.module.ModuleType;
 
 public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
-    public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition(node -> node.setThermalConductivity(100.0));
+    public ModuleType.Template<HeatModule> heatModule = new ModuleType.Template<HeatModule>(Main.Modules.HEAT_MODULE_TYPE, module -> {
+        module.alloc();
+        module.getHeatNode().setThermalConductivity(100.0);
+    });
 
     public HeatFurnace(Properties p) {
         super(p);
@@ -36,13 +41,13 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
         if (!level.isClientSide){
             if (stack.getItem() == Items.LEVER){
                 BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof HeatFurnaceConductorBE furnace) {
+                if (entity instanceof HeatFurnaceBE furnace) {
                     player.displayClientMessage(Component.literal(furnace.heatModule.getHeatNode().getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
                     return InteractionResult.SUCCESS;
                 }
             } else if (stack.getItem() == Items.COAL) {
                 BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof HeatFurnaceConductorBE furnace) {
+                if (entity instanceof HeatFurnaceBE furnace) {
                     furnace.addBoost();
                     stack.consume(10, player);
                     return InteractionResult.SUCCESS;
@@ -56,20 +61,27 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
     }
 
     @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
+            furnace.heatModule = heatModule.get();
+    }
+
+    @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new HeatFurnaceConductorBE(pos, state);
+        return new HeatFurnaceBE(pos, state);
     }
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return type == Main.BlockEntity.HEAT_FURNACE_BE.get() ? HeatFurnaceConductorBE::tick : null;
+        return type == Main.BlockEntity.HEAT_FURNACE_BE.get() ? HeatFurnaceBE::tick : null;
     }
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
         super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
         BlockEntity entity = level.getBlockEntity(pos);
-        if (entity instanceof HeatFurnaceConductorBE tile) {
+        if (entity instanceof HeatFurnaceBE tile) {
             tile.setOverCharged(level.getBlockState(pos.below()).getBlock() == Blocks.LAVA);
         }
     }

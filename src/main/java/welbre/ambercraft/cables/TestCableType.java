@@ -36,7 +36,7 @@ public class TestCableType extends CableType{
 
     @Override
     public Module[] createModules(FacedCableBE entity) {
-        HeatModule module = new HeatModule(entity);
+        HeatModule module = new HeatModule();
         module.getHeatNode().setThermalConductivity(50);
         return new Module[]{module};
     }

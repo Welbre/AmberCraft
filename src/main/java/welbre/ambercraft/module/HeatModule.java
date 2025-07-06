@@ -1,33 +1,15 @@
 package welbre.ambercraft.module;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.sim.heat.HeatNode;
 import welbre.ambercraft.sim.network.Network;
-
-import java.util.function.Consumer;
+import welbre.ambercraft.sim.network.Network.NPointer;
 
 public class HeatModule implements Module {
-    Network.NPointer<HeatNode> pointer;
+    NPointer<HeatNode> pointer;
 
     public HeatModule() {
-    }
-
-    public HeatModule(BlockEntity entity, Consumer<HeatNode> starter) {
-        Level level;
-        if ((level = Minecraft.getInstance().level) != null)
-        {
-            HeatNode node = new HeatNode(HeatNode.GET_AMBIENT_TEMPERATURE(level, entity.getBlockPos()));
-            starter.accept(node);
-            pointer = Network.CREATE(node);
-        }
-    }
-
-    public HeatModule(BlockEntity entity) {
-        this(entity, heatNode -> {});
     }
 
     public HeatNode getHeatNode(){
@@ -35,8 +17,8 @@ public class HeatModule implements Module {
     }
 
     /// Returns a copy of the pointer.
-    public Network.NPointer<HeatNode> getPointer() {
-        return new Network.NPointer<>(pointer);
+    public NPointer<HeatNode> getPointer() {
+        return new NPointer<>(pointer);
     }
 
     @Override
@@ -46,14 +28,21 @@ public class HeatModule implements Module {
 
     @Override
     public void readData(CompoundTag tag, HolderLookup.Provider registries) {
-        pointer = Network.NPointer.GET_FROM_TAG(tag.getCompound("np"));
+        pointer = NPointer.GET_FROM_TAG(tag.getCompound("np"));
     }
 
+    @Override
+    public void alloc() {
+        pointer = Network.CREATE(new HeatNode());
+    }
+
+    @Override
     public void free() {
         try
         {
             Network.REMOVE(pointer);
-        } catch (Network.NPointer.InvalidNetwork e)
+            pointer = null;
+        } catch (NPointer.InvalidNetwork e)
         {
             e.printStackTrace(System.err);
         }

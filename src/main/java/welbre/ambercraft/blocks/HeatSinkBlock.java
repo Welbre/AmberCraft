@@ -19,6 +19,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.*;
@@ -26,7 +27,7 @@ import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
-    public HeatModuleDefinition heatModuleDefinition = new HeatModuleDefinition(HeatSinkBlock::SETTER);
+    public ModuleType.Template<HeatModule> heatModuleDefinition = new ModuleType.Template<HeatModule>(Main.Modules.HEAT_MODULE_TYPE,HeatSinkBlock::SETTER);
 
     public HeatSinkBlock(Properties p) {
         super(p);
@@ -58,7 +59,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
                 }
                 return InteractionResult.CONSUME;
             }
-            return heatModuleDefinition.useItemOn(sink.heatModule, stack,state,level,pos,player,hand, hitResult);
+            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(sink.heatModule, stack,state,level,pos,player,hand, hitResult);
         }
         return super.useItemOn(stack,state,level,pos,player,hand,hitResult);
     }
@@ -68,8 +69,9 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
         return shape;
     }
 
-    private static void SETTER(HeatNode node)
+    private static void SETTER(HeatModule module)
     {
+        var node = module.getHeatNode();
         node.setEnvThermalConductivity(2.0);
         node.setThermalMass(10.0);
         node.setThermalConductivity(100.0);

@@ -21,6 +21,8 @@ import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.TestCableType;
+import welbre.ambercraft.module.HeatModuleType;
+import welbre.ambercraft.module.ModuleType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,6 +42,7 @@ public class Main {
         NeoForge.EVENT_BUS.addListener(ServerEvents::CommandRegister);
         NeoForge.EVENT_BUS.addListener(ServerEvents::CLOSE_THE_WORLD);
 
+        Modules.REGISTER.register(modBus);
         CableTypes.REGISTER.register(modBus);
 
         Blocks.REGISTER.register(modBus);
@@ -91,7 +94,7 @@ public class Main {
     public static final class BlockEntity {
         public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
 
-        public static final Supplier<BlockEntityType<HeatFurnaceConductorBE>> HEAT_FURNACE_BE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceConductorBE::new, Blocks.HEAT_FURNACE_BLOCK.get()));
+        public static final Supplier<BlockEntityType<HeatFurnaceBE>> HEAT_FURNACE_BE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceBE::new, Blocks.HEAT_FURNACE_BLOCK.get()));
         public static final Supplier<BlockEntityType<CopperHeatConductorConductorBE>> COPPER_HEAT_CONDUCTOR_BE = REGISTER.register("copper_heat_conductor", () -> new BlockEntityType<>(CopperHeatConductorConductorBE::new, Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()));
         public static final Supplier<BlockEntityType<IronHeatConductorConductorBE>> IRON_HEAT_CONDUCTOR_BE = REGISTER.register("iron_heat_conductor", () -> new BlockEntityType<>(IronHeatConductorConductorBE::new, Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get()));
         public static final Supplier<BlockEntityType<GoldHeatConductorConductorBE>> GOLD_HEAT_CONDUCTOR_BE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorConductorBE::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
@@ -101,11 +104,15 @@ public class Main {
     }
 
     public static final class AmberRegisters {
-        public static final ResourceKey<Registry<CableType>> CABLE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "cable_type"));
+        private static final ResourceKey<Registry<CableType>> CABLE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "cable_type"));
+        private static final ResourceKey<Registry<ModuleType<?>>> MODULE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "module_type"));
+
         public static final Registry<CableType>  CABLE_TYPE_REGISTRY = new RegistryBuilder<>(CABLE_TYPE_REGISTER_KEY).create();
+        public static final Registry<ModuleType<?>>  MODULE_TYPE_REGISTRY = new RegistryBuilder<>(MODULE_TYPE_REGISTER_KEY).create();
 
         public static void registerRegistries(NewRegistryEvent event) {
             event.register(CABLE_TYPE_REGISTRY);
+            event.register(MODULE_TYPE_REGISTRY);
         }
     }
 
@@ -113,6 +120,12 @@ public class Main {
         public static final DeferredRegister<CableType> REGISTER = DeferredRegister.create(AmberRegisters.CABLE_TYPE_REGISTRY, "cable_type");
 
         public static final Supplier<TestCableType> TEST_CABLE_TYPE = REGISTER.register("test_cable_type", TestCableType::new);
+    }
+
+    public static final class Modules {
+        public static final DeferredRegister<ModuleType<?>> REGISTER = DeferredRegister.create(AmberRegisters.MODULE_TYPE_REGISTRY, "module_type");
+
+        public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat_module_type", HeatModuleType::new);
     }
 
     public static final class Components {
