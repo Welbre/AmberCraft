@@ -15,7 +15,7 @@ import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.cables.*;
-import welbre.ambercraft.module.HeatModule;
+import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 

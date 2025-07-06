@@ -23,11 +23,13 @@ import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.*;
+import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.heat.HeatModuleFactory;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
-    public ModuleType.Template<HeatModule> heatModuleDefinition = new ModuleType.Template<HeatModule>(Main.Modules.HEAT_MODULE_TYPE,HeatSinkBlock::SETTER);
+    public ModuleFactory<HeatModule> factory = new HeatModuleFactory(HeatSinkBlock::SETTER);
 
     public HeatSinkBlock(Properties p) {
         super(p);

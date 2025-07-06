@@ -4,7 +4,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import welbre.ambercraft.blockentity.FacedCableBE;
-import welbre.ambercraft.module.HeatModule;
+import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.Module;
 
 public class TestCableType extends CableType{

@@ -36,11 +36,10 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
-import welbre.ambercraft.module.HeatModule;
-import welbre.ambercraft.module.HeatModuleType;
-import welbre.ambercraft.module.Module;
-import welbre.ambercraft.module.ModuleType;
+import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.heat.HeatModuleFactory;
 import welbre.ambercraft.sim.heat.HeatNode;
 import welbre.ambercraft.sim.network.Network;
 
@@ -55,7 +54,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public static final BooleanProperty WEST = BooleanProperty.create("west");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
 
-    protected ModuleType.Template<HeatModule> heatDef = new ModuleType.Template<>(Main.Modules.HEAT_MODULE_TYPE, HeatModule::alloc);
+    protected ModuleFactory<HeatModule> heatDef = new HeatModuleFactory(HeatModule::alloc);
 
     public HeatConductorBlock(Properties p, float modelRadius) {
         super(p);

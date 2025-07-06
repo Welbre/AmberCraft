@@ -23,11 +23,11 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
-import welbre.ambercraft.module.HeatModule;
-import welbre.ambercraft.module.ModuleType;
+import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.heat.HeatModuleFactory;
 
 public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
-    public ModuleType.Template<HeatModule> heatModule = new ModuleType.Template<HeatModule>(Main.Modules.HEAT_MODULE_TYPE, module -> {
+    public HeatModuleFactory factory = new HeatModuleFactory(module -> {
         module.alloc();
         module.getHeatNode().setThermalConductivity(100.0);
     });
@@ -64,7 +64,7 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
-            furnace.heatModule = heatModule.get();
+            furnace.heatModule = factory.get();
     }
 
     @Override

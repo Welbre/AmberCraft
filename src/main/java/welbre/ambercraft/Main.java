@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.*;
 import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.item.FacedCableBlockItem;
@@ -21,7 +20,7 @@ import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.TestCableType;
-import welbre.ambercraft.module.HeatModuleType;
+import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.module.ModuleType;
 
 import java.lang.annotation.Retention;

@@ -1,0 +1,19 @@
+package welbre.ambercraft.module.heat;
+
+import net.neoforged.neoforge.registries.DeferredHolder;
+import welbre.ambercraft.Main;
+import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.module.ModuleType;
+
+import java.util.function.Consumer;
+
+public final class HeatModuleFactory extends ModuleFactory<HeatModule> {
+    public HeatModuleFactory(Consumer<HeatModule> setter) {
+        super(setter);
+    }
+
+    @Override
+    public DeferredHolder<ModuleType<?>, ? extends ModuleType<HeatModule>> getHolder() {
+        return Main.Modules.HEAT_MODULE_TYPE;
+    }
+}

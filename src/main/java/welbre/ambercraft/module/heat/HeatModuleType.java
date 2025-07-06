@@ -1,4 +1,4 @@
-package welbre.ambercraft.module;
+package welbre.ambercraft.module.heat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -13,6 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import welbre.ambercraft.module.ModuleType;
 
 public class HeatModuleType implements ModuleType<HeatModule> {
 
@@ -47,4 +48,5 @@ public class HeatModuleType implements ModuleType<HeatModule> {
         if (module.getHeatNode().getTemperature() > 100)
             entity.hurtServer((ServerLevel) level, level.damageSources().inFire(), (float) (module.getHeatNode().getTemperature() / 100f));
     }
+
 }

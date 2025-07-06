@@ -6,7 +6,4 @@ import net.minecraft.nbt.CompoundTag;
 public interface Module {
     void writeData(CompoundTag tag, HolderLookup.Provider registries);
     void readData(CompoundTag tag, HolderLookup.Provider registries);
-
-    void alloc();
-    void free();
 }

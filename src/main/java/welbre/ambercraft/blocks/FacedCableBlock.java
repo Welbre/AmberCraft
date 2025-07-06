@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.*;
-import welbre.ambercraft.module.HeatModule;
+import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.Module;
 
 public class FacedCableBlock extends Block implements EntityBlock {
