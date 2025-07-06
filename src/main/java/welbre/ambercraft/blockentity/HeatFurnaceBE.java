@@ -40,7 +40,6 @@ public class HeatFurnaceBE extends HeatConductorBE {
                     furnace.timer = 0;
                     if (furnace.heatModule.getHeatNode().getTemperature() > 1000)
                     {
-                        furnace.heatModule.free();
                         level.setBlock(pos, Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
                     }
                     level.sendBlockUpdated(pos,state,state, Block.UPDATE_CLIENTS);

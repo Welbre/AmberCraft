@@ -11,6 +11,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -63,8 +64,15 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
+        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace && !level.isClientSide)
             furnace.heatModule = factory.get();
+    }
+
+    @Override
+    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
+        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
+            furnace.heatModule.free();
+        super.destroy(level, pos, state);
     }
 
     @Override

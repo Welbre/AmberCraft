@@ -36,10 +36,13 @@ public class Network implements Iterable<Node> {
         for (String key : main.getAllKeys())
         {
             CompoundTag self = main.getCompound(key);
+            ArrayList<Node> nodes = new ArrayList<>();
             UUID uuid = UUID.fromString(key);
-            Node root = Node.fromTag(self.getCompound("root"));
+            Node root = Node.fromStringClass(self.getString("root_class"));
+            root.fromTag(self.getCompound("root"),nodes);
 
-            Network net = new Network(root, new ArrayList<>(), uuid);
+            nodes.add(root);
+            Network net = new Network(root, nodes, uuid);
             NETWORK_LIST.put(uuid, net);
         }
     }
@@ -51,7 +54,8 @@ public class Network implements Iterable<Node> {
         {
             var net = entry.getValue();
             CompoundTag self = new CompoundTag();
-            self.put("root", net.root.toTag());
+            self.putString("root_class", net.root.getClass().getName());
+            self.put("root", net.root.toTag(net.nodes));
 
             main.put(net.network_index.toString(), self);
         }
@@ -208,22 +212,50 @@ public class Network implements Iterable<Node> {
             return children.iterator();
         }
 
-        public CompoundTag toTag() {
+        public CompoundTag toTag(List<Node> nodes) {
             var tag = new CompoundTag();
+            var node_tag = new CompoundTag();
             for (int i = 0; i < children.size(); i++)
             {
-                tag.put("c"+i, children.get(i).toTag());
+                var child = new CompoundTag();
+                child.putString("cl",children.get(i).getClass().getName());
+                child.put("ch", children.get(i).toTag(nodes));
+                child.putInt("i", nodes.indexOf(this));
+
+                node_tag.put("c"+i, child);
             }
+            tag.put("node_tag", node_tag);
             return tag;
         }
 
-        public static Node fromTag(CompoundTag tag){
-            Node node = new Node();
+        public Node fromTag(CompoundTag tag, List<Node> nodes){
+            var node_tag = tag.getCompound("node_tag");
+            for (String key : node_tag.getAllKeys())
+            {
+                CompoundTag dataChild = node_tag.getCompound(key);
 
-            for (String allKey : tag.getAllKeys())
-                node.add(fromTag(tag.getCompound(allKey)));
+                Node child = Node.fromStringClass(dataChild.getString("cl"));
+                child.fromTag(dataChild.getCompound("ch"), nodes);
+                int idx = dataChild.getInt("i");
+                nodes.set(idx, child);
 
-            return node;
+                this.add(child);
+            }
+
+            return this;
+        }
+
+        public static Node fromStringClass(String name){
+            try
+            {
+                Class<?> aClass = Class.forName(name);
+                if (Node.class.isAssignableFrom(aClass))
+                    return (Node) aClass.getDeclaredConstructor().newInstance();
+                else
+                    throw new IllegalArgumentException("Class %s isn't a Node class!".formatted(aClass.getName()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

@@ -2,9 +2,12 @@ package welbre.ambercraft.sim.heat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import welbre.ambercraft.sim.network.Network;
+
+import java.util.List;
 
 public class HeatNode extends Network.TickableNode {
     public static final double DEFAULT_TIME_STEP = 0.05;
@@ -13,7 +16,7 @@ public class HeatNode extends Network.TickableNode {
     protected double thermal_mass = 1.0;
     protected double thermal_conductivity = 1.0;
     protected double envTemperature = 0;
-    protected double envConductive = 0;
+    protected double envConductivivy = 0;
 
     public HeatNode() {
     }
@@ -31,7 +34,7 @@ public class HeatNode extends Network.TickableNode {
 
     /**
      * Use to transfer heat between this node and the environment.<br>
-     * This method is used internally to simulate a constant heat transfer with the environment using the {@link HeatNode#envTemperature} and {@link HeatNode#envConductive},
+     * This method is used internally to simulate a constant heat transfer with the environment using the {@link HeatNode#envTemperature} and {@link HeatNode#envConductivivy},
      * if you want to simulate an ambient heat lost, modify this fields, only use this method to move heat temporarily like throw water in hot stuff.
      * @param env_temperature the environment temperature.
      * @param env_conductivity how good the environment is to transfer heat.
@@ -88,10 +91,35 @@ public class HeatNode extends Network.TickableNode {
     }
 
     @Override
+    public CompoundTag toTag(List<Network.Node> nodes) {
+        CompoundTag tag = super.toTag(nodes);
+        var heatTag = new CompoundTag();
+        heatTag.putDouble("temp", temperature);
+        heatTag.putDouble("t_m", thermal_mass);
+        heatTag.putDouble("t_c", thermal_conductivity);
+        heatTag.putDouble("e_c", envConductivivy);
+        heatTag.putDouble("e_t", envTemperature);
+        tag.put("heat_tag",heatTag);
+        return tag;
+    }
+
+    @Override
+    public Network.Node fromTag(CompoundTag tag, List<Network.Node> nodes) {
+        HeatNode node = (HeatNode) super.fromTag(tag, nodes);
+        var heatTag = tag.getCompound("heat_tag");
+        temperature = heatTag.getDouble("temp");
+        thermal_mass = heatTag.getDouble("t_m");
+        thermal_conductivity = heatTag.getDouble("t_c");
+        envConductivivy = heatTag.getDouble("e_c");
+        envTemperature = heatTag.getDouble("e_t");
+        return node;
+    }
+
+    @Override
     public void run() {
         transferHeatToChildren();
-        if (this.envConductive > 0)
-            transferHeatToEnvironment(envTemperature, envConductive, DEFAULT_TIME_STEP);
+        if (this.envConductivivy > 0)
+            transferHeatToEnvironment(envTemperature, envConductivivy, DEFAULT_TIME_STEP);
     }
 
     public double getTemperature() {
@@ -115,12 +143,12 @@ public class HeatNode extends Network.TickableNode {
     }
 
     public void setEnvConditions(double temperature, double conductive){
-        this.envConductive = conductive;
+        this.envConductivivy = conductive;
         this.envTemperature = temperature;
     }
 
     public void setEnvThermalConductivity(double conductive) {
-        this.envConductive = conductive;
+        this.envConductivivy = conductive;
     }
 
     public void setThermalMass(double thermal_mass) {
