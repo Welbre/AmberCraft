@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -23,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
-import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.heat.HeatModuleFactory;
 
 public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
@@ -65,6 +65,13 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
             furnace.heatModule = factory.get();
+    }
+
+    @Override
+    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
+        super.stepOn(level, pos, state, entity);
+        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
+            factory.getType().stepOn(furnace.heatModule,level,pos,state,entity);
     }
 
     @Override

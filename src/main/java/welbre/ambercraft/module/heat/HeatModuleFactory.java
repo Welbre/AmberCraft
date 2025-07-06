@@ -13,7 +13,7 @@ public final class HeatModuleFactory extends ModuleFactory<HeatModule> {
     }
 
     @Override
-    public DeferredHolder<ModuleType<?>, ? extends ModuleType<HeatModule>> getHolder() {
-        return Main.Modules.HEAT_MODULE_TYPE;
+    public ModuleType<HeatModule> getType() {
+        return Main.Modules.HEAT_MODULE_TYPE.get();
     }
 }

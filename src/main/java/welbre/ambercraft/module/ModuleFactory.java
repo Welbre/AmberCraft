@@ -1,7 +1,5 @@
 package welbre.ambercraft.module;
 
-import net.neoforged.neoforge.registries.DeferredHolder;
-
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -12,11 +10,11 @@ public abstract class ModuleFactory<T extends Module> implements Supplier<T> {
         this.setter = setter;
     }
 
-    public abstract DeferredHolder<ModuleType<?>,? extends ModuleType<T>> getHolder();
+    public abstract ModuleType<T> getType();
 
     @Override
     public T get() {
-        T module = getHolder().get().createModule();
+        T module = getType().createModule();
         setter.accept(module);
         return module;
     }
