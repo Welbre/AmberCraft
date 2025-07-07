@@ -54,7 +54,13 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public static final BooleanProperty WEST = BooleanProperty.create("west");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
 
-    protected ModuleFactory<HeatModule> heatDef = new HeatModuleFactory(HeatModule::alloc);
+    protected ModuleFactory<HeatModule> factory = new HeatModuleFactory(
+            HeatConductorBE.class,
+            HeatModule::alloc,
+            HeatModule::free,
+            HeatConductorBE::setHeatModule,
+            HeatConductorBE::getHeatModule
+    );
 
     public HeatConductorBlock(Properties p, float modelRadius) {
         super(p);
@@ -74,18 +80,16 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
-            System.out.println(heat.heatModule.getPointer().toString() + " side:" + (level.isClientSide ? "Client" : "Server"));
+            System.out.println(heat.getHeatModule().getPointer().toString() + " side:" + (level.isClientSide ? "Client" : "Server"));
         if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
-            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.heatModule, stack, state, level, pos, player, hand, hitResult);
+            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.getHeatModule(), stack, state, level, pos, player, hand, hitResult);
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
-            Main.Modules.HEAT_MODULE_TYPE.get().stepOn(heat.heatModule,level,pos,state,entity);
-
+        factory.getModuleOn(level,pos).ifPresent(module -> factory.getType().stepOn(module, level, pos, state, entity));
         super.stepOn(level,pos,state,entity);
     }
 
@@ -103,22 +107,21 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
         super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
-        level.setBlockAndUpdate(pos, calculateState(level, pos));
+        factory.getModuleOn(level,pos).ifPresent(m -> factory.getType().neighborChanged(m,state,level,pos,neighborBlock, orientation, movedByPiston));
     }
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-
+        factory.create(level,pos);
         if (level.getBlockEntity(pos) instanceof HeatConductorBE entity)
         {
             if (!level.isClientSide)
             {
-                entity.heatModule = this.heatDef.get();
                 for (Direction dir : Direction.values())
                     if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
                     {
-                        Network.NPointer<HeatNode> pointer = entity.heatModule.getPointer();
+                        Network.NPointer<HeatNode> pointer = entity.getHeatModule().getPointer();
                         for (@NotNull HeatModule module : modular.getModule(HeatModule.class, dir.getOpposite()))
                         {
                             Network.NPointer<HeatNode> _pointer = module.getPointer();
@@ -134,8 +137,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
-            heat.heatModule.free();
+        factory.destroy(level, pos);
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 

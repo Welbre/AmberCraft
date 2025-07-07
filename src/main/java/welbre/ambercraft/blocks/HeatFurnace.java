@@ -25,13 +25,22 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
+import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.heat.HeatModuleFactory;
 
+import java.util.function.Consumer;
+
 public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
-    public HeatModuleFactory factory = new HeatModuleFactory(module -> {
-        module.alloc();
-        module.getHeatNode().setThermalConductivity(100.0);
-    });
+    public HeatModuleFactory factory = new HeatModuleFactory(
+            HeatFurnaceBE.class,
+            module -> {
+                    module.alloc();
+                    module.getHeatNode().setThermalConductivity(100.0);
+                },
+            HeatModule::free,
+            HeatFurnaceBE::setHeatModule,
+            HeatFurnaceBE::getHeatModule
+            );
 
     public HeatFurnace(Properties p) {
         super(p);
@@ -43,7 +52,7 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
             if (stack.getItem() == Items.LEVER){
                 BlockEntity entity = level.getBlockEntity(pos);
                 if (entity instanceof HeatFurnaceBE furnace) {
-                    player.displayClientMessage(Component.literal(furnace.heatModule.getHeatNode().getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
+                    player.displayClientMessage(Component.literal(furnace.getHeatModule().getHeatNode().getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
                     return InteractionResult.SUCCESS;
                 }
             } else if (stack.getItem() == Items.COAL) {
@@ -64,14 +73,12 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace && !level.isClientSide)
-            furnace.heatModule = factory.get();
+        factory.create(level, pos);
     }
 
     @Override
     public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
-        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
-            furnace.heatModule.free();
+        factory.destroy(level,pos);
         super.destroy(level, pos, state);
     }
 
@@ -79,7 +86,7 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
         super.stepOn(level, pos, state, entity);
         if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
-            factory.getType().stepOn(furnace.heatModule,level,pos,state,entity);
+            factory.getType().stepOn(furnace.getHeatModule(),level,pos,state,entity);
     }
 
     @Override

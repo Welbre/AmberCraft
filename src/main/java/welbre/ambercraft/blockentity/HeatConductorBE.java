@@ -16,7 +16,7 @@ import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
 public class HeatConductorBE extends BlockEntity implements ModulesHolder {
-    public HeatModule heatModule = new HeatModule();
+    protected HeatModule heatModule = new HeatModule();
 
     public HeatConductorBE(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
@@ -54,5 +54,13 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     @Override
     public Module[] getModule(Direction direction) {
         return new Module[]{heatModule};
+    }
+
+    public void setHeatModule(HeatModule module) {
+        this.heatModule = module;
+    }
+
+    public HeatModule getHeatModule() {
+        return heatModule;
     }
 }

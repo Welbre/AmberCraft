@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import static org.apache.logging.log4j.ThreadContext.peek;
 import static welbre.ambercraft.sim.network.Network.Node;
 
 public class Network implements Iterable<Node> {
@@ -14,6 +15,7 @@ public class Network implements Iterable<Node> {
     private final Node root;
     private final List<Node> nodes;
     private final UUID network_index;
+    private Network proxy;
 
     private Network(Node root,List<Node> nodes, UUID network_index) {
         this.root = root;
@@ -28,42 +30,6 @@ public class Network implements Iterable<Node> {
         this.root = root;
         this.nodes = new ArrayList<>();
         nodes.add(root);
-    }
-
-    public static void LOAD_DATA(CompoundTag tag)
-    {
-        CompoundTag main = tag.getCompound("net");
-        for (String key : main.getAllKeys())
-        {
-            CompoundTag self = main.getCompound(key);
-            ArrayList<Node> nodes = new ArrayList<>();
-            UUID uuid = UUID.fromString(key);
-            Node root = Node.fromStringClass(self.getString("root_class"));
-            root.fromTag(self.getCompound("root"),nodes);
-
-            nodes.add(root);
-            Network net = new Network(root, nodes, uuid);
-            NETWORK_LIST.put(uuid, net);
-        }
-    }
-
-    /// Save all data in the output stream and clear the network map if the clear flag is true.
-    public static void SAVE_DATA(CompoundTag tag, boolean shouldClear) {
-        CompoundTag main = new CompoundTag();
-        for (Map.Entry<UUID, Network> entry : NETWORK_LIST.entrySet())
-        {
-            var net = entry.getValue();
-            CompoundTag self = new CompoundTag();
-            self.putString("root_class", net.root.getClass().getName());
-            self.put("root", net.root.toTag(net.nodes));
-
-            main.put(net.network_index.toString(), self);
-        }
-
-        tag.put("net",main);
-
-        if (shouldClear)
-            NETWORK_LIST.clear();
     }
 
     public Node getRoot() {
@@ -124,7 +90,8 @@ public class Network implements Iterable<Node> {
         return new NPointer<>(network_index, 0, root.getClass());
     }
 
-    public final void tick(){
+
+    public void tick(){
         List<TickableNode> remain;
         if (root instanceof TickableNode tickableNode)
             remain = new ArrayList<>(List.of(tickableNode));
@@ -140,6 +107,10 @@ public class Network implements Iterable<Node> {
             i++;
         }
     }
+
+    //---------------------------------------------------------------------------------------------------------------\\
+    //-------------------------------------------Static methods------------------------------------------------------\\
+    //---------------------------------------------------------------------------------------------------------------\\
 
     public static <T extends Node> NPointer<T> ADD_NODE(T node, NPointer<?> pointer)
     {
@@ -159,7 +130,10 @@ public class Network implements Iterable<Node> {
         Network network = NETWORK_LIST.get(pointer.netAddr);
         if (network == null)
             throw new NPointer.InvalidNetwork(pointer);
+
+
         Node node = network.remove(pointer.index);
+
         if (pointer.aClass.isInstance(node))
         {
             if (network.getNodes().isEmpty())//remove if the network is empty
@@ -187,6 +161,49 @@ public class Network implements Iterable<Node> {
             throw new NPointer.InvalidNetwork(pointer);
         return network;
     }
+
+    private static Stack<Node> GET_PATH(Stack<Node> path, Node root, Node target){
+        path.add(root);
+        if (path.peek() == target)
+            return path;
+
+        for (Node child : root.children)
+            if (GET_PATH(path, child, target) != null)
+                return path;
+
+        path.pop();
+        return null;
+    }
+
+    /// Merge the first network in the second, connecting the "from" in the "to" pointer.
+    private static Network MERGE(Network first, Network second, NPointer<Node> to, NPointer<Node> from)
+    {
+        Node from_node = GET_NODE(from);
+        //make the "from" the root in second.
+        {
+            Stack<Node> path = GET_PATH(new Stack<>(), second.root, from_node);
+            if (path == null)
+                throw new RuntimeException("Can't found the path to \"from%s\" node in second network".formatted(from.toString()));
+            for (int i = 0; i < path.size()-1; i++)
+            {
+                var a = path.get(i);
+                var b = path.get(i+1);
+                a.children.remove(b);
+                b.children.add(a);
+            }
+        }
+
+        //make the connection in the tree
+        Node to_node = GET_NODE(to);
+        to_node.children.add(from_node);
+
+        //Put the nodes in the list.
+        first.nodes.addAll(second.nodes);
+        second.proxy = first;
+
+        return first;
+    }
+
     @SuppressWarnings("unchecked")
     public static <T extends Node> NPointer<T> CREATE(T root){
         Network network = new Network(root);
@@ -196,6 +213,47 @@ public class Network implements Iterable<Node> {
     public static void TICK_ALL() {
         Network.NETWORK_LIST.forEach((id,net) -> net.tick());
     }
+
+    public static void LOAD_DATA(CompoundTag tag)
+    {
+        CompoundTag main = tag.getCompound("net");
+        for (String key : main.getAllKeys())
+        {
+            CompoundTag self = main.getCompound(key);
+            ArrayList<Node> nodes = new ArrayList<>();
+            UUID uuid = UUID.fromString(key);
+            Node root = Node.fromStringClass(self.getString("root_class"));
+            root.fromTag(self.getCompound("root"),nodes);
+
+            nodes.add(root);
+            Network net = new Network(root, nodes, uuid);
+            NETWORK_LIST.put(uuid, net);
+        }
+    }
+
+    /// Save all data in the output stream and clear the network map if the clear flag is true.
+    public static void SAVE_DATA(CompoundTag tag, boolean shouldClear) {
+        CompoundTag main = new CompoundTag();
+        for (Map.Entry<UUID, Network> entry : NETWORK_LIST.entrySet())
+        {
+            var net = entry.getValue();
+            CompoundTag self = new CompoundTag();
+            self.putString("root_class", net.root.getClass().getName());
+            self.put("root", net.root.toTag(net.nodes));
+
+            main.put(net.network_index.toString(), self);
+        }
+
+        tag.put("net",main);
+
+        if (shouldClear)
+            NETWORK_LIST.clear();
+    }
+
+    //---------------------------------------------------------------------------------------------------------------\\
+    //--------------------------------------------Extra classes------------------------------------------------------\\
+    //---------------------------------------------------------------------------------------------------------------\\
+
 
     public static class Node implements Iterable<Node> {
         private final List<Node> children = new ArrayList<>();
@@ -290,6 +348,11 @@ public class Network implements Iterable<Node> {
                 throw new RuntimeException(e);
             }
             return new NPointer<>(new UUID(most,least),idx, (Class<T>) bClass);
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(netAddr.toString().toCharArray(), 0, 8) + "#" + aClass.getSimpleName() + ":" + index;
         }
 
         public static final class InvalidNetwork extends RuntimeException {

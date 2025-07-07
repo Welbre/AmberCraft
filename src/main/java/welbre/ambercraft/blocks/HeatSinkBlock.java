@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,7 +30,13 @@ import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
-    public ModuleFactory<HeatModule> factory = new HeatModuleFactory(HeatSinkBlock::SETTER);
+    public ModuleFactory<HeatModule> factory = new HeatModuleFactory(
+            HeatSinkBE.class,
+            HeatSinkBlock::MODULE_INIT,
+            HeatModule::free,
+            HeatSinkBE::setHeatModule,
+            HeatSinkBE::getHeatModule
+    );
 
     public HeatSinkBlock(Properties p) {
         super(p);
@@ -45,7 +52,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
         if (level.getBlockEntity(pos) instanceof HeatSinkBE sink)
         {
             if (stack.getItem() == Items.WATER_BUCKET) {
-                if (sink.heatModule.getHeatNode().getTemperature() >= 100) {
+                if (sink.getHeatModule().getHeatNode().getTemperature() >= 100) {
                     if (!player.isCreative()) {
                         player.getInventory().removeItem(stack);
                         player.getInventory().add(new ItemStack(Items.BUCKET));
@@ -55,15 +62,27 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
                             SoundEvents.FIRE_EXTINGUISH,
                             SoundSource.BLOCKS, 0.5f, 1f, false
                     );
-                    sink.heatModule.getHeatNode().transferHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
+                    sink.getHeatModule().getHeatNode().transferHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
                     return InteractionResult.SUCCESS;
 
                 }
                 return InteractionResult.CONSUME;
             }
-            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(sink.heatModule, stack,state,level,pos,player,hand, hitResult);
+            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(sink.getHeatModule(), stack,state,level,pos,player,hand, hitResult);
         }
         return super.useItemOn(stack,state,level,pos,player,hand,hitResult);
+    }
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        factory.create(level,pos);
+    }
+
+    @Override
+    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
+        factory.destroy(level, pos);
+        super.destroy(level, pos, state);
     }
 
     @Override
@@ -71,7 +90,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
         return shape;
     }
 
-    private static void SETTER(HeatModule module)
+    private static void MODULE_INIT(HeatModule module)
     {
         var node = module.getHeatNode();
         node.setEnvThermalConductivity(2.0);
