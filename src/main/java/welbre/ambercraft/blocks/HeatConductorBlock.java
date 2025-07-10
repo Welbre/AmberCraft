@@ -10,10 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -114,30 +111,18 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public void setPlacedBy(Level level, BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         factory.create(level,pos);
-        if (level.getBlockEntity(pos) instanceof HeatConductorBE entity)
-        {
-            if (!level.isClientSide)
-            {
-                for (Direction dir : Direction.values())
-                    if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
-                    {
-                        Network.NPointer<HeatNode> pointer = entity.getHeatModule().getPointer();
-                        for (@NotNull HeatModule module : modular.getModule(HeatModule.class, dir.getOpposite()))
-                        {
-                            Network.NPointer<HeatNode> _pointer = module.getPointer();
-                            Network.ADD_NODE(Network.GET_NODE(pointer), _pointer);// add this to the neighbors.
-                            //todo convert to the (pointer pointer) method
-                        }
-                    }
-            }
-        }
+    }
 
-        level.setBlockAndUpdate(pos, calculateState(level,pos));
+    @Override
+    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
+        super.destroy(level, pos, state);
+        System.out.println("destroy");
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        factory.destroy(level, pos);
+        //factory.destroy(level, pos);
+        System.out.println("onRemove");
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 

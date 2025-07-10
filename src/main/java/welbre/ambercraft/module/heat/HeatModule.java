@@ -5,10 +5,10 @@ import net.minecraft.nbt.CompoundTag;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.sim.heat.HeatNode;
 import welbre.ambercraft.sim.network.Network;
-import welbre.ambercraft.sim.network.Network.NPointer;
+import welbre.ambercraft.sim.network.Network.Pointer;
 
 public class HeatModule implements Module {
-    NPointer<HeatNode> pointer;
+    Pointer<HeatNode> pointer;
 
     public HeatModule() {
     }
@@ -18,8 +18,8 @@ public class HeatModule implements Module {
     }
 
     /// Returns a copy of the pointer.
-    public NPointer<HeatNode> getPointer() {
-        return new NPointer<>(pointer);
+    public Network.Pointer<HeatNode> getPointer() {
+        return new Pointer<>(pointer);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class HeatModule implements Module {
     @Override
     public void readData(CompoundTag tag, HolderLookup.Provider registries) {
         if (tag.contains("np"))
-            pointer = NPointer.GET_FROM_TAG(tag.getCompound("np"));
+            pointer = Pointer.GET_FROM_TAG(tag.getCompound("np"));
     }
 
     public HeatNode alloc() {
@@ -44,8 +44,9 @@ public class HeatModule implements Module {
         try
         {
             Network.REMOVE(pointer);
+            pointer.free();
             pointer = null;
-        } catch (NPointer.InvalidNetwork e)
+        } catch (Pointer.InvalidNetwork e)
         {
             e.printStackTrace(System.err);
         }

@@ -104,7 +104,7 @@ public class HeatNode extends Network.TickableNode {
     }
 
     @Override
-    public Network.Node fromTag(CompoundTag tag, List<Network.Node> nodes) {
+    public Network.Node fromTag(CompoundTag tag, Network.Node[] nodes) {
         HeatNode node = (HeatNode) super.fromTag(tag, nodes);
         var heatTag = tag.getCompound("heat_tag");
         temperature = heatTag.getDouble("temp");
