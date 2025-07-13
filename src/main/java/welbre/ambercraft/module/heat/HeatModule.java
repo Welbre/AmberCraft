@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.sim.heat.HeatNode;
 import welbre.ambercraft.sim.network.Network;
-import welbre.ambercraft.sim.network.Network.Pointer;
+import welbre.ambercraft.sim.network.Pointer;
 
 public class HeatModule implements Module {
     Pointer<HeatNode> pointer;
@@ -18,7 +18,7 @@ public class HeatModule implements Module {
     }
 
     /// Returns a copy of the pointer.
-    public Network.Pointer<HeatNode> getPointer() {
+    public Pointer<HeatNode> getPointer() {
         return new Pointer<>(pointer);
     }
 

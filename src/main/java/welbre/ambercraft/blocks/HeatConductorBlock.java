@@ -76,7 +76,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
+        if (level.getBlockEntity(pos) instanceof HeatConductorBE heat && !level.isClientSide)
             System.out.println(heat.getHeatModule().getPointer().toString() + " side:" + (level.isClientSide ? "Client" : "Server"));
         if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
             return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.getHeatModule(), stack, state, level, pos, player, hand, hitResult);
@@ -103,19 +103,53 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
+        //todo functiona mas é muito redundant, precisa atualizar todos os lados em busca de um conexão
         super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
         factory.getModuleOn(level,pos).ifPresent(m -> factory.getType().neighborChanged(m,state,level,pos,neighborBlock, orientation, movedByPiston));
     }
 
     @Override
+    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+        //todo não funciona pq o setPlacedBy ainda não foi executado.
+        super.onNeighborChange(state, level, pos, neighbor);
+        System.out.println("onNeighborChange");
+        //factory.getModuleOn((LevelAccessor) level, pos).ifPresent(m -> factory.getType().onNeighborChange(m,state,level,pos,neighbor));
+    }
+
+
+
+    @Override
     public void setPlacedBy(Level level, BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         factory.create(level,pos);
+
+        if (level.isClientSide()) return;
+
+        for (Direction dir : Direction.values())
+        {
+            BlockEntity entity = level.getBlockEntity(pos.relative(dir));
+            if (entity instanceof ModulesHolder modular)
+            {
+                @NotNull HeatModule[] module = modular.getModule(HeatModule.class, dir.getOpposite());
+                for (HeatModule heatModule : module)
+                {
+                    Network.CONNECT(factory.getModuleOn(level,pos).get().getPointer(), heatModule.getPointer());
+                }
+            }
+        }
+    }
+
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        factory.destroy(level, pos);
+        System.out.println("onPlayerDestroy");
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
     public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
         super.destroy(level, pos, state);
+
         System.out.println("destroy");
     }
 

@@ -5,11 +5,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
-import welbre.ambercraft.sim.network.Network;
+import welbre.ambercraft.sim.network.Node;
 
 import java.util.List;
 
-public class HeatNode extends Network.TickableNode {
+public class HeatNode extends Node.TickableNode {
     public static final double DEFAULT_TIME_STEP = 0.05;
 
     protected double temperature = 0;
@@ -27,7 +27,7 @@ public class HeatNode extends Network.TickableNode {
 
     private void transferHeatToChildren()
     {
-        for (Network.Node node : this)
+        for (Node node : this)
             if (node instanceof HeatNode heatNode)
                 this.transferHeat(heatNode, DEFAULT_TIME_STEP);
     }
@@ -91,7 +91,7 @@ public class HeatNode extends Network.TickableNode {
     }
 
     @Override
-    public CompoundTag toTag(List<Network.Node> nodes) {
+    public CompoundTag toTag(List<Node> nodes) {
         CompoundTag tag = super.toTag(nodes);
         var heatTag = new CompoundTag();
         heatTag.putDouble("temp", temperature);
@@ -104,7 +104,7 @@ public class HeatNode extends Network.TickableNode {
     }
 
     @Override
-    public Network.Node fromTag(CompoundTag tag, Network.Node[] nodes) {
+    public Node fromTag(CompoundTag tag, Node[] nodes) {
         HeatNode node = (HeatNode) super.fromTag(tag, nodes);
         var heatTag = tag.getCompound("heat_tag");
         temperature = heatTag.getDouble("temp");

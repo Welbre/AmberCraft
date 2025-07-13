@@ -12,6 +12,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,9 +20,12 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.w3c.dom.Text;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.sim.network.Network;
+
+import java.lang.reflect.Field;
 
 public class HeatModuleType implements ModuleType<HeatModule> {
 
@@ -32,15 +36,21 @@ public class HeatModuleType implements ModuleType<HeatModule> {
 
     @Override
     public void neighborChanged(HeatModule module, BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
-        for (Direction dir : Direction.values())
+
+    }
+
+    @Override
+    public void onNeighborChange(HeatModule module, BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor)
+    {
+        if (level.isClientSide()) return;
+
+        BlockEntity entity = level.getBlockEntity(neighbor);
+        if (entity instanceof ModulesHolder modular)
         {
-            BlockEntity entity = level.getBlockEntity(pos.relative(dir));
-            if (entity instanceof ModulesHolder modular)
-            {
-                @NotNull HeatModule[] modules = modular.getModule(HeatModule.class, dir);
+            @NotNull HeatModule[] modules = modular.getModule(HeatModule.class, Direction.getApproximateNearest(neighbor.getCenter().subtract(pos.getCenter())));
                 for (@NotNull HeatModule relative : modules)
-                    Network.CONNECT(module.pointer, relative.pointer);
-            }
+                    //keep this parameter order! this ensures that the biggest network is by default the first parameter
+                    Network.CONNECT(relative.pointer, module.pointer);
         }
     }
 
@@ -60,6 +70,16 @@ public class HeatModuleType implements ModuleType<HeatModule> {
             if (stack.getItem() == Items.LEVER)
                 return InteractionResult.SUCCESS;
         }
+        if (!level.isClientSide)
+            if (hand == InteractionHand.MAIN_HAND)
+            {
+                player.displayClientMessage(Component.empty()
+                                .append(Component.literal("Pointer: " + module.pointer.toString()).withColor(DyeColor.GREEN.getTextColor()))
+                                .append("|")
+                                .append(Component.literal("Network: " + Network.GET_NETWORK(module.pointer).getFinalPoint().getRootPointer().toString()).withColor(DyeColor.LIME.getTextColor()))
+                        , false);
+            }
+
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 

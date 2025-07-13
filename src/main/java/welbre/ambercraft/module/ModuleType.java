@@ -7,6 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
@@ -27,6 +28,7 @@ public interface ModuleType<T extends Module> {
     InteractionResult useItemOn(T module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult);
     void stepOn(T module, Level level, BlockPos pos, BlockState state, Entity entity);
     void neighborChanged(T module, BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston);
+    void onNeighborChange(T module, BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor);
 
     T createModule();
 }

@@ -4,17 +4,16 @@ import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-
-import static welbre.ambercraft.sim.network.Network.Node;
+import java.util.stream.Collectors;
 
 public class Network implements Iterable<Node> {
-    private static final Map<UUID,Network> NETWORK_LIST = new HashMap<>();
+    protected static final Map<UUID,Network> NETWORK_LIST = new HashMap<>();
 
-    private Node root;
-    private final List<Node> nodes;
-    private final UUID network_index;
-    private int availablePointers;
-    private Proxy proxy;
+    protected Node root;
+    protected final List<Node> nodes;
+    protected final UUID network_index;
+    protected int availablePointers;
+    Proxy proxy;
 
     private Network(Node root,List<Node> nodes, UUID network_index) {
         this.root = root;
@@ -31,18 +30,31 @@ public class Network implements Iterable<Node> {
         nodes.add(root);
     }
 
-    public Node getRoot() {
-        return root;
+    @Deprecated
+    public Network getFinalPoint(){
+        if (proxy != null)
+            return proxy.network.getFinalPoint();
+        else
+            return this;
     }
 
-    private <T extends Node> Pointer<T> addNode(T node, int index)
+    public Node getRoot() {
+        if (proxy != null)
+            return proxy.network.getRoot();
+        else
+            return root;
+    }
+
+    <T extends Node> Pointer<T> addNode(T node, int index)
     {
+        if (proxy != null)
+            return proxy.addNode(node, index);
         nodes.get(index).add(node);
         nodes.add(node);
         return new Pointer<>(network_index, nodes.size() - 1, (Class<T>) node.getClass(), true);
     }
 
-    private Node getNode(int index)
+    Node getNode(int index)
     {
         if (proxy != null)
             return proxy.get(index);
@@ -50,8 +62,10 @@ public class Network implements Iterable<Node> {
             return nodes.get(index);
     }
 
-    private Node remove(int index)
+    Node remove(int index)
     {
+        if (proxy != null)
+            return proxy.remove(index);
         Node node = nodes.remove(index);
         if (node != null)
         {
@@ -94,8 +108,8 @@ public class Network implements Iterable<Node> {
 
 
     public void tick(){
-        List<TickableNode> remain;
-        if (root instanceof TickableNode tickableNode)
+        List<Node.TickableNode> remain;
+        if (root instanceof Node.TickableNode tickableNode)
             remain = new ArrayList<>(List.of(tickableNode));
         else
             return;
@@ -103,9 +117,9 @@ public class Network implements Iterable<Node> {
         int i = 0;
         while (i < remain.size())
         {
-            TickableNode node = remain.get(i);
+            Node.TickableNode node = remain.get(i);
             node.run();
-            node.iterator().forEachRemaining(a -> {if (a instanceof TickableNode t) remain.add(t);});
+            node.iterator().forEachRemaining(a -> {if (a instanceof Node.TickableNode t) remain.add(t);});
             i++;
         }
     }
@@ -132,11 +146,7 @@ public class Network implements Iterable<Node> {
         Node node = network.remove(pointer.index);
 
         if (pointer.aClass.isInstance(node))
-        {
-            if (network.getNodes().isEmpty())//remove if the network is empty
-                NETWORK_LIST.remove(pointer.netAddr);
             return pointer.aClass.cast(node);
-        }
         return null;
     }
 
@@ -175,20 +185,50 @@ public class Network implements Iterable<Node> {
         return null;
     }
 
-    /// Merge the first network in the second, connecting the "from" in the "to" nodes.
-    public static void CONNECT(Pointer<?> to, Pointer<?> from)
+    /// Merge the first network in the second, connecting in a performatic way.
+    public static void CONNECT(Pointer<?> nodeA, Pointer<?> nodeB)
     {
-        Network first = GET_NETWORK(to);
-        Network second = GET_NETWORK(from);
+        Network first = GET_NETWORK(nodeA).getFinalPoint();
+        Network second = GET_NETWORK(nodeB).getFinalPoint();
+
+
+        //sort to the second be the sortest network
+        if (first.nodes.size() < second.nodes.size())
+        {
+            Network temp = first;
+            first = second;
+            second = temp;
+            Pointer<?> temp_p = nodeA;
+            nodeA = nodeB;
+            nodeB = temp_p;
+        }
+
         if (first == second)
             return;
-        Node from_node = second.getNode(from.index);
 
-        //make the "from" the root in second.
+        //check cyclical connection via proxy.
         {
-            Stack<Node> path = GET_PATH(new Stack<>(), second.root, from_node);
+            Stack<Proxy> stack = new Stack<>();
+            if (first.proxy != null) stack.add(first.proxy);
+            if (second.proxy != null) stack.add(second.proxy);
+
+            while (!stack.isEmpty())
+            {
+                Proxy next = stack.pop();
+                if (next.network == second)
+                    return;
+                else
+                    if (next.network.proxy != null)
+                        stack.add(next.network.proxy);
+            }
+        }
+        Node from_node = second.getNode(nodeB.index);
+
+        //make the "nodeB" the root in second.
+        {
+            Stack<Node> path = GET_PATH(new Stack<>(), second.getRoot(), from_node);
             if (path == null)
-                throw new RuntimeException("Can't found the path to \"from%s\" node in second network".formatted(from.toString()));
+                throw new RuntimeException("Can't found the path to \"from%s\" node in second network".formatted(nodeB.toString()));
             for (int i = 0; i < path.size()-1; i++)
             {
                 var a = path.get(i);
@@ -205,7 +245,7 @@ public class Network implements Iterable<Node> {
         second.root = null;
 
         //make the connection in the tree
-        Node to_node = first.getNode(to.index);
+        Node to_node = first.getNode(nodeA.index);
         to_node.children.add(from_node);
     }
 
@@ -241,6 +281,7 @@ public class Network implements Iterable<Node> {
                 root.fromTag(self.getCompound("root"), nodes);
                 nodes[0] = root;
                 net = new Network(root, new ArrayList<>(Arrays.asList((nodes))), uuid);
+                net.availablePointers = self.getInt("availablePointers");
             }
 
             NETWORK_LIST.put(uuid, net);
@@ -266,6 +307,9 @@ public class Network implements Iterable<Node> {
         for (Map.Entry<UUID, Network> entry : NETWORK_LIST.entrySet())
         {
             var net = entry.getValue();
+            if (net.availablePointers == 0)//ignore non-referenced networks.
+                continue;
+
             CompoundTag self = new CompoundTag();
             if (net.proxy != null)
                 self.put("proxy", net.proxy.toTag());
@@ -274,6 +318,7 @@ public class Network implements Iterable<Node> {
                 self.putString("root_class", net.root.getClass().getName());
                 self.put("root", net.root.toTag(net.nodes));
                 self.putInt("length",net.nodes.size());
+                self.putInt("availablePointers",net.availablePointers);
             }
             main.put(net.network_index.toString(), self);
         }
@@ -282,200 +327,5 @@ public class Network implements Iterable<Node> {
 
         if (shouldClear)
             NETWORK_LIST.clear();
-    }
-
-    //---------------------------------------------------------------------------------------------------------------\\
-    //--------------------------------------------Extra classes------------------------------------------------------\\
-    //---------------------------------------------------------------------------------------------------------------\\
-
-
-    public static class Node implements Iterable<Node> {
-        private final List<Node> children = new ArrayList<>();
-
-        public Node() {
-        }
-
-        protected void add(Node node){
-            children.add(node);
-        }
-
-        @Override
-        public @NotNull Iterator<Node> iterator() {
-            return children.iterator();
-        }
-
-        public CompoundTag toTag(List<Node> nodes) {
-            var tag = new CompoundTag();
-            var node_tag = new CompoundTag();
-            for (int i = 0; i < children.size(); i++)
-            {
-                var self = children.get(i);
-                var child = new CompoundTag();
-                child.putString("cl",self.getClass().getName());
-                child.put("ch", self.toTag(nodes));
-                child.putInt("i", nodes.indexOf(self));
-
-                node_tag.put("c"+i, child);
-            }
-            tag.put("node_tag", node_tag);
-            return tag;
-        }
-
-        public Node fromTag(CompoundTag tag, Node[] nodes){
-            var node_tag = tag.getCompound("node_tag");
-            for (String key : node_tag.getAllKeys())
-            {
-                CompoundTag dataChild = node_tag.getCompound(key);
-
-                Node child = Node.fromStringClass(dataChild.getString("cl"));
-                child.fromTag(dataChild.getCompound("ch"), nodes);
-                int idx = dataChild.getInt("i");
-                nodes[idx] = child;
-
-                this.add(child);
-            }
-
-            return this;
-        }
-
-        public static Node fromStringClass(String name){
-            try
-            {
-                Class<?> aClass = Class.forName(name);
-                if (Node.class.isAssignableFrom(aClass))
-                    return (Node) aClass.getDeclaredConstructor().newInstance();
-                else
-                    throw new IllegalArgumentException("Class %s isn't a Node class!".formatted(aClass.getName()));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public static abstract class TickableNode extends Node implements Runnable{}
-
-    public static class Pointer<T extends Node>{
-        private final UUID netAddr;
-        private final int index;
-        private final Class<T> aClass;
-        private final boolean isPersistent;
-
-        private Pointer(UUID netAddr, int index, Class<T> aClass, boolean isPersistent)
-        {
-            this.netAddr = netAddr;
-            this.index = index;
-            this.aClass = aClass;
-            this.isPersistent = isPersistent;
-            if (isPersistent)
-            {
-                Network network = NETWORK_LIST.get(netAddr);
-                network.availablePointers++;
-            }
-        }
-
-        public Pointer(Pointer<T> pointer) {
-            this(pointer.netAddr, pointer.index, pointer.aClass, false);
-        }
-
-        public CompoundTag getAsTag()
-        {
-            if (!isPersistent)
-                throw new IllegalArgumentException("Trying to save a volatile pointer");
-
-            CompoundTag tag = new CompoundTag();
-            tag.putLong("id_m", netAddr.getMostSignificantBits());
-            tag.putLong("id_l", netAddr.getLeastSignificantBits());
-            tag.putInt("idx", index);
-            tag.putString("class", aClass.getName());
-            return tag;
-        }
-
-        public static <T extends Node> Pointer<T> GET_FROM_TAG(CompoundTag tag)
-        {
-            final long most = tag.getLong("id_m");
-            final long least = tag.getLong("id_l");
-            final int idx = tag.getInt("idx");
-            Class<?> bClass;
-            try
-            {
-                bClass = Class.forName(tag.getString("class"));
-            } catch (ClassNotFoundException e)
-            {
-                throw new RuntimeException(e);
-            }
-            var pointer = new Pointer<>(new UUID(most, least), idx, (Class<T>) bClass, true);
-            //check if is pointing to a proxied network, if true, then return the direct address.
-            try {
-                Network network = Network.GET_NETWORK(pointer);
-                if (network.proxy != null)
-                    pointer = network.proxy.direct(pointer);
-            } catch (Exception ignore){}
-
-            return pointer;
-        }
-
-        public void free(){
-            if (isPersistent)
-            {
-                Network network = NETWORK_LIST.get(netAddr);
-                network.availablePointers--;
-            }
-        }
-
-        @Override
-        public String toString() {
-            return String.valueOf(netAddr.toString().toCharArray(), 0, 8) + "#" + aClass.getSimpleName() + ":" + index;
-        }
-
-        public static final class InvalidNetwork extends RuntimeException {
-
-            public InvalidNetwork(Pointer<?> pointer) {
-                super("Invalid pointer, network(%s) not found!".formatted(pointer.netAddr.toString()));
-            }
-        }
-    }
-
-    private static final class Proxy {
-        public int pointers;
-        public UUID target_uuid;
-        public Network network;
-        private final int offSet;
-
-        private Proxy(int offSet, Network network, UUID target_uuid, int pointers) {
-            this.offSet = offSet;
-            this.network = network;
-            this.target_uuid = target_uuid;
-            this.pointers = pointers;
-        }
-
-        public Proxy(Network target) {
-            this.target_uuid = target.network_index;
-            this.network = target;
-            this.offSet = target.nodes.size();
-            this.pointers = target.availablePointers;
-        }
-
-        public Node get(int index)
-        {
-            return network.getNode(index + offSet);
-        }
-
-        public CompoundTag toTag() {
-            var tag = new CompoundTag();
-            tag.putInt("p", pointers);
-            tag.putUUID("id", target_uuid);
-            tag.putInt("off", offSet);
-            return tag;
-        }
-
-        public static Proxy fromTag(CompoundTag tag){
-            UUID id = tag.getUUID("id");
-            return new Proxy(tag.getInt("off"), null, id, tag.getInt("p"));
-        }
-
-        //Translate a pointer to a direct connection.
-        <T extends Node> Pointer<T> direct(Pointer<T> pointer) {
-            return new Pointer<>(target_uuid, pointer.index + offSet, pointer.aClass, pointer.isPersistent);
-        }
     }
 }
