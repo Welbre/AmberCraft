@@ -23,24 +23,21 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.Main;
+import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
+import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.module.heat.HeatModuleFactory;
-
-import java.util.function.Consumer;
 
 public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
-    public HeatModuleFactory factory = new HeatModuleFactory(
+    public ModuleFactory<HeatModule, HeatFurnaceBE> factory = new ModuleFactory<>(
             HeatFurnaceBE.class,
-            module -> {
-                    module.alloc();
-                    module.getHeatNode().setThermalConductivity(100.0);
-                },
+            Main.Modules.HEAT_MODULE_TYPE,
+            heatModule -> {heatModule.alloc(); heatModule.getHeatNode().setThermalConductivity(100.0);},
             HeatModule::free,
             HeatFurnaceBE::setHeatModule,
             HeatFurnaceBE::getHeatModule
-            );
+    );
 
     public HeatFurnace(Properties p) {
         super(p);
@@ -67,6 +64,7 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
             if (stack.getItem() == Items.LEVER)
                 return InteractionResult.SUCCESS;
         }
+        factory.getModuleOn(level,pos).ifPresent(m -> factory.getType().useItemOn(m,stack,state,level,pos,player,hand,hitResult));
         return super.useItemOn(stack,state,level,pos,player,hand, hitResult);
     }
 
@@ -74,6 +72,12 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         factory.create(level, pos);
+    }
+
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        factory.destroy(level, pos);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

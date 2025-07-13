@@ -36,8 +36,7 @@ import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.module.heat.HeatModuleFactory;
-import welbre.ambercraft.sim.heat.HeatNode;
+import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.sim.network.Network;
 
 public abstract class HeatConductorBlock extends AmberBasicBlock implements EntityBlock {
@@ -51,13 +50,14 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public static final BooleanProperty WEST = BooleanProperty.create("west");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
 
-    protected ModuleFactory<HeatModule> factory = new HeatModuleFactory(
+    protected ModuleFactory<HeatModule,HeatConductorBE> factory = new ModuleFactory<>(
             HeatConductorBE.class,
+            Main.Modules.HEAT_MODULE_TYPE,
             HeatModule::alloc,
             HeatModule::free,
             HeatConductorBE::setHeatModule,
             HeatConductorBE::getHeatModule
-    );
+    ).setConstructor(HeatModule::init);
 
     public HeatConductorBlock(Properties p, float modelRadius) {
         super(p);
@@ -122,21 +122,6 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public void setPlacedBy(Level level, BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         factory.create(level,pos);
-
-        if (level.isClientSide()) return;
-
-        for (Direction dir : Direction.values())
-        {
-            BlockEntity entity = level.getBlockEntity(pos.relative(dir));
-            if (entity instanceof ModulesHolder modular)
-            {
-                @NotNull HeatModule[] module = modular.getModule(HeatModule.class, dir.getOpposite());
-                for (HeatModule heatModule : module)
-                {
-                    Network.CONNECT(factory.getModuleOn(level,pos).get().getPointer(), heatModule.getPointer());
-                }
-            }
-        }
     }
 
     @Override

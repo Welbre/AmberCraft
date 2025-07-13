@@ -85,7 +85,7 @@ public class HeatModuleType implements ModuleType<HeatModule> {
 
     @Override
     public void stepOn(HeatModule module, Level level, BlockPos pos, BlockState state, Entity entity) {
-        if (!level.isClientSide)
+        if (level.isClientSide())
             return;
         if (module.getHeatNode().getTemperature() > 100)
             entity.hurtServer((ServerLevel) level, level.damageSources().inFire(), (float) (module.getHeatNode().getTemperature() / 100f));

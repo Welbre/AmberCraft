@@ -67,6 +67,9 @@ public class HeatNode extends Node.TickableNode {
     @Deprecated
     public void transferHeat(HeatNode target, double dt)
     {
+        //todo re write this, is broken at the moment;
+        if (this.temperature < target.temperature)
+            return;
         double resistance = (1.0/thermal_conductivity) + (1.0/ target.thermal_conductivity);
         double power, heat;
 

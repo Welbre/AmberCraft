@@ -256,7 +256,12 @@ public class Network implements Iterable<Node> {
     }
 
     public static void TICK_ALL() {
-        Network.NETWORK_LIST.forEach((id,net) -> net.tick());
+        //todo implement tick action
+        //Network.NETWORK_LIST.forEach((id,net) -> net.tick());
+        for (Map.Entry<UUID, Network> networkEntry : Network.NETWORK_LIST.entrySet())
+        {
+            networkEntry.getValue().tick();
+        }
     }
 
     public static void LOAD_DATA(CompoundTag tag)
