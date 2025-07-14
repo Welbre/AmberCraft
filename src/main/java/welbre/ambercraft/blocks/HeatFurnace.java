@@ -37,10 +37,11 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
             HeatModule::free,
             HeatFurnaceBE::setHeatModule,
             HeatFurnaceBE::getHeatModule
-    );
+    ).setConstructor(HeatModule::init);
 
     public HeatFurnace(Properties p) {
         super(p);
+
     }
 
     @Override

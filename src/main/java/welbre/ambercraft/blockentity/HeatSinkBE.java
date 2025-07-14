@@ -17,7 +17,7 @@ import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
 public class HeatSinkBE extends BlockEntity implements ModulesHolder {
-    private HeatModule heatModule;
+    private HeatModule heatModule = new HeatModule();
 
     public HeatSinkBE(BlockPos pos, BlockState blockState) {
         super(Main.BlockEntity.HEAT_SINK_BLOCK_BE.get(), pos, blockState);

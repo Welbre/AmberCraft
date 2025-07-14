@@ -5,6 +5,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -33,11 +35,14 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public ModuleFactory<HeatModule,HeatSinkBE> factory = new ModuleFactory<>(
             HeatSinkBE.class,
             Main.Modules.HEAT_MODULE_TYPE,
-            HeatModule::alloc,
+            HeatSinkBlock::MODULE_INIT,
             HeatModule::free,
             HeatSinkBE::setHeatModule,
             HeatSinkBE::getHeatModule
-    );
+    ).setConstructor((a,b,c,d,e) -> {
+        a.init(b,c,d,e);
+        a.getHeatNode().setEnvConditions(HeatNode.GET_AMBIENT_TEMPERATURE(d,e),2.0);
+    });
 
     public HeatSinkBlock(Properties p) {
         super(p);
@@ -75,15 +80,15 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        factory.create(level,pos);
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        factory.create(level, pos);
     }
 
     @Override
-    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         factory.destroy(level, pos);
-        super.destroy(level, pos, state);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
@@ -93,6 +98,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
 
     private static void MODULE_INIT(HeatModule module)
     {
+        module.alloc();
         var node = module.getHeatNode();
         node.setEnvThermalConductivity(2.0);
         node.setThermalMass(10.0);

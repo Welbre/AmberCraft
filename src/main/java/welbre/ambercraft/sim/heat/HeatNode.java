@@ -67,30 +67,16 @@ public class HeatNode extends Node.TickableNode {
     @Deprecated
     public void transferHeat(HeatNode target, double dt)
     {
-        //todo re write this, is broken at the moment;
-        if (this.temperature < target.temperature)
-            return;
         double resistance = (1.0/thermal_conductivity) + (1.0/ target.thermal_conductivity);
-        double power, heat;
+        double teq = (temperature * thermal_mass + target.temperature * target.thermal_mass) / (thermal_mass + target.thermal_mass);
+        double tau = resistance*(this.thermal_mass*target.thermal_mass)/(this.thermal_mass + target.thermal_mass);
 
-        double step = dt;
-        while (dt > 0 && this.temperature != target.temperature)
-        {
-            power = (this.temperature - target.temperature) / resistance;
-            heat = power * step;
-            if //check if the corp contains half of energy transited.
-            (
-                    heat < (this.temperature - target.temperature) / 2.0
-            ) {
-                this.temperature -= heat / thermal_mass;
-                target.temperature += heat / thermal_mass;
-                dt -= step;
-                step = resistance / 2.01;
-            } else {
-                //todo check if this works in a environment with different heat capacity
-                step = resistance / 2.01;
-            }
-        }
+        // Calculate new temperatures for both nodes based on equilibrium temperature and time constant
+        double t1 = teq + (this.temperature - teq) * Math.pow(Math.E, -dt / tau);
+        double t2 = teq + (target.temperature - teq) * Math.pow(Math.E, -dt / tau);
+
+        this.temperature = t1;
+        target.temperature = t2;
     }
 
     @Override

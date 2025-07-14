@@ -127,22 +127,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         factory.destroy(level, pos);
-        System.out.println("onPlayerDestroy");
         return super.playerWillDestroy(level, pos, state, player);
-    }
-
-    @Override
-    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
-        super.destroy(level, pos, state);
-
-        System.out.println("destroy");
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        //factory.destroy(level, pos);
-        System.out.println("onRemove");
-        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
