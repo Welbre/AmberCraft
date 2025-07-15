@@ -16,7 +16,7 @@ public class HeatNode extends Node.TickableNode {
     protected double thermal_mass = 1.0;
     protected double thermal_conductivity = 1.0;
     protected double envTemperature = 0;
-    protected double envConductivivy = 0;
+    protected double envConductivity = 0;
 
     public HeatNode() {
     }
@@ -34,7 +34,7 @@ public class HeatNode extends Node.TickableNode {
 
     /**
      * Use to transfer heat between this node and the environment.<br>
-     * This method is used internally to simulate a constant heat transfer with the environment using the {@link HeatNode#envTemperature} and {@link HeatNode#envConductivivy},
+     * This method is used internally to simulate a constant heat transfer with the environment using the {@link HeatNode#envTemperature} and {@link HeatNode#envConductivity},
      * if you want to simulate an ambient heat lost, modify this fields, only use this method to move heat temporarily like throw water in hot stuff.
      * @param env_temperature the environment temperature.
      * @param env_conductivity how good the environment is to transfer heat.
@@ -67,6 +67,7 @@ public class HeatNode extends Node.TickableNode {
     @Deprecated
     public void transferHeat(HeatNode target, double dt)
     {
+        //todo need to implement a fast way to simulate this, pre-calculating the power for each connection, and only updating the temperature after all power be calculated.
         double resistance = (1.0/thermal_conductivity) + (1.0/ target.thermal_conductivity);
         double teq = (temperature * thermal_mass + target.temperature * target.thermal_mass) / (thermal_mass + target.thermal_mass);
         double tau = resistance*(this.thermal_mass*target.thermal_mass)/(this.thermal_mass + target.thermal_mass);
@@ -86,7 +87,7 @@ public class HeatNode extends Node.TickableNode {
         heatTag.putDouble("temp", temperature);
         heatTag.putDouble("t_m", thermal_mass);
         heatTag.putDouble("t_c", thermal_conductivity);
-        heatTag.putDouble("e_c", envConductivivy);
+        heatTag.putDouble("e_c", envConductivity);
         heatTag.putDouble("e_t", envTemperature);
         tag.put("heat_tag",heatTag);
         return tag;
@@ -99,7 +100,7 @@ public class HeatNode extends Node.TickableNode {
         temperature = heatTag.getDouble("temp");
         thermal_mass = heatTag.getDouble("t_m");
         thermal_conductivity = heatTag.getDouble("t_c");
-        envConductivivy = heatTag.getDouble("e_c");
+        envConductivity = heatTag.getDouble("e_c");
         envTemperature = heatTag.getDouble("e_t");
         return node;
     }
@@ -107,8 +108,8 @@ public class HeatNode extends Node.TickableNode {
     @Override
     public void run() {
         transferHeatToChildren();
-        if (this.envConductivivy > 0)
-            transferHeatToEnvironment(envTemperature, envConductivivy, DEFAULT_TIME_STEP);
+        if (this.envConductivity > 0)
+            transferHeatToEnvironment(envTemperature, envConductivity, DEFAULT_TIME_STEP);
     }
 
     public double getTemperature() {
@@ -132,12 +133,12 @@ public class HeatNode extends Node.TickableNode {
     }
 
     public void setEnvConditions(double temperature, double conductive){
-        this.envConductivivy = conductive;
+        this.envConductivity = conductive;
         this.envTemperature = temperature;
     }
 
     public void setEnvThermalConductivity(double conductive) {
-        this.envConductivivy = conductive;
+        this.envConductivity = conductive;
     }
 
     public void setThermalMass(double thermal_mass) {

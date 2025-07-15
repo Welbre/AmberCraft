@@ -2,29 +2,58 @@ package welbre.ambercraft.sim.network;
 
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 final class Proxy {
     public int pointers;
     public UUID target_uuid;
     public Network network;
-    private final int offSet;
+    private int offSet;
+    private final Map<Integer, Pointer<?>> addrMap = new HashMap<>();
+    private boolean shouldHandle = false;
 
-    private Proxy(int offSet, Network network, UUID target_uuid, int pointers) {
+    Proxy(int offSet, Network network, UUID target_uuid, int pointers) {
         this.offSet = offSet;
         this.network = network;
         this.target_uuid = target_uuid;
         this.pointers = pointers;
+        this.shouldHandle = true;
     }
 
     public Proxy(Network target) {
+        setTarget(target);
+    }
+
+    public Proxy(){}
+
+    public void setTarget(Network target){
         this.target_uuid = target.network_index;
         this.network = target;
         this.offSet = target.nodes.size();
         this.pointers = target.availablePointers;
+        this.shouldHandle = true;
+    }
+
+    public void addAsMap(int index, Pointer<?> pointer){
+        addrMap.put(index, pointer);
+        shouldHandle = true;
+    }
+
+    public void removeAsMap(int index){
+        addrMap.remove(index);
+        shouldHandle = !addrMap.isEmpty();
+    }
+
+    public boolean shouldHandle(){
+        return shouldHandle;
     }
 
     public Node get(int index) {
+        Pointer<?> pointer = addrMap.get(index);
+        if (pointer != null)
+            return Network.GET_NODE(pointer);
         return network.getNode(index + offSet);
     }
 
@@ -50,7 +79,7 @@ final class Proxy {
     }
 
     //Translate a pointer to a direct connection.
-    <T extends Node> Pointer<T> direct(Pointer<T> pointer) {
+    public <T extends Node> Pointer<T> direct(Pointer<T> pointer) {
         return direct(pointer, this.network, offSet);
     }
 

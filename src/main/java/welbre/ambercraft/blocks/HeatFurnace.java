@@ -41,7 +41,6 @@ public class HeatFurnace extends AmberHorizontalBlock implements EntityBlock {
 
     public HeatFurnace(Properties p) {
         super(p);
-
     }
 
     @Override
