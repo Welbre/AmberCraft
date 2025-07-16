@@ -57,25 +57,31 @@ final class Proxy {
         return network.getNode(index + offSet);
     }
 
-    public CompoundTag toTag() {
-        var tag = new CompoundTag();
-        tag.putInt("p", pointers);
-        tag.putUUID("id", target_uuid);
-        tag.putInt("off", offSet);
-        return tag;
-    }
-
     public <T extends Node> Pointer<T> addNode(T node, int index) {
+        Pointer<?> pointer = addrMap.get(index);
+        if (pointer != null)
+            return Network.ADD_NODE(node, pointer);
         return network.addNode(node, index);
     }
 
     public Node remove(int index) {
+        Pointer<?> pointer = addrMap.get(index);
+        if (pointer != null)
+            return Network.REMOVE(pointer);
         return network.remove(index + offSet);
     }
 
     public static Proxy fromTag(CompoundTag tag) {
         UUID id = tag.getUUID("id");
         return new Proxy(tag.getInt("off"), null, id, tag.getInt("p"));
+    }
+
+    public CompoundTag toTag() {
+        var tag = new CompoundTag();
+        tag.putInt("p", pointers);
+        tag.putUUID("id", target_uuid);
+        tag.putInt("off", offSet);
+        return tag;
     }
 
     //Translate a pointer to a direct connection.
@@ -85,7 +91,7 @@ final class Proxy {
 
     private <T extends Node> Pointer<T> direct(Pointer<T> pointer, Network network, int offSetStack)
     {
-        if (network.proxy != null)
+        if (network.proxy.shouldHandle())
         {
             offSetStack += network.proxy.offSet;
             return direct(pointer, network.proxy.network, offSetStack);

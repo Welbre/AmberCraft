@@ -12,9 +12,9 @@ public class Network implements Iterable<Node> {
     protected final List<Node> nodes;
     protected final UUID network_index;
     protected int availablePointers;
-    final Proxy proxy;
+    final @NotNull Proxy proxy;
 
-    private Network(Node root,List<Node> nodes, UUID network_index, Proxy proxy) {
+    private Network(Node root, List<Node> nodes, UUID network_index, @NotNull Proxy proxy) {
         this.root = root;
         this.network_index = network_index;
         this.nodes = nodes;
