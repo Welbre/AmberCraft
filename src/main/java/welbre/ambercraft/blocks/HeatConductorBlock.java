@@ -117,7 +117,6 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
         //todo não funciona pq o setPlacedBy ainda não foi executado.
         super.onNeighborChange(state, level, pos, neighbor);
-        System.out.println("onNeighborChange");
         //factory.getModuleOn((LevelAccessor) level, pos).ifPresent(m -> factory.getType().onNeighborChange(m,state,level,pos,neighbor));
     }
 

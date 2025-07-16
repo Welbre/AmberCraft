@@ -27,7 +27,7 @@ public interface ModulesHolder {
     default void tickModules(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
     {
         for (Module module : getModules())
-            module.tick();
+            module.tick(blockEntity);
     }
 
     default <T extends Module> @NotNull T[] getModule(Class<T> aclass, Direction direction){

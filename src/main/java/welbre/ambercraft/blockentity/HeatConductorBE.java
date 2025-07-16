@@ -37,6 +37,12 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        heatModule.refresh(this);
+    }
+
+    @Override
     public Module[] getModules() {
         return new Module[]{heatModule};
     }

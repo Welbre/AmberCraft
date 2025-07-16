@@ -22,11 +22,9 @@ public class HeatFurnaceBE extends HeatConductorBE {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level != null) {
-            BlockEntity entity = level.getBlockEntity(getBlockPos());
-            if (entity instanceof HeatFurnaceBE tile) {
-                tile.setOverCharged(level.getBlockState(getBlockPos().below()).getBlock() == Blocks.LAVA);
-            }
+        BlockEntity entity = level.getBlockEntity(getBlockPos());
+        if (entity instanceof HeatFurnaceBE tile) {
+            tile.setOverCharged(level.getBlockState(getBlockPos().below()).getBlock() == Blocks.LAVA);
         }
     }
 
@@ -66,5 +64,6 @@ public class HeatFurnaceBE extends HeatConductorBE {
 
     public void addBoost() {
         boost+=10;
+        setChanged();
     }
 }

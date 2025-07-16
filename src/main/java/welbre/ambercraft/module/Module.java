@@ -2,6 +2,7 @@ package welbre.ambercraft.module;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * This class represents a module, an object used to store AmberCraft related data in the minecraft block entity.<br>
@@ -13,5 +14,5 @@ public interface Module {
     void writeData(CompoundTag tag, HolderLookup.Provider registries);
     void readData(CompoundTag tag, HolderLookup.Provider registries);
 
-    void tick();
+    void tick(BlockEntity entity);
 }

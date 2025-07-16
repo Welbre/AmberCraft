@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
@@ -25,6 +26,8 @@ public class HeatModule implements Module {
     boolean isMaster = false;
     HeatModule[] children;
 
+    boolean isFresh = false;
+
     public HeatModule() {
         children = new HeatModule[0];
     }
@@ -38,8 +41,8 @@ public class HeatModule implements Module {
         if (node != null)
         {
             tag.put("node", node.toTag());
-            tag.putBoolean("isMaster", isMaster);
         }
+        tag.putBoolean("isMaster", isMaster);
     }
 
     @Override
@@ -48,42 +51,8 @@ public class HeatModule implements Module {
             HeatNode n = (HeatNode) Node.fromStringClass(tag.getCompound("node").getString("class"));
             n.fromTag(tag.getCompound("node"));
             node = n;
-            isMaster = tag.getBoolean("isMaster");
         }
-    }
-
-    /**
-     * Allocates a new instance of a {@link HeatNode} and registers it within the network,
-     * @return the newly created and registered {@link HeatNode} instance.
-     */
-    public HeatNode alloc() {
-        node = new HeatNode();
-        return node;
-    }
-
-    /**
-     * Initialize the current module in the world, using the blockEntity, the level, and the position.<br>
-     *
-     * Server side only!
-     */
-    public <T extends BlockEntity & ModulesHolder> void init(T entity, ModuleFactory<HeatModule,T> factory, LevelAccessor level, BlockPos pos) {
-        for (Direction dir : Direction.values())
-            if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
-                for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
-                    this.connect(heatModule);
-        
-        this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
-
-        isMaster = shouldBeMaster();
-    }
-
-    /**
-     * Frees the pointer associated with this module.<br>
-     * Before call this, the internal pointer will be null.
-     */
-    public void free() {
-        node = null;
-        disconnectAll();
+        isMaster = tag.getBoolean("isMaster");
     }
 
     public void disconnectFather(){
@@ -116,6 +85,9 @@ public class HeatModule implements Module {
     /// connect this in the target module.
     public void connect(HeatModule target)
     {
+        //check if is already connected
+        if (this.father == target || target.father == this)
+            return;
         disconnectFather();
         //check if the network has 2 masters, if true, then remove the target mester.
         {
@@ -123,6 +95,10 @@ public class HeatModule implements Module {
             HeatModule target_master = target.getMaster();
             if (this_master != null && target_master != null)
                 target_master.isMaster = false;
+            else if (this_master == null && target_master == null)
+            {
+                this.isMaster = true;
+            }
         }
         this.father = target;
         target.addChild(this);
@@ -174,7 +150,7 @@ public class HeatModule implements Module {
     }
 
     @Override
-    public void tick(){
+    public void tick(BlockEntity entity){
         if (!this.isMaster)
             return;
 
@@ -195,8 +171,65 @@ public class HeatModule implements Module {
             HeatModule module = queue.poll();
             //todo terrible code. refactor this later.
             if (module.node != null)
+            {
                 module.node.run(Arrays.stream(module.children).map(a -> a.node).toArray(HeatNode[]::new));
+                entity.setChanged();
+            }
             queue.addAll(Arrays.asList(module.children));
         }
     }
+
+    /**
+     * Allocates a new instance of a {@link HeatNode} and registers it within the network,
+     * @return the newly created and registered {@link HeatNode} instance.
+     */
+    public HeatNode alloc() {
+        node = new HeatNode();
+        return node;
+    }
+
+    /**
+     * Initialize the current module in the world, using the blockEntity, the level, and the position.<br>
+     *
+     * Server side only!
+     */
+    public <T extends BlockEntity & ModulesHolder> void init(T entity, ModuleFactory<HeatModule,T> factory, LevelAccessor level, BlockPos pos) {
+        refresh(entity);
+        this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
+
+        isMaster = shouldBeMaster();
+    }
+
+    /**
+     * Rebuild the reference for this module.
+     */
+    public void refresh(BlockEntity entity) {
+        if (isFresh)
+            return;
+
+        var level = entity.getLevel();
+        if (level == null)
+            throw new IllegalStateException("Trying to refresh module while the game isn't loaded!");
+        if (level.isClientSide)
+            return;
+
+        var pos = entity.getBlockPos();
+
+        for (Direction dir : Direction.values())
+            if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
+                for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
+                    this.connect(heatModule);
+
+        isFresh = true;
+    }
+
+    /**
+     * Frees the pointer associated with this module.<br>
+     * Before call this, the internal pointer will be null.
+     */
+    public void free() {
+        node = null;
+        disconnectAll();
+    }
+
 }
