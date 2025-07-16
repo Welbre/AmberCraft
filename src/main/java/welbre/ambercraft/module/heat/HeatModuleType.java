@@ -50,7 +50,7 @@ public class HeatModuleType implements ModuleType<HeatModule> {
             @NotNull HeatModule[] modules = modular.getModule(HeatModule.class, Direction.getApproximateNearest(neighbor.getCenter().subtract(pos.getCenter())));
                 for (@NotNull HeatModule relative : modules)
                     //keep this parameter order! this ensures that the biggest network is by default the first parameter
-                    Network.CONNECT(relative.pointer, module.pointer);
+                    module.connect(relative);
         }
     }
 
@@ -70,15 +70,6 @@ public class HeatModuleType implements ModuleType<HeatModule> {
             if (stack.getItem() == Items.LEVER)
                 return InteractionResult.SUCCESS;
         }
-        if (!level.isClientSide)
-            if (hand == InteractionHand.MAIN_HAND)
-            {
-                player.displayClientMessage(Component.empty()
-                                .append(Component.literal("Pointer: " + module.pointer.toString()).withColor(DyeColor.GREEN.getTextColor()))
-                                .append("|")
-                                .append(Component.literal("Network: " + Network.GET_NETWORK(module.pointer).getFinalPoint().getRootPointer().toString()).withColor(DyeColor.LIME.getTextColor()))
-                        , false);
-            }
 
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }

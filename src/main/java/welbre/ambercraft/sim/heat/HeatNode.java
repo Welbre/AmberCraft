@@ -9,7 +9,7 @@ import welbre.ambercraft.sim.network.Node;
 
 import java.util.List;
 
-public class HeatNode extends Node.TickableNode {
+public class HeatNode extends Node {
     public static final double DEFAULT_TIME_STEP = 0.05;
 
     protected double temperature = 0;
@@ -25,9 +25,9 @@ public class HeatNode extends Node.TickableNode {
         this.temperature = temperature;
     }
 
-    private void transferHeatToChildren()
+    private void transferHeatToChildren(Node[] nodes)
     {
-        for (Node node : this)
+        for (Node node : nodes)
             if (node instanceof HeatNode heatNode)
                 this.transferHeat(heatNode, DEFAULT_TIME_STEP);
     }
@@ -81,8 +81,9 @@ public class HeatNode extends Node.TickableNode {
     }
 
     @Override
-    public CompoundTag toTag(List<Node> nodes) {
-        CompoundTag tag = super.toTag(nodes);
+    public CompoundTag toTag() {
+        CompoundTag tag = super.toTag();
+
         var heatTag = new CompoundTag();
         heatTag.putDouble("temp", temperature);
         heatTag.putDouble("t_m", thermal_mass);
@@ -94,8 +95,9 @@ public class HeatNode extends Node.TickableNode {
     }
 
     @Override
-    public Node fromTag(CompoundTag tag, Node[] nodes) {
-        HeatNode node = (HeatNode) super.fromTag(tag, nodes);
+    public Node fromTag(CompoundTag tag) {
+        HeatNode node = (HeatNode) super.fromTag(tag);
+
         var heatTag = tag.getCompound("heat_tag");
         temperature = heatTag.getDouble("temp");
         thermal_mass = heatTag.getDouble("t_m");
@@ -105,9 +107,8 @@ public class HeatNode extends Node.TickableNode {
         return node;
     }
 
-    @Override
-    public void run() {
-        transferHeatToChildren();
+    public void run(Node[] nodes) {
+        transferHeatToChildren(nodes);
         if (this.envConductivity > 0)
             transferHeatToEnvironment(envTemperature, envConductivity, DEFAULT_TIME_STEP);
     }

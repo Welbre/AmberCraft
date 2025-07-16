@@ -28,14 +28,6 @@ public class Network implements Iterable<Node> {
         this.root = root;
         this.nodes = new ArrayList<>();
         this.proxy = new Proxy();
-
-        nodes.add(root);
-        Queue<Node> queue = new ArrayDeque<>(root.children);
-        for (Node node : queue)
-        {
-            nodes.add(node);
-            queue.addAll(node.children);
-        }
     }
 
     @Deprecated
@@ -57,7 +49,6 @@ public class Network implements Iterable<Node> {
     {
         if (proxy.shouldHandle())
             return proxy.addNode(node, index);
-        nodes.get(index).add(node);
         nodes.add(node);
         //noinspection unchecked
         return new Pointer<>(network_index, nodes.size() - 1, (Class<T>) node.getClass(), true);
@@ -73,47 +64,12 @@ public class Network implements Iterable<Node> {
 
     Node remove(int index)
     {
-        if (proxy.shouldHandle())
-            return proxy.remove(index);
-
-        Node node = nodes.set(index, null);
-
-        //split the network
-        for (Node child : node.children)
-        {
-            Network split = new Network(child);
-            this.proxy.addAsMap(this.nodes.indexOf(child), split.getRootPointer());
-            //todo finish implementation.
-        }
-
-        if (node == root)
-            return node;
-
-        //find the father and remove it from his children.
-        {
-            Stack<Node> path = GET_PATH(new Stack<>(), this.root, node);
-            if (path == null)
-                throw new RuntimeException("Can't remove the node \"%s\" because can't find a path to \"%s\"!".formatted(node.toString(), this.root.toString()));
-            path.pop();//the top is the node it self.
-            Node father = path.pop();
-            father.children.remove(node);
-        }
-        
-        return node;
+        return null;
     }
 
     void reRoot(Node newRoot)
     {
-        Stack<Node> path = GET_PATH(new Stack<>(), this.root, newRoot);
-        if (path == null)
-            throw new RuntimeException("Can't re-root the network because can't find a path to \"%s\"!".formatted(newRoot.toString()));
-        for (int i = 0; i < path.size()-1; i++)
-        {
-            var a = path.get(i);
-            var b = path.get(i+1);
-            a.children.remove(b);
-            b.children.add(a);
-        }
+
     }
 
     public <T extends Node> Pointer<T> getNodePointer(T node)
@@ -141,20 +97,7 @@ public class Network implements Iterable<Node> {
 
 
     public void tick(){
-        List<Node.TickableNode> remain;
-        if (root instanceof Node.TickableNode tickableNode)
-            remain = new ArrayList<>(List.of(tickableNode));
-        else
-            return;
 
-        int i = 0;
-        while (i < remain.size())
-        {
-            Node.TickableNode node = remain.get(i);
-            node.run();
-            node.iterator().forEachRemaining(a -> {if (a instanceof Node.TickableNode t) remain.add(t);});
-            i++;
-        }
     }
 
     //---------------------------------------------------------------------------------------------------------------\\
@@ -204,9 +147,6 @@ public class Network implements Iterable<Node> {
         if (path.peek() == target)
             return path;
 
-        for (Node child : root.children)
-            if (GET_PATH(path, child, target) != null)
-                return path;
 
         path.pop();
         return null;
@@ -262,7 +202,6 @@ public class Network implements Iterable<Node> {
 
         //make the connection in the tree
         Node to_node = first.getNode(nodeA.index);
-        to_node.children.add(from_node);
     }
 
     @SuppressWarnings("unchecked")
@@ -280,59 +219,11 @@ public class Network implements Iterable<Node> {
 
     public static void LOAD_DATA(CompoundTag tag)
     {
-        CompoundTag main = tag.getCompound("net");
-        for (String key : main.getAllKeys())
-        {
-            CompoundTag self = main.getCompound(key);
 
-            UUID uuid = UUID.fromString(key);
-            Node[] nodes = new Node[self.getInt("length")];
-
-            Proxy proxy = Proxy.fromTag(self.getCompound("proxy"));
-            Node root = Node.fromStringClass(self.getString("root_class"));
-            root.fromTag(self.getCompound("root"), nodes);
-            nodes[0] = root;
-            Network net = new Network(root, new ArrayList<>(Arrays.asList((nodes))), uuid, proxy);
-            net.availablePointers = self.getInt("availablePointers");
-
-            NETWORK_LIST.put(uuid, net);
-        }
-
-        //assign the memory reference index in the proxys.
-        for (Map.Entry<UUID, Network> entry : NETWORK_LIST.entrySet())
-        {
-            Network net = entry.getValue();
-            if (net.proxy.shouldHandle())
-            {
-                var p_n = NETWORK_LIST.get(net.proxy.target_uuid);
-                if (p_n == null)
-                    throw new IllegalStateException("Network %s is trying to proxy a null network %s".formatted(net.network_index, net.proxy.target_uuid));
-                net.proxy.network = p_n;
-            }
-        }
     }
 
     /// Save all data in the output stream and clear the network map if the clear flag is true.
     public static void SAVE_DATA(CompoundTag tag, boolean shouldClear) {
-        CompoundTag main = new CompoundTag();
-        for (Map.Entry<UUID, Network> entry : NETWORK_LIST.entrySet())
-        {
-            var net = entry.getValue();
-            if (net.availablePointers == 0)//ignore non-referenced networks.
-                continue;
 
-            CompoundTag self = new CompoundTag();
-            self.put("proxy", net.proxy.toTag());
-            self.putString("root_class", net.root.getClass().getName());
-            self.put("root", net.root.toTag(net.nodes));
-            self.putInt("length",net.nodes.size());
-            self.putInt("availablePointers",net.availablePointers);
-            main.put(net.network_index.toString(), self);
-        }
-
-        tag.put("net",main);
-
-        if (shouldClear)
-            NETWORK_LIST.clear();
     }
 }

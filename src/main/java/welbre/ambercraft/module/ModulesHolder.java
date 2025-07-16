@@ -1,8 +1,12 @@
 package welbre.ambercraft.module;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Array;
@@ -19,6 +23,12 @@ public interface ModulesHolder {
     Module[] getModules();
     /// Returns all modules in certain face.
     Module[] getModule(Direction direction);
+
+    default void tickModules(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
+    {
+        for (Module module : getModules())
+            module.tick();
+    }
 
     default <T extends Module> @NotNull T[] getModule(Class<T> aclass, Direction direction){
         Module[] modules = direction == null ? getModules() : getModule(direction);
@@ -45,7 +55,6 @@ public interface ModulesHolder {
         {
             var _tag = new CompoundTag();
             module.writeData(_tag, registries);
-
             main.put(module.getClass().getName(), _tag);
         }
         tag.put("modules", main);

@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -75,9 +77,12 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     }
 
     @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+        return HeatConductorBE::tick;
+    }
+
+    @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (level.getBlockEntity(pos) instanceof HeatConductorBE heat && !level.isClientSide)
-            System.out.println(heat.getHeatModule().getPointer().toString() + " side:" + (level.isClientSide ? "Client" : "Server"));
         if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
             return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.getHeatModule(), stack, state, level, pos, player, hand, hitResult);
 

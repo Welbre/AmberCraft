@@ -7,12 +7,19 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import welbre.ambercraft.Main;
 
 @GameTestHolder(Main.MOD_ID)
-public class RedstoneTest {
+public class AmberCondutorTest {
 
     @PrefixGameTestTemplate(false)
-    @GameTest(template = "custom_redstone_lamp_template")
-    public static void customRedstoneLampTest(GameTestHelper helper)
+    @GameTest()
+    public static void heat_conductor_connection_test(GameTestHelper helper)
     {
-
+        helper.setBlock(
+                0,1,0,
+                Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()
+        );
+        helper.setBlock(
+                1,1,0,
+                Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()
+        );
     }
 }
