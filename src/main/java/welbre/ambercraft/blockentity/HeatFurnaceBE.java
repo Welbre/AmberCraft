@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatFurnaceBE extends HeatConductorBE {
@@ -18,7 +18,7 @@ public class HeatFurnaceBE extends HeatConductorBE {
     private boolean isOn = false;
 
     public HeatFurnaceBE(BlockPos pos, BlockState blockState) {
-        super(Main.BlockEntity.HEAT_FURNACE_BE.get(), pos, blockState);
+        super(AmberCraft.BlockEntity.HEAT_FURNACE_BE.get(), pos, blockState);
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
@@ -43,7 +43,7 @@ public class HeatFurnaceBE extends HeatConductorBE {
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         power = tag.getInt("power");
-        isOn = tag.getBoolean("overcharged");
+        isOn = tag.getBoolean("isOne");
     }
 
     @Override

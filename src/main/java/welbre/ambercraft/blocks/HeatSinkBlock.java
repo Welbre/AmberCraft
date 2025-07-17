@@ -6,39 +6,35 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
     public ModuleFactory<HeatModule,HeatSinkBE> factory = new ModuleFactory<>(
             HeatSinkBE.class,
-            Main.Modules.HEAT_MODULE_TYPE,
+            AmberCraft.Modules.HEAT_MODULE_TYPE,
             HeatSinkBlock::MODULE_INIT,
             HeatModule::free,
             HeatSinkBE::setHeatModule,
@@ -78,7 +74,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
                 }
                 return InteractionResult.CONSUME;
             }
-            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(sink.getHeatModule(), stack,state,level,pos,player,hand, hitResult);
+            return AmberCraft.Modules.HEAT_MODULE_TYPE.get().useItemOn(sink.getHeatModule(), stack,state,level,pos,player,hand, hitResult);
         }
         return super.useItemOn(stack,state,level,pos,player,hand,hitResult);
     }

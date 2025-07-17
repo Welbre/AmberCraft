@@ -17,8 +17,8 @@ import welbre.ambercraft.client.models.FacedCableModelLoader;
 import welbre.ambercraft.datagen.template.CentredCableLoaderBuilder;
 import welbre.ambercraft.datagen.template.FacedCableLoaderBuilder;
 
-import static welbre.ambercraft.Main.BlockEntity.HEAT_SINK_BLOCK_BE;
-import static welbre.ambercraft.Main.MOD_ID;
+import static welbre.ambercraft.AmberCraft.BlockEntity.HEAT_SINK_BLOCK_BE;
+import static welbre.ambercraft.AmberCraft.MOD_ID;
 
 @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class ClientMain {

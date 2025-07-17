@@ -6,11 +6,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.*;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -32,14 +34,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.module.heat.HeatModuleType;
-import welbre.ambercraft.sim.network.Network;
 
 public abstract class HeatConductorBlock extends AmberBasicBlock implements EntityBlock {
     public final float model_radius;
@@ -54,7 +54,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     protected ModuleFactory<HeatModule,HeatConductorBE> factory = new ModuleFactory<>(
             HeatConductorBE.class,
-            Main.Modules.HEAT_MODULE_TYPE,
+            AmberCraft.Modules.HEAT_MODULE_TYPE,
             HeatModule::alloc,
             HeatModule::free,
             HeatConductorBE::setHeatModule,
@@ -84,7 +84,7 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof HeatConductorBE heat)
-            return Main.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.getHeatModule(), stack, state, level, pos, player, hand, hitResult);
+            return AmberCraft.Modules.HEAT_MODULE_TYPE.get().useItemOn(heat.getHeatModule(), stack, state, level, pos, player, hand, hitResult);
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }

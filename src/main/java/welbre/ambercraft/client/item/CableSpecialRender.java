@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.CableState;
@@ -40,7 +40,7 @@ public record CableSpecialRender() implements SpecialModelRenderer<AmberFCableCo
 
     @Override
     public @NotNull AmberFCableComponent extractArgument(ItemStack stack) {
-        return stack.getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
+        return stack.getComponents().get(AmberCraft.Components.CABLE_DATA_COMPONENT.get());
     }
 
     public record UnBacked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {

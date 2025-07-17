@@ -30,7 +30,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.*;
 import welbre.ambercraft.module.Module;
@@ -186,12 +186,12 @@ public class FacedCableBlock extends Block implements EntityBlock {
     }
 
     private static ItemStack GET_ITEM_STACK_FROM_FACE_STATUS(FaceState faceState){
-        var stack = new ItemStack(Main.Items.FACED_CABLE_BLOCK_ITEM.get());
+        var stack = new ItemStack(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM.get());
         var data = new CableData(faceState.data);
         data.ignoreColor = false;
         var comp = new AmberFCableComponent(faceState.type.cable_type_index, data);
 
-        stack.set(Main.Components.CABLE_DATA_COMPONENT.get(), comp);
+        stack.set(AmberCraft.Components.CABLE_DATA_COMPONENT.get(), comp);
         return stack;
     }
 }

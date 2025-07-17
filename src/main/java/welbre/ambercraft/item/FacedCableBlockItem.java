@@ -19,14 +19,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.blocks.FacedCableBlock;
 import welbre.ambercraft.cables.AmberFCableComponent;
 
 public class FacedCableBlockItem extends BlockItem {
     public FacedCableBlockItem(Item.Properties properties) {
-        super(Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(),properties);
+        super(AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(),properties);
     }
     @Override
     public @NotNull InteractionResult place(BlockPlaceContext context) {
@@ -35,7 +35,7 @@ public class FacedCableBlockItem extends BlockItem {
         BlockEntity be = level.getBlockEntity(pos);
         Direction clickedFace = context.getClickedFace();
 
-        AmberFCableComponent component = context.getItemInHand().getComponents().get(Main.Components.CABLE_DATA_COMPONENT.get());
+        AmberFCableComponent component = context.getItemInHand().getComponents().get(AmberCraft.Components.CABLE_DATA_COMPONENT.get());
         if (component == null)
             return InteractionResult.FAIL;
 

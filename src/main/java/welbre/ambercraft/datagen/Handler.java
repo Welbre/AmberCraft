@@ -3,9 +3,9 @@ package welbre.ambercraft.datagen;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = Main.MOD_ID)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = AmberCraft.MOD_ID)
 public class Handler {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent.Client event) {

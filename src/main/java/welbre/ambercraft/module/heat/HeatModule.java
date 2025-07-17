@@ -6,27 +6,23 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.sim.Node;
 import welbre.ambercraft.sim.heat.HeatNode;
-import welbre.ambercraft.sim.network.Network;
-import welbre.ambercraft.sim.network.Node;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Queue;
+import java.io.Serializable;
+import java.util.*;
 
-public class HeatModule implements Module {
+public class HeatModule implements Module, Serializable {
     HeatNode node;
     HeatModule father;
     boolean isMaster = false;
     HeatModule[] children;
 
     boolean isFresh = false;
+    public int ID = new Random().nextInt(0,0xffffff);
 
     public HeatModule() {
         children = new HeatModule[0];
@@ -43,6 +39,7 @@ public class HeatModule implements Module {
             tag.put("node", node.toTag());
         }
         tag.putBoolean("isMaster", isMaster);
+        tag.putInt("ID", ID);
     }
 
     @Override
@@ -53,6 +50,7 @@ public class HeatModule implements Module {
             node = n;
         }
         isMaster = tag.getBoolean("isMaster");
+        ID = tag.getInt("ID");
     }
 
     /// Makes the father a child of this.
@@ -138,16 +136,33 @@ public class HeatModule implements Module {
     {
         if (isMaster)
             return this;
-        if (father != null && father.isMaster)
-            return father;
 
-        for (HeatModule child : children)
+        HeatModule root = getRoot();
+        Stack<HeatModule> stack = new Stack<>(); stack.push(root);
+        while (!stack.isEmpty())
         {
-            HeatModule master = child.getMaster();
-            if (master != null)
-                return master;
+            HeatModule module = stack.pop();
+            if (module == null) continue;
+
+            if (module.isMaster)
+                return module;
+            stack.addAll(Arrays.asList(module.children));
         }
+
         return null;
+    }
+
+    public HeatModule getRoot()
+    {
+        HeatModule oldestFather = this;
+        var temp = this.father;
+
+        while (temp != null){
+            oldestFather = temp;
+            temp = temp.father;
+        }
+
+        return oldestFather;
     }
 
     private boolean shouldBeMaster()
@@ -160,16 +175,7 @@ public class HeatModule implements Module {
         if (!this.isMaster)
             return;
 
-        HeatModule oldestFather = this;
-        //get the oldest father.
-        {
-            var temp = this.father;
-
-            while (temp != null){
-                oldestFather = temp;
-                temp = temp.father;
-            }
-        }
+        var oldestFather = getRoot();
 
         Queue<HeatModule> queue = new ArrayDeque<>(Collections.singleton(oldestFather));
         while (!queue.isEmpty())

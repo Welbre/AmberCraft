@@ -1,11 +1,6 @@
-package welbre.ambercraft.sim.network;
+package welbre.ambercraft.sim;
 
 import net.minecraft.nbt.CompoundTag;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class Node {
 

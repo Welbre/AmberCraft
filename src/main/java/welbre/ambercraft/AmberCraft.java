@@ -22,6 +22,7 @@ import welbre.ambercraft.cables.TestCableType;
 import welbre.ambercraft.item.FacedCableBlockItem;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.heat.HeatModuleType;
+import welbre.ambercraft.network.PayLoadRegister;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,11 +32,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
-@Mod(Main.MOD_ID)
-public class Main {
+@Mod(AmberCraft.MOD_ID)
+public class AmberCraft {
     public static final String MOD_ID = "ambercraft";
 
-    public Main(IEventBus modBus, ModContainer container) {
+    public AmberCraft(IEventBus modBus, ModContainer container) {
         modBus.addListener(AmberRegisters::registerRegistries);
         ServerEvents.register();
 
@@ -47,6 +48,8 @@ public class Main {
         Items.REGISTER.register(modBus);
         BlockEntity.REGISTER.register(modBus);
         Components.REGISTER.register(modBus);
+
+        modBus.addListener(PayLoadRegister::registerPayLoads);
 
         TABS.REGISTER.register(modBus);
     }

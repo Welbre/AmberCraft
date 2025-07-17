@@ -17,7 +17,7 @@ import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
 import welbre.ambercraft.blocks.parent.AmberSidedBasicBlock;
 
-import static welbre.ambercraft.Main.MOD_ID;
+import static welbre.ambercraft.AmberCraft.MOD_ID;
 
 public class AmberModelTemplate {
     public static final TextureSlot connection0 = TextureSlot.create("c0");

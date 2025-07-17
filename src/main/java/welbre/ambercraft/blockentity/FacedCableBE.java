@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.cables.*;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
@@ -40,7 +40,7 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
     private CableBrain brain = new CableBrain();
 
     public FacedCableBE(BlockPos pos, BlockState blockState) {
-        super(Main.BlockEntity.FACED_CABLE_BLOCK_BE.get(), pos, blockState);
+        super(AmberCraft.BlockEntity.FACED_CABLE_BLOCK_BE.get(), pos, blockState);
     }
 
     public CableState getState(){
@@ -132,7 +132,7 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
                 }
                 {
                     BlockState state = level.getBlockState(neighbor);
-                    if (state.canOcclude() && state.getBlock() != Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get())
+                    if (state.canOcclude() && state.getBlock() != AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get())
                         continue;
                 }
 

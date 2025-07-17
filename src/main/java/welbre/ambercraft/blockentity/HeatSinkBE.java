@@ -11,7 +11,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.Main;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
@@ -20,7 +20,7 @@ public class HeatSinkBE extends BlockEntity implements ModulesHolder {
     private HeatModule heatModule = new HeatModule();
 
     public HeatSinkBE(BlockPos pos, BlockState blockState) {
-        super(Main.BlockEntity.HEAT_SINK_BLOCK_BE.get(), pos, blockState);
+        super(AmberCraft.BlockEntity.HEAT_SINK_BLOCK_BE.get(), pos, blockState);
     }
 
     @Override

@@ -13,12 +13,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.AmberCraft;
 
 /**
  * Defines how a {@link Module} behavior.<br>
  * To create your one ModulesType,
  * instantiate this interface and implement all methods, before that,
- * register the ModuleType in the {@link welbre.ambercraft.Main.Modules#REGISTER REGISTER}.<br>
+ * register the ModuleType in the {@link AmberCraft.Modules#REGISTER REGISTER}.<br>
  * The interactions with the Block and BlockEntity isn't handled automatically by AmberCraft or by NeoForge,
  * Remember to call the functions in your custom Blocks.
  * @param <T> The module class to be created.

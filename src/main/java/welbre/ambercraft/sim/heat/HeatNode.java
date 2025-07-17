@@ -5,11 +5,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
-import welbre.ambercraft.sim.network.Node;
+import welbre.ambercraft.sim.Node;
 
-import java.util.List;
+import java.io.Serializable;
 
-public class HeatNode extends Node {
+public class HeatNode extends Node implements Serializable {
     public static final double DEFAULT_TIME_STEP = 0.05;
 
     protected double temperature = 0;
