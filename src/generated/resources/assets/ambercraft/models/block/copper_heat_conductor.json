@@ -1,0 +1,6 @@
+{
+  "loader": "ambercraft:centred_cable_loader",
+  "textures": {
+    "cable": "ambercraft:block/copper_heat_conductor"
+  }
+}

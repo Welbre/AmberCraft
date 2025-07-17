@@ -1,0 +1,6 @@
+{
+  "loader": "ambercraft:faced_cable_loader",
+  "textures": {
+    "cable": "minecraft:block/white_wool"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "loader": "ambercraft:centred_cable_loader",
+  "textures": {
+    "cable": "minecraft:block/gold_block"
+  }
+}

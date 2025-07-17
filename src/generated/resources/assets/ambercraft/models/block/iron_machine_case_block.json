@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "ambercraft:block/iron_machine_case_block"
+  }
+}
