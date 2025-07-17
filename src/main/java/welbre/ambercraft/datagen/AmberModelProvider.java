@@ -5,18 +5,28 @@ import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.blockstates.Variant;
 import net.minecraft.client.data.models.blockstates.VariantProperties;
+import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.renderer.item.SpecialModelWrapper;
+import net.minecraft.core.Direction;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.AbstractFurnaceBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FurnaceBlock;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.Main;
+import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
 import welbre.ambercraft.client.item.CableSpecialRender;
 
 import java.util.HashMap;
 
+import static welbre.ambercraft.Main.MOD_ID;
 import static welbre.ambercraft.datagen.template.AmberModelTemplate.*;
 
 public class AmberModelProvider extends ModelProvider {
@@ -55,11 +65,10 @@ public class AmberModelProvider extends ModelProvider {
                 "connection_creative_block", "connection_creative_block", "voltage_source_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, Main.Blocks.RESISTOR_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "resistor_block");
-        CREATE_AMBER_HORIZONTAL_BLOCK(blocks, Main.Blocks.HEAT_FURNACE_BLOCK.get(),
-                "brick_machine_block", "furnace_base_block","iron_machine_base_beauty_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, Main.Blocks.GROUND_BLOCK.get(),
                 "connection_creative_block", "ground_block","ground_block");
 
+        CREATE_HEAT_FURNACE(blocks);
         CREATE_AMBER_FREE_BLOCK_STATE(blocks, Main.Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get());
 
         CABLES.CREATE_CENTRED(blocks, Main.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("ambercraft:block/copper_heat_conductor"));
@@ -67,5 +76,36 @@ public class AmberModelProvider extends ModelProvider {
         CABLES.CREATE_CENTRED(blocks, Main.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/gold_block"));
 
         CABLES.CREATE_FACED(blocks, Main.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), ResourceLocation.parse("minecraft:block/white_wool"));
+    }
+
+    private static void CREATE_HEAT_FURNACE(BlockModelGenerators g){
+        var off = ModelTemplates.CUBE_ORIENTABLE.create(Main.Blocks.HEAT_FURNACE_BLOCK.get(),
+                new TextureMapping()
+                        .put(TextureSlot.TOP, ResourceLocation.parse(MOD_ID + ":block/brick_machine_block"))
+                        .put(TextureSlot.FRONT, ResourceLocation.parse(MOD_ID + ":block/furnace_base_block"))
+                        .put(TextureSlot.SIDE, ResourceLocation.parse(MOD_ID + ":block/iron_machine_base_beauty_block")),
+                g.modelOutput
+        );
+        var on = ModelTemplates.CUBE_ORIENTABLE.create(ModelLocationUtils.getModelLocation(Main.Blocks.HEAT_FURNACE_BLOCK.get(),"_on"),
+                new TextureMapping()
+                        .put(TextureSlot.TOP, ResourceLocation.parse(MOD_ID + ":block/brick_machine_block"))
+                        .put(TextureSlot.FRONT, ResourceLocation.parse(MOD_ID + ":block/furnace_base_on"))
+                        .put(TextureSlot.SIDE, ResourceLocation.parse(MOD_ID + ":block/iron_machine_base_beauty_block")),
+                g.modelOutput
+        );
+
+        g.blockStateOutput.accept(
+                MultiVariantGenerator.multiVariant(Main.Blocks.HEAT_FURNACE_BLOCK.get())
+                        .with(PropertyDispatch.properties(AmberHorizontalBlock.FACING, FurnaceBlock.LIT)
+                                .select(Direction.NORTH,false, Variant.variant().with(VariantProperties.MODEL, off))
+                                .select(Direction.SOUTH,false, Variant.variant().with(VariantProperties.MODEL, off).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.WEST,false, Variant.variant().with(VariantProperties.MODEL, off).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270))
+                                .select(Direction.EAST,false, Variant.variant().with(VariantProperties.MODEL, off).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))
+                                .select(Direction.NORTH,true, Variant.variant().with(VariantProperties.MODEL, on))
+                                .select(Direction.SOUTH,true, Variant.variant().with(VariantProperties.MODEL, on).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.WEST,true, Variant.variant().with(VariantProperties.MODEL, on).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270))
+                                .select(Direction.EAST,true, Variant.variant().with(VariantProperties.MODEL, on).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))
+                        )
+        );
     }
 }

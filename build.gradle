@@ -39,6 +39,9 @@ base {
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+compileJava.options.fork = true
+compileJava.options.forkOptions.executable = 'C:/Users/welbre/.jdks/jbr-21.0.7/bin/javac.exe'
+
 //minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
 //minecraft.accessTransformers.entry public net.minecraft.client.Minecraft textureManager # textureManager
 
@@ -60,7 +63,6 @@ runs {
         systemProperty 'forge.logging.console.level', 'debug'
 
         modSource project.sourceSets.main
-        argument 'XX:+AllowEnhancedClassRedefinition'
     }
 
     client {

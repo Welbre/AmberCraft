@@ -42,16 +42,7 @@ public class HeatModuleType implements ModuleType<HeatModule> {
     @Override
     public void onNeighborChange(HeatModule module, BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor)
     {
-        if (level.isClientSide()) return;
 
-        BlockEntity entity = level.getBlockEntity(neighbor);
-        if (entity instanceof ModulesHolder modular)
-        {
-            @NotNull HeatModule[] modules = modular.getModule(HeatModule.class, Direction.getApproximateNearest(neighbor.getCenter().subtract(pos.getCenter())));
-                for (@NotNull HeatModule relative : modules)
-                    //keep this parameter order! this ensures that the biggest network is by default the first parameter
-                    module.connect(relative);
-        }
     }
 
     @Override

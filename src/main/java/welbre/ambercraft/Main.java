@@ -57,7 +57,7 @@ public class Main {
         public static final DeferredHolder<Block, VoltageSourceBlockAmberBasic> VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("voltage_source_block", VoltageSourceBlockAmberBasic::new);
         public static final DeferredHolder<Block, ResistorBlock> RESISTOR_BLOCK = REGISTER.registerBlock("resistor_block", ResistorBlock::new);
         public static final DeferredHolder<Block, Ground> GROUND_BLOCK = REGISTER.registerBlock("ground_block", Ground::new);
-        public static final DeferredHolder<Block, HeatFurnace> HEAT_FURNACE_BLOCK = REGISTER.registerBlock("heat_furnace", HeatFurnace::new);
+        public static final DeferredHolder<Block, HeatFurnaceBlock> HEAT_FURNACE_BLOCK = REGISTER.registerBlock("heat_furnace", HeatFurnaceBlock::new);
         public static final DeferredHolder<Block, AmberFreeBlock> CREATIVE_HEAT_FURNACE_BLOCK = REGISTER.registerBlock("creative_heat_furnace", AmberFreeBlock::new);
 
         public static final DeferredHolder<Block, CopperHeatConductorBlock> COPPER_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("copper_heat_conductor", CopperHeatConductorBlock::new);

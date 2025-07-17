@@ -108,31 +108,24 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
-        //todo functiona mas é muito redundant, precisa atualizar todos os lados em busca de um conexão
         super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
         factory.getModuleOn(level,pos).ifPresent(m -> factory.getType().neighborChanged(m,state,level,pos,neighborBlock, orientation, movedByPiston));
     }
 
     @Override
-    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
-        //todo não funciona pq o setPlacedBy ainda não foi executado.
-        super.onNeighborChange(state, level, pos, neighbor);
-        //factory.getModuleOn((LevelAccessor) level, pos).ifPresent(m -> factory.getType().onNeighborChange(m,state,level,pos,neighbor));
-    }
-
-
-
-    @Override
-    public void setPlacedBy(Level level, BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
-        factory.create(level,pos);
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!state.is(oldState.getBlock()))
+            factory.create(level,pos);
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        factory.destroy(level, pos);
-        return super.playerWillDestroy(level, pos, state, player);
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()))
+            factory.destroy(level, pos);
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
+
 
     @Override
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {

@@ -55,10 +55,14 @@ public class HeatModule implements Module {
         isMaster = tag.getBoolean("isMaster");
     }
 
-    public void disconnectFather(){
-        if (father != null)
-            father.removeChild(this);
-        father = null;
+    /// Makes the father a child of this.
+    private void invertRelationChip(){
+        if (this.father != null){
+            this.father.removeChild(this);
+            this.addChild(this.father);
+            this.father.father = this;
+            this.father = null;
+        }
     }
 
     /// Disconnect this node from all connections.
@@ -82,13 +86,15 @@ public class HeatModule implements Module {
         children = new HeatModule[0];
     }
     
-    /// connect this in the target module.
+    /// connect this to the target module.<br> So target will be the father of this.
     public void connect(HeatModule target)
     {
         //check if is already connected
         if (this.father == target || target.father == this)
             return;
-        disconnectFather();
+        //if this has a father, then this new connection needs to be inverted.
+        invertRelationChip();
+
         //check if the network has 2 masters, if true, then remove the target mester.
         {
             HeatModule this_master = this.getMaster();
@@ -198,7 +204,7 @@ public class HeatModule implements Module {
         this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
 
         isMaster = shouldBeMaster();
-    }
+        }
 
     /**
      * Rebuild the reference for this module.
