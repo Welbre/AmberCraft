@@ -72,6 +72,7 @@ public class AmberModelProvider extends ModelProvider {
         CABLES.CREATE_CENTRED(blocks, AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("ambercraft:block/copper_heat_conductor"));
         CABLES.CREATE_CENTRED(blocks, AmberCraft.Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/iron_block"));
         CABLES.CREATE_CENTRED(blocks, AmberCraft.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/gold_block"));
+        CABLES.CREATE_CENTRED(blocks, AmberCraft.Blocks.CREATIVE_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("ambercraft:block/creative_machine_base"));
 
         CABLES.CREATE_FACED(blocks, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), ResourceLocation.parse("minecraft:block/white_wool"));
     }

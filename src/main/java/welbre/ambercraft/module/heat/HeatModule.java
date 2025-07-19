@@ -6,6 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
@@ -139,6 +140,7 @@ public class HeatModule implements Module, Serializable {
 
         HeatModule root = getRoot();
         Stack<HeatModule> stack = new Stack<>(); stack.push(root);
+        int count = 0;
         while (!stack.isEmpty())
         {
             HeatModule module = stack.pop();
@@ -147,6 +149,11 @@ public class HeatModule implements Module, Serializable {
             if (module.isMaster)
                 return module;
             stack.addAll(Arrays.asList(module.children));
+            if (count++ > 3000)
+            {
+                AmberCraft.LOGGER.error(new IllegalStateException("Cyclic dependency detected!").getMessage());
+                return null;
+            }
         }
 
         return null;

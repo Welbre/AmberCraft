@@ -20,6 +20,7 @@ public class AmberLanguageProvider extends LanguageProvider {
         addBlock(AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK, "Copper heat conductor");
         addBlock(AmberCraft.Blocks.IRON_HEAT_CONDUCTOR_BLOCK, "Iron heat conductor");
         addBlock(AmberCraft.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK, "Gold heat conductor");
+        addBlock(AmberCraft.Blocks.CREATIVE_HEAT_CONDUCTOR_BLOCK, "Creative heat conductor");
         addBlock(AmberCraft.Blocks.HEAT_SINK_BLOCK, "Heat sink");
 
         addBlock(AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK, "Abstract cable");

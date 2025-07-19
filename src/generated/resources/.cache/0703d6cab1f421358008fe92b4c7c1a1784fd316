@@ -1,5 +1,6 @@
-// 1.21.4	2025-07-16T21:41:36.8840318	Model Definitions - ambercraft
+// 1.21.4	2025-07-18T21:23:38.0683451	Model Definitions - ambercraft
 9017b80459b2cdea1f854ac115816ace512e93f3 assets/ambercraft/blockstates/copper_heat_conductor.json
+46676c9727aa8c11ca401f1a305e2b82178fbbe2 assets/ambercraft/blockstates/creative_heat_conductor.json
 d705d1e2ec195924e0875b6076311d75d08b57a6 assets/ambercraft/blockstates/creative_heat_furnace.json
 c29a913b9d8d5cc91cd7082e509e0617e7fe8c10 assets/ambercraft/blockstates/faced_cable.json
 a37d541d3cb19179552af650d788a97fbd185cab assets/ambercraft/blockstates/gold_heat_conductor.json
@@ -11,6 +12,7 @@ f9b7ed0f85e4cab9a7cbf20c25669c504ee60418 assets/ambercraft/blockstates/heat_furn
 a17cf0d6fe4b2ba5d07a7e7a5c4cfd858dc2d438 assets/ambercraft/blockstates/resistor_block.json
 58914927ea5e0ef992276a798a411d9a0edd9c12 assets/ambercraft/blockstates/voltage_source_block.json
 d579a423315bddba6c480a2bcbf39dab795eb98d assets/ambercraft/items/copper_heat_conductor.json
+788b7ee09557f9e6eafaf6ccfdbb611b523faabc assets/ambercraft/items/creative_heat_conductor.json
 5b51fb2eca6f5d1a73f305a7e6c702af1581148d assets/ambercraft/items/creative_heat_furnace.json
 0ece57125f769bf93461b2e6879f46867054598f assets/ambercraft/items/faced_cable.json
 7a95c1f1bbb9650b1d6c5bc742b35df0d17ae46e assets/ambercraft/items/gold_heat_conductor.json
@@ -23,6 +25,7 @@ ede0603661e7c3717454c36062cdffb9c63e9a8c assets/ambercraft/items/iron_machine_ca
 54efa76eba8a184915ba4a4a4523f5b62c7a46f8 assets/ambercraft/items/resistor_block.json
 c703b3332f4201800a2d946c62df8e9e041855d3 assets/ambercraft/items/voltage_source_block.json
 639773698481a4c00ccb4ae294507b13d96e7f4f assets/ambercraft/models/block/copper_heat_conductor.json
+c7c615617be77f818129e1ef7d3060f80483e218 assets/ambercraft/models/block/creative_heat_conductor.json
 b0e3f97003adcf1547d27dd3a284106a15e0acda assets/ambercraft/models/block/faced_cable.json
 91c44da1513e1a5c9ca72cd82f1c8cf27128b208 assets/ambercraft/models/block/gold_heat_conductor.json
 b7b6fba79cb5978c0bdd66d1c5505c5c72ff0521 assets/ambercraft/models/block/ground_block.json

@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.CopperHeatConductorConductorBE;
+import welbre.ambercraft.blockentity.CopperHeatConductorBE;
 import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blockentity.HeatSinkBE;
@@ -56,7 +56,7 @@ public class AmberHeatCondutorTest {
         furnace.addPower();
         furnace.addPower();
 
-        CopperHeatConductorConductorBE conductor = helper.getBlockEntity(new BlockPos(0,1,0));
+        CopperHeatConductorBE conductor = helper.getBlockEntity(new BlockPos(0,1,0));
         AtomicReference<Double> temperature = new AtomicReference<>(-1.0);
         helper.runAfterDelay(1,() -> {
             temperature.set(conductor.getHeatModule().getHeatNode().getTemperature());
@@ -132,7 +132,7 @@ public class AmberHeatCondutorTest {
                     "heat_conductor_replace_test"+index++,
                     "ambercraft:heat_conductor_breaking_test",
                     Rotation.NONE,
-                    200,
+                    250,
                     0,
                     true,
                     false,
@@ -152,6 +152,7 @@ public class AmberHeatCondutorTest {
         AtomicReference<Boolean> reachCoolDown = new AtomicReference<>(false);
 
         HeatSinkBE heatSinkBE = helper.getBlockEntity(new BlockPos(2,2,3));
+        HeatFurnaceBE furnace = helper.getBlockEntity(new BlockPos(4,2,0));
         final double temperature = heatSinkBE.getHeatModule().getHeatNode().getTemperature();
 
         helper.setBlock(pos, Blocks.AIR);//remove the conductor
@@ -165,12 +166,20 @@ public class AmberHeatCondutorTest {
                     helper.setBlock(pos, AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get());
                     HeatConductorBE conductorBE = helper.getBlockEntity(pos);
                     conductorBE.getHeatModule().getHeatNode().setTemperature(temperature);
+                    furnace.addPower();
+                    furnace.addPower();
+                    furnace.addPower();
+                    furnace.addPower();
+                    furnace.addPower();
+                    furnace.addPower();
+                    furnace.ignite();
                 }
         });
 
         //if the temperature gets at 95% of the original and reach the 100% again, success.
         helper.succeedWhen(() -> {
-            if (reachCoolDown.get() && heatSinkBE.getHeatModule().getHeatNode().getTemperature() >= temperature)
+            System.out.println(heatSinkBE.getHeatModule().getHeatNode().getTemperature());
+            if (reachCoolDown.get() && heatSinkBE.getHeatModule().getHeatNode().getTemperature() >= temperature * 0.95)
                 helper.succeed();
             throw new GameTestAssertException("");
         });

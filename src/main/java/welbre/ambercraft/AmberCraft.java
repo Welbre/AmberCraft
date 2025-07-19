@@ -1,5 +1,6 @@
 package welbre.ambercraft;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -13,6 +14,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.*;
+import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.parent.AmberFreeBlock;
@@ -35,6 +37,7 @@ import java.util.function.Supplier;
 @Mod(AmberCraft.MOD_ID)
 public class AmberCraft {
     public static final String MOD_ID = "ambercraft";
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public AmberCraft(IEventBus modBus, ModContainer container) {
         modBus.addListener(AmberRegisters::registerRegistries);
@@ -66,6 +69,7 @@ public class AmberCraft {
         public static final DeferredHolder<Block, CopperHeatConductorBlock> COPPER_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("copper_heat_conductor", CopperHeatConductorBlock::new);
         public static final DeferredHolder<Block, IronHeatConductorBlock> IRON_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("iron_heat_conductor", IronHeatConductorBlock::new);
         public static final DeferredHolder<Block, GoldHeatConductorBlock> GOLD_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("gold_heat_conductor", GoldHeatConductorBlock::new);
+        public static final DeferredHolder<Block, CreativeHeatConductorBlock> CREATIVE_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("creative_heat_conductor", CreativeHeatConductorBlock::new);
 
         public static final DeferredHolder<Block, HeatSinkBlock> HEAT_SINK_BLOCK = REGISTER.registerBlock("heat_sink", HeatSinkBlock::new);
 
@@ -85,6 +89,7 @@ public class AmberCraft {
         public static final DeferredItem<BlockItem> COPPER_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.COPPER_HEAT_CONDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> IRON_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_HEAT_CONDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> GOLD_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GOLD_HEAT_CONDUCTOR_BLOCK);
+        public static final DeferredItem<BlockItem> CREATIVE_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CREATIVE_HEAT_CONDUCTOR_BLOCK);
 
         public static final DeferredItem<BlockItem> HEAT_SINK_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_SINK_BLOCK);
 
@@ -96,9 +101,10 @@ public class AmberCraft {
         public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
 
         public static final Supplier<BlockEntityType<HeatFurnaceBE>> HEAT_FURNACE_BE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceBE::new, Blocks.HEAT_FURNACE_BLOCK.get()));
-        public static final Supplier<BlockEntityType<CopperHeatConductorConductorBE>> COPPER_HEAT_CONDUCTOR_BE = REGISTER.register("copper_heat_conductor", () -> new BlockEntityType<>(CopperHeatConductorConductorBE::new, Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()));
-        public static final Supplier<BlockEntityType<IronHeatConductorConductorBE>> IRON_HEAT_CONDUCTOR_BE = REGISTER.register("iron_heat_conductor", () -> new BlockEntityType<>(IronHeatConductorConductorBE::new, Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get()));
-        public static final Supplier<BlockEntityType<GoldHeatConductorConductorBE>> GOLD_HEAT_CONDUCTOR_BE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorConductorBE::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<CopperHeatConductorBE>> COPPER_HEAT_CONDUCTOR_BE = REGISTER.register("copper_heat_conductor", () -> new BlockEntityType<>(CopperHeatConductorBE::new, Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<IronHeatConductorBE>> IRON_HEAT_CONDUCTOR_BE = REGISTER.register("iron_heat_conductor", () -> new BlockEntityType<>(IronHeatConductorBE::new, Blocks.IRON_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<GoldHeatConductorBE>> GOLD_HEAT_CONDUCTOR_BE = REGISTER.register("gold_heat_conductor", () -> new BlockEntityType<>(GoldHeatConductorBE::new, Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()));
+        public static final Supplier<BlockEntityType<CreativeHeatConductorBE>> CREATIVE_HEAT_CONDUCTOR_BE = REGISTER.register("creative_heat_conductor", () -> new BlockEntityType<>(CreativeHeatConductorBE::new, Blocks.CREATIVE_HEAT_CONDUCTOR_BLOCK.get()));
 
         public static final Supplier<BlockEntityType<HeatSinkBE>> HEAT_SINK_BLOCK_BE = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBE::new,Blocks.HEAT_SINK_BLOCK.get()));
         public static final Supplier<BlockEntityType<FacedCableBE>> FACED_CABLE_BLOCK_BE = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBE::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
