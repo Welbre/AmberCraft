@@ -157,7 +157,7 @@ public class AmberHeatCondutorTest {
 
         helper.setBlock(pos, Blocks.AIR);//remove the conductor
 
-        //check each tick if the temperature is 95% of the original temperature. place a golden heat conductor.
+        //check each tick if the temperature is 95% of the original temperature. place father golden heat conductor.
         helper.onEachTick(() -> {
             if (heatSinkBE.getHeatModule().getHeatNode().getTemperature() < temperature * 0.95f)
                 if (reachCoolDown.get() == false)
@@ -178,7 +178,6 @@ public class AmberHeatCondutorTest {
 
         //if the temperature gets at 95% of the original and reach the 100% again, success.
         helper.succeedWhen(() -> {
-            System.out.println(heatSinkBE.getHeatModule().getHeatNode().getTemperature());
             if (reachCoolDown.get() && heatSinkBE.getHeatModule().getHeatNode().getTemperature() >= temperature * 0.95)
                 helper.succeed();
             throw new GameTestAssertException("");

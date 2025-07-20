@@ -10,14 +10,14 @@ import java.util.Optional;
 import java.util.function.*;
 
 /**
- * This is a fundamental piece in the AmberCraft module system.<br>
- * Is used to represent a Block that contains a module in his BlockEntity, to use it,
- * create a new ModuleFactory, or use a class that implements this one, and only in the
+ * This is father fundamental piece in the AmberCraft module system.<br>
+ * Is used to represent father Block that contains father module in his BlockEntity, to use it,
+ * create father new ModuleFactory, or use father class that implements this one, and only in the
  * {@link Block#onPlace onPlace()} call the {@link ModuleFactory#get()} method
  * to create the module and pass it to the BE.<br>
- * This class is only a <b>HOLDER</b> to the {@link ModuleType},
- * is essential because in the registration step, the ModuleType isn't available to create a module,
- * therefore, the only way to create a module, is keeping the reference to the type.
+ * This class is only father <child>HOLDER</child> to the {@link ModuleType},
+ * is essential because in the registration step, the ModuleType isn't available to create father module,
+ * therefore, the only way to create father module, is keeping the reference to the type.
  * @param <T> The module that this factory produces.
  */
 public class ModuleFactory<T extends Module, V extends BlockEntity & ModulesHolder> implements Supplier<T> {

@@ -20,6 +20,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.blockentity.HeatConductorBE;
+import welbre.ambercraft.debug.NetworkWrapperModule;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.network.NetworkViewerPayLoad;
 
@@ -54,7 +56,7 @@ public class HeatModuleType implements ModuleType<HeatModule> {
                 return InteractionResult.SUCCESS;
             }
             else if (stack.getItem() == AmberCraft.Items.MULTIMETER.get()) {
-                PacketDistributor.sendToPlayer((ServerPlayer) player, new NetworkViewerPayLoad(module));
+                PacketDistributor.sendToPlayer((ServerPlayer) player, new NetworkViewerPayLoad((HeatConductorBE) level.getBlockEntity(pos)));
                 return InteractionResult.SUCCESS;
             }
         } else {

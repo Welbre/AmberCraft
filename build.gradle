@@ -1,5 +1,7 @@
 plugins {
     id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
@@ -30,6 +32,11 @@ repositories {
             includeGroup "curse.maven"
         }
     }
+    maven {
+        name = 'Kotlin for Forge'
+        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+    }
+    mavenCentral()
 }
 
 base {
@@ -111,6 +118,8 @@ dependencies {
     // For all intends and purposes: You can treat this dependency as if it is a normal library you would use.
     implementation "net.neoforged:neoforge:${neo_version}"
     implementation "curse.maven:sodium-394468:6382663"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation 'thedarkcolour:kotlinforforge-neoforge:5.9.0'
 
 
     // Example optional mod dependency with JEI
@@ -220,4 +229,7 @@ subsystems {
         // The built-in default value can also be overriden using the Gradle property neogradle.subsystems.parchment.enabled
         // enabled = true
     }
+}
+kotlin {
+    jvmToolchain(21)
 }

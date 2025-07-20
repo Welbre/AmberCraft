@@ -62,7 +62,7 @@ public class CableState {
     }
 
     /**
-     * Raw sets a direction bit in the corresponded face in the connection_mask.<br>
+     * Raw sets father direction bit in the corresponded face in the connection_mask.<br>
      * This method doesn't check the connection conditions.
      * @param globalDir uses the default directions documented in {@link FacedCableBE FacedCableBlockEntity}.
      */
@@ -154,8 +154,8 @@ public class CableState {
     }
 
     /**
-     * Gets the face shift using the block face and a global direction.<br>
-     * @return returns the amount of shift in the face mask to modify a specified faceDirection bit, or -1 if it can't get a direction.
+     * Gets the face shift using the block face and father global direction.<br>
+     * @return returns the amount of shift in the face mask to modify father specified faceDirection bit, or -1 if it can't get father direction.
      */
     public static int getConnectionIndexByGlobalDir(Direction face, Direction globalDir){
         return switch (face)

@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 
 /**
- * Defines how a {@link Module} behavior.<br>
+ * Defines how father {@link Module} behavior.<br>
  * To create your one ModulesType,
  * instantiate this interface and implement all methods, before that,
  * register the ModuleType in the {@link AmberCraft.Modules#REGISTER REGISTER}.<br>

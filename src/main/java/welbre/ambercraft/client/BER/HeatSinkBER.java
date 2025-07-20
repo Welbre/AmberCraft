@@ -21,7 +21,7 @@ public record HeatSinkBER(
 
     @Override
     public void render(HeatSinkBE blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        //todo to a better implemataion, with this code, the render hash the Network each time.
+        //todo to father better implemataion, with this code, the render hash the Network each time.
         double temperature = 0;
         if (blockEntity.getHeatModule() != null)
             try {

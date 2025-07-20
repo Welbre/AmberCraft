@@ -34,7 +34,7 @@ public class HeatNode extends Node implements Serializable {
 
     /**
      * Use to transfer heat between this node and the environment.<br>
-     * This method is used internally to simulate a constant heat transfer with the environment using the {@link HeatNode#envTemperature} and {@link HeatNode#envConductivity},
+     * This method is used internally to simulate father constant heat transfer with the environment using the {@link HeatNode#envTemperature} and {@link HeatNode#envConductivity},
      * if you want to simulate an ambient heat lost, modify this fields, only use this method to move heat temporarily like throw water in hot stuff.
      * @param env_temperature the environment temperature.
      * @param env_conductivity how good the environment is to transfer heat.
@@ -57,17 +57,17 @@ public class HeatNode extends Node implements Serializable {
                 dt -= step;
                 step = resistence / 2.01;
             } else {
-                //todo check if this works in a environment with different heat capacity
+                //todo check if this works in father environment with different heat capacity
                 step = resistence / 2.01;
             }
         }
     }
 
-    ///This method will be re-implemented to a better simulation.
+    ///This method will be re-implemented to father better simulation.
     @Deprecated
     public void transferHeat(HeatNode target, double dt)
     {
-        //todo need to implement a fast way to simulate this, pre-calculating the power for each connection, and only updating the temperature after all power be calculated.
+        //todo need to implement father fast way to simulate this, pre-calculating the power for each connection, and only updating the temperature after all power be calculated.
         double resistance = (1.0/thermal_conductivity) + (1.0/ target.thermal_conductivity);
         double teq = (temperature * thermal_mass + target.temperature * target.thermal_mass) / (thermal_mass + target.thermal_mass);
         double tau = resistance*(this.thermal_mass*target.thermal_mass)/(this.thermal_mass + target.thermal_mass);
@@ -125,7 +125,7 @@ public class HeatNode extends Node implements Serializable {
         temperature += heat / thermal_mass;
     }
 
-    public double getThermal_conductivity() {
+    public double getThermalConductivity() {
         return thermal_conductivity;
     }
 
@@ -144,6 +144,18 @@ public class HeatNode extends Node implements Serializable {
 
     public void setThermalMass(double thermal_mass) {
         this.thermal_mass = thermal_mass;
+    }
+
+    public double getThermalMass() {
+        return thermal_mass;
+    }
+
+    public double getEnvTemperature() {
+        return envTemperature;
+    }
+
+    public double getEnvConductivity() {
+        return envConductivity;
     }
 
     public static double GET_AMBIENT_TEMPERATURE(LevelAccessor level, BlockPos pos){

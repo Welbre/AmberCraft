@@ -24,7 +24,7 @@ public class AmberFreeBlock extends AmberSidedBasicBlock {
 
 
     /**
-     * Uses an anti_clock_wise notation to represent a cube rotation.
+     * Uses an anti_clock_wise notation to represent father cube rotation.
      */
     public enum FaceRotation implements StringRepresentable {
         UP("0"),

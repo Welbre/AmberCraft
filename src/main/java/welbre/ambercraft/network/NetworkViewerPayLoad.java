@@ -9,16 +9,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.debug.NetworkScreen;
+import welbre.ambercraft.debug.NetworkWrapperModule;
 import welbre.ambercraft.module.heat.HeatModule;
 
 import java.io.*;
 import java.util.Base64;
 
 public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
-    public NetworkViewerPayLoad(HeatModule module)
+    public NetworkViewerPayLoad(HeatConductorBE conductor)
     {
-        this(convert(module));
+        this(convert(conductor));
     }
 
     public static void handleOnClient(final NetworkViewerPayLoad payLoad, final IPayloadContext context) {
@@ -26,10 +28,10 @@ public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
             ByteArrayInputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(payLoad.data));
 
             ObjectInputStream inputStream = new ObjectInputStream(stream);
-            HeatModule module = (HeatModule) inputStream.readObject();
+            NetworkWrapperModule wrapper = (NetworkWrapperModule) inputStream.readObject();
             inputStream.close();
 
-            Minecraft.getInstance().setScreen(new NetworkScreen(module));
+            Minecraft.getInstance().setScreen(new NetworkScreen(wrapper));
 
         } catch (ClassNotFoundException | IOException e)
         {
@@ -62,16 +64,15 @@ public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
         return TYPE;
     }
 
-    private static String convert(HeatModule module)
+    private static String convert(HeatConductorBE conductor)
     {
         try
         {
             ByteArrayOutputStream array = new ByteArrayOutputStream();
             ObjectOutputStream outputStream = new ObjectOutputStream(array);
-            outputStream.writeObject(module);
+            outputStream.writeObject(new NetworkWrapperModule(conductor));
             outputStream.close();
-            String bytes = Base64.getEncoder().encodeToString(array.toByteArray());
-            return bytes;
+            return Base64.getEncoder().encodeToString(array.toByteArray());
         } catch (Exception e)
         {
             throw new RuntimeException(e);

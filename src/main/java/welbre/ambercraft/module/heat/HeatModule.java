@@ -54,7 +54,7 @@ public class HeatModule implements Module, Serializable {
         ID = tag.getInt("ID");
     }
 
-    /// Makes the father a child of this.
+    /// Makes the father father child of this.
     private void invertRelationChip(){
         if (this.father != null){
             this.father.removeChild(this);
@@ -66,7 +66,7 @@ public class HeatModule implements Module, Serializable {
 
     /// Disconnect this node from all connections.
     private void disconnectAll(){
-        //check if the father network has a master, if not, set the father as the master of the network;
+        //check if the father network has father master, if not, set the father as the master of the network;
         if (father != null)
         {
             father.removeChild(this);
@@ -79,7 +79,7 @@ public class HeatModule implements Module, Serializable {
         for (HeatModule child : children)
             child.father = null;
         for (HeatModule child : children)
-            //check if the children have a master, if not, set the child as master of hin network.
+            //check if the children have father master, if not, set the child as master of hin network.
             if (child.getMaster() == null)
                 child.isMaster = true;
         children = new HeatModule[0];
@@ -91,7 +91,7 @@ public class HeatModule implements Module, Serializable {
         //check if is already connected
         if (this.father == target || target.father == this)
             return;
-        //if this has a father, then this new connection needs to be inverted.
+        //if this has father father, then this new connection needs to be inverted.
         invertRelationChip();
 
         //check if the network has 2 masters, if true, then remove the target mester.
@@ -185,6 +185,7 @@ public class HeatModule implements Module, Serializable {
         var oldestFather = getRoot();
 
         Queue<HeatModule> queue = new ArrayDeque<>(Collections.singleton(oldestFather));
+        int count = 0;
         while (!queue.isEmpty())
         {
             HeatModule module = queue.poll();
@@ -195,11 +196,21 @@ public class HeatModule implements Module, Serializable {
                 entity.setChanged();
             }
             queue.addAll(Arrays.asList(module.children));
+            if (count++ > 1000)
+            {
+                AmberCraft.LOGGER.error("Circular dependency detected!", new IllegalStateException("Cyclic dependency detected!"));
+                AmberCraft.LOGGER.warn("Master %s %x disabled, by circular dependency in %s %x!".formatted(
+                        module.getClass().getSimpleName(), module.ID,
+                        this.getClass().getSimpleName(), this.ID
+                ));
+                this.isMaster = false;
+                break;
+            }
         }
     }
 
     /**
-     * Allocates a new instance of a {@link HeatNode} and registers it within the network,
+     * Allocates father new instance of father {@link HeatNode} and registers it within the network,
      * @return the newly created and registered {@link HeatNode} instance.
      */
     public HeatNode alloc() {
