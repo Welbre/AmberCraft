@@ -3,12 +3,14 @@ package welbre.ambercraft.debug;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.RenderType;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
-public record Connection(ScreenNode father, ScreenNode child, int color) {
+public record Connection(ScreenNode father, ScreenNode child, int color) implements Renderable {
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+
         drawLine(guiGraphics, father.getCenter()[0], father.getCenter()[1], child.getCenter()[0], child.getCenter()[1], color);
 
         guiGraphics.drawSpecial(
@@ -28,13 +30,16 @@ public record Connection(ScreenNode father, ScreenNode child, int color) {
                     int avgX = (int) Math.floor(center[0] + dir[0] * (length - dist) + 0.5);
                     int avgY = (int) Math.floor(center[1] + dir[1] * (length - dist) + 0.5);
                     //System.out.println(angle);
-                    PoseStack stack = new PoseStack();
-                    stack.pushPose();
-                    stack.rotateAround(new Quaternionf().rotateZ((float) angle), avgX, avgY, 0);
-                    buffer.addVertex(stack.last(), avgX, avgY, 0).setColor(color);
-                    buffer.addVertex(stack.last(), avgX + 10, avgY, 0).setColor(color);
-                    buffer.addVertex(stack.last(), avgX, 10 + avgY, 0).setColor(color);
-                    stack.popPose();
+
+                    var poseStack = guiGraphics.pose();
+                    poseStack.pushPose();
+
+                    poseStack.rotateAround(new Quaternionf().rotateZ((float) angle), avgX, avgY, 0);
+                    buffer.addVertex(poseStack.last(), avgX, avgY, 0).setColor(color);
+                    buffer.addVertex(poseStack.last(), avgX + 10, avgY, 0).setColor(color);
+                    buffer.addVertex(poseStack.last(), avgX, 10 + avgY, 0).setColor(color);
+
+                    poseStack.popPose();
                 }
         );
     }

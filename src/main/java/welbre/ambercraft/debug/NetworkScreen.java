@@ -1,5 +1,7 @@
 package welbre.ambercraft.debug;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -10,15 +12,21 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.sim.heat.HeatNode;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
 public class NetworkScreen extends Screen {
-    private static final int ERROR_COLOR = 0xFFDD0A0A;
+    private final PoseStack poseStack = new PoseStack();
+    private double zoomLevel = 1.0;
 
+    private ScreenNode selectedNode = null;
+    private int dragStartX;
+    private int dragStartY;
 
     private final HeatModule main;
     private final NetworkWrapperModule wrapper;
@@ -75,10 +83,7 @@ public class NetworkScreen extends Screen {
                 if (child == module)
                 {isOk = true; break;}
             if (!isOk)
-            {
-                node.backGround = ERROR_COLOR;
-                AmberCraft.LOGGER.error("Inconsistent network structure");
-            }
+                node.applyError(new IllegalStateException("Inconsistent network structure"));
         }
 
         HeatModule[] children = forcedGet(module, "children");
@@ -112,6 +117,9 @@ public class NetworkScreen extends Screen {
         }
 
         checkCyclical();
+
+        for (ScreenNode node : this.nodes)
+            node.setWorldPos(wrapper.findBlockEntity(node.module));
     }
 
     @Override
@@ -135,6 +143,12 @@ public class NetworkScreen extends Screen {
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().pushTransformation(new Transformation(poseStack.last().pose()));
+        var transformed = poseStack.last().copy().pose().invert().transformPosition(new Vector3f((float)mouseX, (float)mouseY, 0));
+        mouseX = (int) transformed.x;
+        mouseY = (int) transformed.y;
+
         for (Animation animation : animations)
             animation.tick(partialTick);
         animations.removeIf(Animation::done);
@@ -153,20 +167,23 @@ public class NetworkScreen extends Screen {
             }
             node.render(guiGraphics, mouseX, mouseY, partialTick);
         }
+        guiGraphics.pose().popPose();
     }
 
+    
+    
     @Override
     public boolean isPauseScreen() {
         return false;
     }
 
-    private ScreenNode selectedNode = null;
-    private int dragStartX;
-    private int dragStartY;
-
     // Add these methods to handle mouse interactions
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        var transformed = poseStack.last().copy().pose().invert().transformPosition(new Vector3f((float)mouseX, (float)mouseY, 0));
+        mouseX = transformed.x;
+        mouseY = transformed.y;
+
         if (button == 0) { // Left click
             for (ScreenNode node : nodes) {
                 if (node.isMouseOver((int)mouseX, (int)mouseY)) {
@@ -191,6 +208,10 @@ public class NetworkScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        var transformed = poseStack.last().copy().pose().invert().transformPosition(new Vector3f((float)mouseX, (float)mouseY, 0));
+        mouseX = transformed.x;
+        mouseY = transformed.y;
+
         if (button == 0) {
             if (selectedNode != null)
             {
@@ -214,6 +235,18 @@ public class NetworkScreen extends Screen {
         if (button == 0)
             selectedNode = null;
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        zoomLevel = Math.max(0.25, Math.min(4.0, zoomLevel + scrollY * 0.25));
+        if (!poseStack.clear())
+            poseStack.popPose();
+        poseStack.pushPose();
+        poseStack.translate(width / 2f, height / 2f, 0);
+        poseStack.scale((float) zoomLevel, (float) zoomLevel, 1.0f);
+        poseStack.translate(-width / 2f, -height / 2f, 0);
+        return true;
     }
 
     public void centralize()
@@ -248,8 +281,31 @@ public class NetworkScreen extends Screen {
     private void checkCyclical() {
         //check cyclical connection.
         {
+            HeatModule root;
+            {
+                Set<HeatModule> visited = new HashSet<>();
+                root = this.main;
+                HeatModule temp = forcedGet(this.main, "father");
+
+                while (temp != null)
+                {
+                    if (visited.contains(temp))
+                    {
+                        ScreenNode screen = getScreenNode(temp);
+                        if (screen != null)
+                            screen.applyError(new IllegalStateException("Cyclical connection detected on %x!".formatted(screen.module.ID)));
+                        else
+                            AmberCraft.LOGGER.warn("Cyclical connection detected on Null!");
+                    }
+                    visited.add(temp);
+                    root = temp;
+                    temp = forcedGet(temp, "father");
+                }
+            }
+
+
             Set<HeatModule> visited = new HashSet<>();
-            Queue<HeatModule> search = new ArrayDeque<>(List.of(main));
+            Queue<HeatModule> search = new ArrayDeque<>(List.of(root));
             while (!search.isEmpty())
             {
                 HeatModule module = search.poll();
@@ -262,12 +318,9 @@ public class NetworkScreen extends Screen {
                         {
                             ScreenNode screen = getScreenNode(module);
                             if (screen != null)
-                            {
-                                screen.backGround = ERROR_COLOR;
-                                AmberCraft.LOGGER.warn("Cyclical connection detected on %x!".formatted(screen.module.ID));
-                            } else {
+                                screen.applyError(new IllegalStateException("Cyclical connection detected on %x!".formatted(screen.module.ID)));
+                            else
                                 AmberCraft.LOGGER.warn("Cyclical connection detected on Null!");
-                            }
                             break;
                         }
                     }
@@ -279,9 +332,6 @@ public class NetworkScreen extends Screen {
                 HeatModule[] children = forcedGet(module, "children");
                 if (children != null)
                     search.addAll(Arrays.asList(children));
-                HeatModule root = forcedGet(module, "root");
-                if (root != null)
-                    search.add(root);
             }
         }
     }
@@ -353,27 +403,43 @@ public class NetworkScreen extends Screen {
             return filed;
         } catch (Exception e)
         {
-            AmberCraft.LOGGER.error("don't contains field " + e.getMessage());
+            AmberCraft.LOGGER.error("",new IllegalAccessException("don't contains field " + e.getMessage()));
         }
         return null;
     }
 
-    public static void RENDER_TOOL_TIPS(GuiGraphics graphics, int mouseX, int mouseY, float parcialTick, ScreenNode node){
+    public void RENDER_TOOL_TIPS(GuiGraphics graphics, int mouseX, int mouseY, float parcialTick, ScreenNode node){
         HeatModule father = forcedGet(node.module, "father");
         boolean isMaster = forcedGet(node.module, "isMaster");
+        HeatNode heatNode = node.module.getHeatNode();
         ArrayList<Component> list = new ArrayList<>(List.of(
                 Component.literal("ID: " + Integer.toHexString(node.module.ID)).withColor(10494192),
                 Component.literal("IsMaster: " + (isMaster ? "true " : "false")).withColor(10494192),
                 Component.literal("Father: " + (father == null ? "root" : Integer.toHexString(father.ID))).withColor(10494192),
-                Component.literal("Children: ").withColor(10494192),
-                Component.literal("Temperature: %.2fºC".formatted(node.module.getHeatNode().getTemperature())),
-                Component.literal("Conductivity: %.2f W/ºC".formatted(node.module.getHeatNode().getThermalConductivity())),
-                Component.literal("Capacidade: %.2f J/ºC".formatted(node.module.getHeatNode().getThermalMass()))
+                Component.literal("Children: ").withColor(10494192)
+
         ));
         HeatModule[] children = forcedGet(node.module, "children");
         for (HeatModule module : children)
+            list.add(Component.literal("-->Child: " + Integer.toHexString(module.ID)).withColor(10494192));
+
+        BlockEntity entity = this.wrapper.findBlockEntity(node.module);
+        if (entity != null)
+            list.add(Component.literal("Pos: x=%d, y=%d, z=%d".formatted(
+                    entity.getBlockPos().getX(),
+                    entity.getBlockPos().getY(),
+                    entity.getBlockPos().getZ()
+            )).withColor(DyeColor.LIME.getTextColor()));
+        else
+            list.add(Component.literal("Pos: null").withColor(DyeColor.LIME.getTextColor()));
+
+        if (heatNode != null)
         {
-            list.add(3, Component.literal("-->Child: " + Integer.toHexString(module.ID)).withColor(10494192));
+            list.add(Component.literal("Temperature: %.2fºC".formatted(node.module.getHeatNode().getTemperature())));
+            list.add(Component.literal("Conductivity: %.2f W/ºC".formatted(node.module.getHeatNode().getThermalConductivity())));
+            list.add(Component.literal("Capacidade: %.2f J/ºC".formatted(node.module.getHeatNode().getThermalMass())));
+        } else {
+            list.add(Component.literal("Heat not is null!").withColor(DyeColor.RED.getTextColor()));
         }
 
         graphics.renderComponentTooltip(Minecraft.getInstance().font,

@@ -1,18 +1,27 @@
 package welbre.ambercraft.debug;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.heat.HeatModule;
 
 import java.util.List;
 
-public class ScreenNode {
+public class ScreenNode implements Renderable {
+    private static final int ERROR_COLOR = 0xFFDD0A0A;
+
     public int x;
     public int y;
     public int width;
     public int height;
     public int backGround;
+    public int[] worldPos;
     public HeatModule module;
 
     public ScreenNode(int x, int y, int width, int height, int backGround, HeatModule module) {
@@ -25,11 +34,15 @@ public class ScreenNode {
     }
 
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        guiGraphics.fill(x-1, y-1, x + width + 1, y + height + 1, 0xff000000);
         guiGraphics.fill(x, y, x + width, y + height, backGround);
         if ((boolean) NetworkScreen.forcedGet(module, "isMaster"))
             guiGraphics.fill(x + width - 5, y + width - 5, x + width, y + height, 0xffff0000);
+        if (NetworkScreen.forcedGet(module, "father") == null)
+            guiGraphics.fill(x + width - 10, y + width - 5, x + width-5, y + height, 0xFF7b4d18);
 
         guiGraphics.drawString(Minecraft.getInstance().font, "@" + Integer.toHexString(module.ID), x, y, 0xFFFFFFFF);
+        guiGraphics.drawString(Minecraft.getInstance().font, worldPosAsString(), x, y+10, 0xFFFFFFFF);
     }
 
     public int[] getCenter() {
@@ -72,7 +85,34 @@ public class ScreenNode {
         }
     }
 
-    public boolean isMouseOver(int mouseX, int mouseY) {
+    public boolean isMouseOver(float mouseX, float mouseY) {
         return mouseX >= this.x && mouseX <= this.x + this.width && mouseY >= this.y && mouseY <= this.y + this.height;
+    }
+
+    public void applyError(Exception exception)
+    {
+        this.backGround = ERROR_COLOR;
+        AmberCraft.LOGGER.error(exception.getMessage(), exception);
+    }
+
+    private String worldPosAsString()
+    {
+        if (worldPos == null)
+            return "null";
+        return "" + worldPos[0] + "," + worldPos[1] + "," + worldPos[2];
+    }
+
+    public void setWorldPos(BlockEntity entity)
+    {
+        if (entity == null)
+            return;
+
+        this.worldPos = new int[]{entity.getBlockPos().getX(), entity.getBlockPos().getY(), entity.getBlockPos().getZ()};
+
+        if (worldPosAsString().length() * 5 > this.width)
+        {
+            this.width = (worldPosAsString().length() * 5 + 10);
+            this.height = width;
+        }
     }
 }

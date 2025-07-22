@@ -68,11 +68,17 @@ public class AmberHeatCondutorTest {
         });
     }
 
+
+
+
+
+
+
     public static final List<BlockPos> heat_conductor_breaking_test_conductor_list = List.of(
-            new BlockPos(4,1,0),
             new BlockPos(3,1,0),
             new BlockPos(2,1,0),
             new BlockPos(1,1,0),
+            new BlockPos(0,1,0),
             new BlockPos(0,1,1),
             new BlockPos(0,1,2),
             new BlockPos(1,1,2),
@@ -90,7 +96,7 @@ public class AmberHeatCondutorTest {
             var fun = new TestFunction(
                     "defaultBatch",
                     "heat_conductor_breaking_test"+index++,
-                    "ambercraft:heat_conductor_breaking_test",
+                    "ambercraft:heat_source_and_heat_sink",
                     Rotation.NONE,
                     100,
                     0,
@@ -130,7 +136,7 @@ public class AmberHeatCondutorTest {
             var fun = new TestFunction(
                     "defaultBatch",
                     "heat_conductor_replace_test"+index++,
-                    "ambercraft:heat_conductor_breaking_test",
+                    "ambercraft:heat_source_and_heat_sink",
                     Rotation.NONE,
                     250,
                     0,
@@ -152,7 +158,7 @@ public class AmberHeatCondutorTest {
         AtomicReference<Boolean> reachCoolDown = new AtomicReference<>(false);
 
         HeatSinkBE heatSinkBE = helper.getBlockEntity(new BlockPos(2,2,3));
-        HeatFurnaceBE furnace = helper.getBlockEntity(new BlockPos(4,2,0));
+        HeatFurnaceBE furnace = helper.getBlockEntity(new BlockPos(4,1,0));
         final double temperature = heatSinkBE.getHeatModule().getHeatNode().getTemperature();
 
         helper.setBlock(pos, Blocks.AIR);//remove the conductor

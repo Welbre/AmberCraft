@@ -38,6 +38,21 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     }
 
     @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        super.handleUpdateTag(tag, lookupProvider);
+        heatModule.ID = tag.getInt("id");
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        var tag= new CompoundTag();
+        tag.putInt("id", heatModule.ID);
+        return tag;
+    }
+
+
+
+    @Override
     public void onDataPacket(@NotNull Connection net, @NotNull ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
         heatModule.ID = pkt.getTag().getInt("id");
@@ -46,13 +61,6 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     @Override
     public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
-        var tag= new CompoundTag();
-        tag.putInt("id", heatModule.ID);
-        return tag;
     }
 
     @Override

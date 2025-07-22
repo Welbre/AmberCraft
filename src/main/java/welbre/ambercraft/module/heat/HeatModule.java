@@ -19,7 +19,7 @@ import java.util.*;
 public class HeatModule implements Module, Serializable {
     HeatNode node;
     HeatModule father;
-    boolean isMaster = false;
+    boolean isMaster = true;
     HeatModule[] children;
 
     boolean isFresh = false;
@@ -54,59 +54,75 @@ public class HeatModule implements Module, Serializable {
         ID = tag.getInt("ID");
     }
 
-    /// Makes the father father child of this.
-    private void invertRelationChip(){
-        if (this.father != null){
-            this.father.removeChild(this);
-            this.addChild(this.father);
-            this.father.father = this;
-            this.father = null;
+    private void setRoot()
+    {
+        List<HeatModule> path = new ArrayList<>();
+        {
+            HeatModule current = this;
+            while (current != null)
+            {
+                if (path.size() > 5000)
+                    return;
+                path.add(current);
+                current = current.father;
+            }
         }
+
+        for (int i = path.size() - 1; i >= 1; i--)
+        {
+            HeatModule current = path.get(i);
+            HeatModule previous = path.get(i - 1);
+
+            current.removeChild(previous);
+            previous.addChild(current);
+            current.father = previous;
+        }
+
+        path.getLast().isMaster = false;
+        isMaster = true;
+        father = null;
     }
 
     /// Disconnect this node from all connections.
     private void disconnectAll(){
-        //check if the father network has father master, if not, set the father as the master of the network;
         if (father != null)
-        {
-            father.removeChild(this);
-            HeatModule master = father.getMaster();
-            if (master == null)
-                father.isMaster = true;
-        }
-        this.father = null;
+            this.father.removeChild(this);
 
-        for (HeatModule child : children)
+        for (HeatModule child : this.children)
+        {
             child.father = null;
-        for (HeatModule child : children)
-            //check if the children have father master, if not, set the child as master of hin network.
-            if (child.getMaster() == null)
-                child.isMaster = true;
-        children = new HeatModule[0];
+            HeatModule root = child.getRoot();
+            if (root != null)
+                child.setRoot();
+        }
+    }
+
+    public void connectTo(HeatModule target)
+    {
+        if (this.getRoot() == target.getRoot())//check if is already connected!
+            return;
+        if (this.isMaster && target.isMaster)
+            connect(target);
+        else if (this.isMaster)
+            this.connect(target);
+        else if (target.isMaster)
+            target.connect(this);
+        else
+            merge(target);
     }
     
-    /// connect this to the target module.<br> So target will be the father of this.
-    public void connect(HeatModule target)
+    /// connect this to the target module.<br> So the target will be the father of this.
+    private void connect(HeatModule target)
     {
-        //check if is already connected
-        if (this.father == target || target.father == this)
-            return;
-        //if this has father father, then this new connection needs to be inverted.
-        invertRelationChip();
-
-        //check if the network has 2 masters, if true, then remove the target mester.
-        {
-            HeatModule this_master = this.getMaster();
-            HeatModule target_master = target.getMaster();
-            if (this_master != null && target_master != null)
-                target_master.isMaster = false;
-            else if (this_master == null && target_master == null)
-            {
-                this.isMaster = true;
-            }
-        }
+        this.isMaster = false;
         this.father = target;
         target.addChild(this);
+    }
+
+    private void merge(HeatModule target)
+    {
+        setRoot();
+        target.connect(this);
     }
     
     /// Copy's the children array and the child on it.<br> don't use it to connect 2 modules! 
@@ -130,33 +146,6 @@ public class HeatModule implements Module, Serializable {
                 newChildren[index++] = module;
 
         children = newChildren;
-    }
-
-    /// Get the master of the network
-    public HeatModule getMaster()
-    {
-        if (isMaster)
-            return this;
-
-        HeatModule root = getRoot();
-        Stack<HeatModule> stack = new Stack<>(); stack.push(root);
-        int count = 0;
-        while (!stack.isEmpty())
-        {
-            HeatModule module = stack.pop();
-            if (module == null) continue;
-
-            if (module.isMaster)
-                return module;
-            stack.addAll(Arrays.asList(module.children));
-            if (count++ > 3000)
-            {
-                AmberCraft.LOGGER.error(new IllegalStateException("Cyclic dependency detected!").getMessage());
-                return null;
-            }
-        }
-
-        return null;
     }
 
     public HeatModule getRoot()
@@ -198,11 +187,11 @@ public class HeatModule implements Module, Serializable {
             queue.addAll(Arrays.asList(module.children));
             if (count++ > 1000)
             {
-                AmberCraft.LOGGER.error("Circular dependency detected!", new IllegalStateException("Cyclic dependency detected!"));
-                AmberCraft.LOGGER.warn("Master %s %x disabled, by circular dependency in %s %x!".formatted(
+                AmberCraft.LOGGER.warn("Master %s @%x disabled, by circular dependency in %s @%x!".formatted(
                         module.getClass().getSimpleName(), module.ID,
                         this.getClass().getSimpleName(), this.ID
                 ));
+                AmberCraft.LOGGER.error("Circular dependency detected!", new IllegalStateException("Cyclic dependency detected!"));
                 this.isMaster = false;
                 break;
             }
@@ -248,7 +237,7 @@ public class HeatModule implements Module, Serializable {
         for (Direction dir : Direction.values())
             if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
                 for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
-                    this.connect(heatModule);
+                    this.connectTo(heatModule);
 
         isFresh = true;
     }
