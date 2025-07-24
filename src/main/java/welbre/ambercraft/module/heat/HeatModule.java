@@ -39,7 +39,6 @@ public class HeatModule implements Module, Serializable {
         {
             tag.put("node", node.toTag());
         }
-        tag.putBoolean("isMaster", isMaster);
         tag.putInt("ID", ID);
     }
 
@@ -50,7 +49,6 @@ public class HeatModule implements Module, Serializable {
             n.fromTag(tag.getCompound("node"));
             node = n;
         }
-        isMaster = tag.getBoolean("isMaster");
         ID = tag.getInt("ID");
     }
 
@@ -85,44 +83,58 @@ public class HeatModule implements Module, Serializable {
 
     /// Disconnect this node from all connections.
     private void disconnectAll(){
+        //todo only to debug, remove it later
+        if (isMaster && father != null)
+            throw new IllegalStateException("corrupted module!");
+        if (!isMaster && father == null)
+            throw new IllegalStateException("corrupted module!");
+
         if (father != null)
-            this.father.removeChild(this);
+            father.removeChild(this);
 
         for (HeatModule child : this.children)
         {
             child.father = null;
-            HeatModule root = child.getRoot();
-            if (root != null)
-                child.setRoot();
+            child.setRoot();
         }
     }
 
-    public void connectTo(HeatModule target)
+    public void connect(HeatModule target)
     {
-        if (this.getRoot() == target.getRoot())//check if is already connected!
+        HeatModule this_root = this.getRoot();
+        HeatModule target_root = target.getRoot();
+        if (this_root == target_root)//check if is already connected!
             return;
-        if (this.isMaster && target.isMaster)
-            connect(target);
-        else if (this.isMaster)
-            this.connect(target);
-        else if (target.isMaster)
-            target.connect(this);
-        else
-            merge(target);
+
+        if (this.isMaster && target.isMaster)//Simplest case, only add this to the target children.
+        {
+            //todo check which is easier to re-root using some future root info
+            connect__CRUDE__(target);
+        }
+        else if (this.isMaster)//if this is master, and the target isn't a master, re-root the target and connect the target to this.
+        {
+            target.setRoot();
+            target.connect__CRUDE__(this);
+        }
+        else if (target.isMaster)//if the target is master and this isn't, re-root this and connect this to the target.
+        {
+            setRoot();
+            connect__CRUDE__(target);
+        }
+        else//no master connection, so re-root both and connect this to target.
+        {
+            setRoot();
+            target.setRoot();
+            connect__CRUDE__(target);
+        }
     }
     
     /// connect this to the target module.<br> So the target will be the father of this.
-    private void connect(HeatModule target)
+    private void connect__CRUDE__(HeatModule target)
     {
         this.isMaster = false;
         this.father = target;
         target.addChild(this);
-    }
-
-    private void merge(HeatModule target)
-    {
-        setRoot();
-        target.connect(this);
     }
     
     /// Copy's the children array and the child on it.<br> don't use it to connect 2 modules! 
@@ -158,12 +170,12 @@ public class HeatModule implements Module, Serializable {
             temp = temp.father;
         }
 
-        return oldestFather;
+        return oldestFather.isMaster ? oldestFather : null;
     }
 
     private boolean shouldBeMaster()
     {
-        return father == null && children.length == 0;
+        return father == null;
     }
 
     @Override
@@ -237,7 +249,7 @@ public class HeatModule implements Module, Serializable {
         for (Direction dir : Direction.values())
             if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
                 for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
-                    this.connectTo(heatModule);
+                    this.connect(heatModule);
 
         isFresh = true;
     }

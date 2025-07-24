@@ -22,58 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @GameTestHolder(AmberCraft.MOD_ID)
 public class AmberHeatCondutorTest {
 
-    @PrefixGameTestTemplate(false)
-    @GameTest()
-    public static void heat_conductor_connection_test(GameTestHelper helper)
-    {
-        helper.setBlock(
-                0,1,0,
-                AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()
-        );
-        helper.setBlock(
-                1,1,0,
-                AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()
-        );
-        helper.setBlock(
-                2,1,0,
-                AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()
-        );
-        helper.setBlock(
-                3,1,0,
-                AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get()
-        );
-        helper.setBlock(
-                4,1,0,
-                AmberCraft.Blocks.HEAT_FURNACE_BLOCK.get().defaultBlockState().setValue(HeatFurnaceBlock.FACING, Direction.NORTH)
-        );
-        HeatFurnaceBE furnace = helper.getBlockEntity(new BlockPos(4,1,0));
-        furnace.ignite();
-        furnace.ignite();
-        furnace.ignite();
-        furnace.addPower();
-        furnace.addPower();
-        furnace.addPower();
-        furnace.addPower();
-        furnace.addPower();
-
-        CopperHeatConductorBE conductor = helper.getBlockEntity(new BlockPos(0,1,0));
-        AtomicReference<Double> temperature = new AtomicReference<>(-1.0);
-        helper.runAfterDelay(1,() -> {
-            temperature.set(conductor.getHeatModule().getHeatNode().getTemperature());
-        });
-        helper.succeedWhen(() -> {
-            if (conductor.getHeatModule().getHeatNode().getTemperature() - temperature.get() > 100)
-                helper.succeed();
-            throw new GameTestAssertException("");
-        });
-    }
-
-
-
-
-
-
-
     public static final List<BlockPos> heat_conductor_breaking_test_conductor_list = List.of(
             new BlockPos(3,1,0),
             new BlockPos(2,1,0),

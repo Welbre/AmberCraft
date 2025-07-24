@@ -9,17 +9,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.network.NetworkViewerPayLoad;
 import welbre.ambercraft.sim.heat.HeatNode;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 
+@OnlyIn(Dist.CLIENT)
 public class NetworkScreen extends Screen {
     private final PoseStack poseStack = new PoseStack();
     private double zoomLevel = 1.0;
