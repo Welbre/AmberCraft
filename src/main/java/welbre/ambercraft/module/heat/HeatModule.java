@@ -7,6 +7,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.debug.Connection;
+import welbre.ambercraft.debug.ScreenNode;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
@@ -52,19 +54,14 @@ public class HeatModule implements Module, Serializable {
         ID = tag.getInt("ID");
     }
 
+    /// Returns a copy of children
+    public HeatModule[] getChildren() {
+        return Arrays.copyOf(this.children,this.children.length);
+    }
+
     private void setRoot()
     {
-        List<HeatModule> path = new ArrayList<>();
-        {
-            HeatModule current = this;
-            while (current != null)
-            {
-                if (path.size() > 5000)
-                    return;
-                path.add(current);
-                current = current.father;
-            }
-        }
+        List<HeatModule> path = getRootPath();
 
         for (int i = path.size() - 1; i >= 1; i--)
         {
@@ -83,12 +80,6 @@ public class HeatModule implements Module, Serializable {
 
     /// Disconnect this node from all connections.
     private void disconnectAll(){
-        //todo only to debug, remove it later
-        if (isMaster && father != null)
-            throw new IllegalStateException("corrupted module!");
-        if (!isMaster && father == null)
-            throw new IllegalStateException("corrupted module!");
-
         if (father != null)
             father.removeChild(this);
 
@@ -101,31 +92,73 @@ public class HeatModule implements Module, Serializable {
 
     public void connect(HeatModule target)
     {
-        HeatModule this_root = this.getRoot();
-        HeatModule target_root = target.getRoot();
-        if (this_root == target_root)//check if is already connected!
-            return;
+        List<HeatModule> this_path = this.getRootPath();
+        List<HeatModule> target_path = target.getRootPath();
 
-        if (this.isMaster && target.isMaster)//Simplest case, only add this to the target children.
+        if (this.father == target || target.father == this)//trying to connect 2 nodes already connected.
+            return;
+        for (var child : this.children)
+            if (child == target)
+                return;
+        for (var child : target.children)
+            if (child == this)
+                return;
+
+        if (this_path.getLast() == target_path.getLast())//trying to connect 2 nodes in the same network
         {
-            //todo check which is easier to re-root using some future root info
+            if (this.isMaster)
+            {
+                target.father = this;
+                addChild(target);
+            }
+            else if (target.isMaster)
+            {
+                this.father = target;
+                target.addChild(this);
+            }
+            else
+            {
+                if (this.children.length == 0)//keep as a leaf
+                    connect__CRUDE__(target);
+                else if (target.children.length == 0)
+                    target.connect__CRUDE__(this);
+                else if (this_path.size() < target_path.size())
+                    target.connect__CRUDE__(this);
+                else
+                    connect__CRUDE__(target);
+            }
+            return;
+        }
+
+        if (this.isMaster && target.isMaster)
+        {
+            //Only connect this to the target; therefore, this will no longer be a master.
             connect__CRUDE__(target);
         }
-        else if (this.isMaster)//if this is master, and the target isn't a master, re-root the target and connect the target to this.
+        else if (this.isMaster)
         {
-            target.setRoot();
+            //Connect 2 nodes, and this is the root, so instead find the root of the target, only connect this to the target.
+            //Therefore, all connections will be maintained without the expensive cost of find the root.
+            connect__CRUDE__(target);
+        }
+        else if (target.isMaster)
+        {
+            //Exact the same solution, but now the available root is the target.
             target.connect__CRUDE__(this);
         }
-        else if (target.isMaster)//if the target is master and this isn't, re-root this and connect this to the target.
+        else
         {
-            setRoot();
-            connect__CRUDE__(target);
-        }
-        else//no master connection, so re-root both and connect this to target.
-        {
-            setRoot();
-            target.setRoot();
-            connect__CRUDE__(target);
+            //The worst case, no root available, so need to re-Root one a network and after that connect.
+            if (this_path.size() > target_path.size())//use the smaller network.
+            {
+                target.setRoot();
+                target.connect__CRUDE__(this);
+            }
+            else
+            {
+                this.setRoot();
+                this.connect__CRUDE__(target);
+            }
         }
     }
     
@@ -160,14 +193,35 @@ public class HeatModule implements Module, Serializable {
         children = newChildren;
     }
 
+    public List<HeatModule> getRootPath()
+    {
+        List<HeatModule> path = new ArrayList<>();
+        {
+            HeatModule current = this;
+            while (current != null)
+            {
+                if (path.size() > 50000)
+                    throw new IllegalStateException("Circular dependency detected!");
+                path.add(current);
+                current = current.father;
+            }
+        }
+
+        return path;
+    }
+
     public HeatModule getRoot()
     {
+        int count = 0;
         HeatModule oldestFather = this;
         var temp = this.father;
 
         while (temp != null){
             oldestFather = temp;
             temp = temp.father;
+
+            if (count++ > 50000)
+                throw new IllegalStateException("Circular dependency detected!");
         }
 
         return oldestFather.isMaster ? oldestFather : null;
@@ -178,32 +232,86 @@ public class HeatModule implements Module, Serializable {
         return father == null;
     }
 
+    public RuntimeException checkInconsistencies() {
+        if (isMaster && father != null)
+            return new IllegalStateException("corrupted module! is master but isn't root");
+        if (!isMaster && father == null)
+            return new IllegalStateException("corrupted module! is root but isn't master");
+
+        if (father != null)
+        {
+            boolean isOk = false;
+            for (HeatModule child : father.children)
+            {
+                if (child == this)
+                {
+                    isOk = true;
+                    break;
+                }
+            }
+            if (!isOk)
+                return new RuntimeException("The father(@%x) don't contains this child(@%x)!".formatted(father.ID, ID));
+
+            for (var child : this.children)
+                if (child == father)
+                    return new RuntimeException("module (@%x) and (@%x) are in a children circular dependency!".formatted(ID, father.ID));
+        }
+
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "HeatModule{ID = @%x}".formatted(ID);
+    }
+
     @Override
     public void tick(BlockEntity entity){
         if (!this.isMaster)
             return;
 
-        var oldestFather = getRoot();
+        Set<HeatModule> visited = new HashSet<>();
+        Queue<HeatModule> queue = new ArrayDeque<>(Collections.singleton(this));
+        visited.add(this);
 
-        Queue<HeatModule> queue = new ArrayDeque<>(Collections.singleton(oldestFather));
         int count = 0;
         while (!queue.isEmpty())
         {
             HeatModule module = queue.poll();
-            //todo terrible code. refactor this later.
-            if (module.node != null)
+            if (module.node == null)
+                continue;
+            HeatNode[] nodes = Arrays.stream(module.children).map(HeatModule::getHeatNode).toArray(HeatNode[]::new);
+            module.node.run(nodes);
+            for (HeatModule child : module.children)
             {
-                module.node.run(Arrays.stream(module.children).map(a -> a.node).toArray(HeatNode[]::new));
-                entity.setChanged();
+                if (!visited.contains(child))
+                {
+                    visited.add(child);
+                    queue.add(child);
+                }
             }
-            queue.addAll(Arrays.asList(module.children));
-            if (count++ > 1000)
+
+
+            if (count++ > 50000)
             {
-                AmberCraft.LOGGER.warn("Master %s @%x disabled, by circular dependency in %s @%x!".formatted(
-                        module.getClass().getSimpleName(), module.ID,
-                        this.getClass().getSimpleName(), this.ID
+                AmberCraft.LOGGER.warn("Master %s @%x disabled, by circular dependency while ticking %s @%x!".formatted(
+                        this.getClass().getSimpleName(), this.ID,
+                        module.getClass().getSimpleName(), module.ID
                 ));
-                AmberCraft.LOGGER.error("Circular dependency detected!", new IllegalStateException("Cyclic dependency detected!"));
+                StringBuilder builder = new StringBuilder();
+                HashSet<HeatModule> _visited = new HashSet<>();
+                _visited.add(module);
+
+                for (HeatModule a : queue)
+                {
+                    builder.append(a.toString()).append("\n");
+                    if (_visited.contains(a))
+                        break;
+                    _visited.add(a);
+                }
+                AmberCraft.LOGGER.warn("Queue Status:\n current -> " + module + "\n" + builder + "##redundancy##");
+
+                AmberCraft.LOGGER.error("Circular dependency detected while ticking!", new IllegalStateException("Circular dependency detected while ticking!"));
                 this.isMaster = false;
                 break;
             }
@@ -241,7 +349,7 @@ public class HeatModule implements Module, Serializable {
         var level = entity.getLevel();
         if (level == null)
             throw new IllegalStateException("Trying to refresh module while the game isn't loaded!");
-        if (level.isClientSide)
+        if (level.isClientSide())
             return;
 
         var pos = entity.getBlockPos();
@@ -249,7 +357,12 @@ public class HeatModule implements Module, Serializable {
         for (Direction dir : Direction.values())
             if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
                 for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
-                    this.connect(heatModule);
+                        this.connect(heatModule);
+
+        if (isMaster && father != null)
+            throw new IllegalStateException("corrupted module!");
+        if (!isMaster && father == null)
+            throw new IllegalStateException("corrupted module!");
 
         isFresh = true;
     }
@@ -262,5 +375,4 @@ public class HeatModule implements Module, Serializable {
         node = null;
         disconnectAll();
     }
-
 }

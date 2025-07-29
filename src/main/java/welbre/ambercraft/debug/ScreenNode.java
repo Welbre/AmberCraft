@@ -92,7 +92,7 @@ public class ScreenNode implements Renderable {
     public void applyError(Exception exception)
     {
         this.backGround = ERROR_COLOR;
-        AmberCraft.LOGGER.error(exception.getMessage(), exception);
+        AmberCraft.LOGGER.warn(exception.getMessage(), exception);
     }
 
     private String worldPosAsString()

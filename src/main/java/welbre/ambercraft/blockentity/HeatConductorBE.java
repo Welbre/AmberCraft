@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
@@ -66,7 +67,14 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     @Override
     public void onLoad() {
         super.onLoad();
-        heatModule.refresh(this);
+        try
+        {
+            heatModule.refresh(this);
+        } catch (Exception e)
+        {
+            AmberCraft.LOGGER.error("Error loading heat module for block entity at " + getBlockPos() + " with ID " + heatModule.ID, e);
+            level.removeBlock(getBlockPos(), false);
+        }
     }
 
     @Override

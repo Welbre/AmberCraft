@@ -4,6 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload;
@@ -12,18 +15,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.network.NetworkViewerPayLoad;
 import welbre.ambercraft.sim.heat.HeatNode;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -36,11 +34,11 @@ public class NetworkScreen extends Screen {
     private int dragStartX;
     private int dragStartY;
 
-    private final HeatModule main;
-    private final NetworkWrapperModule wrapper;
-    private final List<ScreenNode> nodes = new ArrayList<>();
-    private final List<Connection> connections = new ArrayList<>();
-    private final List<Animation> animations = new ArrayList<>();
+    final HeatModule main;
+    final NetworkWrapperModule wrapper;
+    final List<ScreenNode> nodes = new ArrayList<>();
+    final List<Connection> connections = new ArrayList<>();
+    final List<Animation> animations = new ArrayList<>();
 
     public NetworkScreen(NetworkWrapperModule main) {
         super(Component.literal("Network viewer").withColor(DyeColor.PURPLE.getTextColor()));
@@ -49,7 +47,7 @@ public class NetworkScreen extends Screen {
     }
 
 
-    private ScreenNode getScreenNode(HeatModule module)
+    ScreenNode getScreenNode(HeatModule module)
     {
         for (ScreenNode screenNode : nodes)
             if (screenNode.module == module)
@@ -77,24 +75,16 @@ public class NetworkScreen extends Screen {
 
         @Nullable ScreenNode fatherNode = getScreenNode(father);
 
-        var center = nextCenter(fatherNode);
-        node.x = center[0];
-        node.y = center[1];
+        var pos = nextCenter(fatherNode);
+        //var pos = nextGrid(5);
+        node.x = pos[0];
+        node.y = pos[1];
 
+        RuntimeException ok = module.checkInconsistencies();
+        if (ok != null)
+            node.applyError(ok);
 
-        //todo place in father function
-        //check inconsistencies
-        if (father != null){
-            HeatModule[] children = forcedGet(father, "children");
-            boolean isOk = false;
-            for (HeatModule child : children)
-                if (child == module)
-                {isOk = true; break;}
-            if (!isOk)
-                node.applyError(new IllegalStateException("Inconsistent network structure"));
-        }
-
-        HeatModule[] children = forcedGet(module, "children");
+        HeatModule[] children = module.getChildren();
         if (children != null)
             for (HeatModule child : children)
             {
@@ -128,6 +118,11 @@ public class NetworkScreen extends Screen {
 
         for (ScreenNode node : this.nodes)
             node.setWorldPos(wrapper.findBlockEntity(node.module));
+
+
+        this.addRenderableWidget(Button.builder(Component.literal("Tree viewer"), (a) -> TreeViewerSort.sort(this)).pos(0,0).size(100,18).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Orbital viewer"), (a) -> OrbitalViewerSort.sort(this)).pos(100,0).size(100,18).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Onion viewer"), (a) -> OnionViewerSort.sort(this)).pos(200,0).size(100,18).build());
     }
 
     @Override
@@ -176,6 +171,9 @@ public class NetworkScreen extends Screen {
             node.render(guiGraphics, mouseX, mouseY, partialTick);
         }
         guiGraphics.pose().popPose();
+
+        for (Renderable renderable : this.renderables)
+            renderable.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     
@@ -257,6 +255,14 @@ public class NetworkScreen extends Screen {
         return true;
     }
 
+    public void centralize(ScreenNode node)
+    {
+        int x = (this.width/2) - node.x;
+        int y = (this.height/2) - node.y;
+        for (ScreenNode n : nodes)
+            animations.add(new Animation(n, n.x + x, n.y + y, 20, Animation.Interpolations.EASE_OUT_QUART));
+    }
+
     public void centralize()
     {
         int x = 0;
@@ -276,72 +282,87 @@ public class NetworkScreen extends Screen {
             animations.add(new Animation(node, node.x - x, node.y - y, 10, Animation.Interpolations.EASE_OUT_QUART));
     }
 
+
+    public static EditBox SEARCH;
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 32)// Space bar
         {
             centralize();
             return true;
+        } else if (keyCode == 70 && modifiers == 2) //ctrl + f
+        {
+            if (SEARCH != null)
+            {
+                this.removeWidget(SEARCH);
+                SEARCH = null;
+                return true;
+            }
+
+            SEARCH = new EditBox(this.font, this.width /2 - 50, this.height/2 - 9, 100, 18, Component.literal("Search"));
+            SEARCH.setResponder((text) -> {
+                if (text.startsWith("@"))
+                    text = text.substring(1);
+                if (text.isEmpty())
+                    return;
+
+
+                text = text.toLowerCase();
+                for (var node : nodes)
+                {
+                    if (String.format("%x",node.module.ID).contains(text))
+                    {
+                        this.centralize(node);
+                        if (String.format("%x",node.module.ID).equals(text))//remove if findit
+                        {
+                            this.removeWidget(SEARCH);
+                            SEARCH = null;
+                        }
+
+                        return;
+                    }
+                }
+            });
+            SEARCH.setCanLoseFocus(true);
+            SEARCH.setFocused(true);
+            this.setFocused(SEARCH);
+            this.addRenderableWidget(SEARCH);
+            return true;
         }
+        if (SEARCH != null)
+            return SEARCH.keyPressed(keyCode, scanCode, modifiers);
+
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private void checkCyclical() {
         //check cyclical connection.
+        HeatModule root;
         {
-            HeatModule root;
-            {
-                Set<HeatModule> visited = new HashSet<>();
-                root = this.main;
-                HeatModule temp = forcedGet(this.main, "father");
-
-                while (temp != null)
-                {
-                    if (visited.contains(temp))
-                    {
-                        ScreenNode screen = getScreenNode(temp);
-                        if (screen != null)
-                            screen.applyError(new IllegalStateException("Cyclical connection detected on %x!".formatted(screen.module.ID)));
-                        else
-                            AmberCraft.LOGGER.warn("Cyclical connection detected on Null!");
-                    }
-                    visited.add(temp);
-                    root = temp;
-                    temp = forcedGet(temp, "father");
-                }
-            }
-
-
             Set<HeatModule> visited = new HashSet<>();
-            Queue<HeatModule> search = new ArrayDeque<>(List.of(root));
-            while (!search.isEmpty())
+            root = this.main;
+            HeatModule temp = forcedGet(this.main, "father");
+
+            while (temp != null)
             {
-                HeatModule module = search.poll();
-                if (visited.contains(module))
+                if (visited.contains(temp))
                 {
-                    HeatModule[] children = forcedGet(module, "children");
-                    for (HeatModule child : children)
-                    {
-                        if (visited.contains(child))
-                        {
-                            ScreenNode screen = getScreenNode(module);
-                            if (screen != null)
-                                screen.applyError(new IllegalStateException("Cyclical connection detected on %x!".formatted(screen.module.ID)));
-                            else
-                                AmberCraft.LOGGER.warn("Cyclical connection detected on Null!");
-                            break;
-                        }
-                    }
-
-                    continue;
+                    ScreenNode screen = getScreenNode(temp);
+                    temp = null;
+                    if (screen != null)
+                        screen.applyError(new IllegalStateException("Cyclical connection detected on %x!".formatted(screen.module.ID)));
+                    else
+                        AmberCraft.LOGGER.warn("Cyclical connection detected on Null!");
                 }
-                visited.add(module);
-
-                HeatModule[] children = forcedGet(module, "children");
-                if (children != null)
-                    search.addAll(Arrays.asList(children));
+                visited.add(temp);
+                root = temp;
+                temp = forcedGet(temp, "father");
             }
         }
+
+        if (root == null)
+            return;
+
     }
 
     private int[] nextCenter(ScreenNode father)

@@ -47,6 +47,7 @@ public record Connection(ScreenNode father, ScreenNode child, int color) impleme
     public static void drawLine(GuiGraphics guiGraphics, int x1, int y1, int x2, int y2, int color) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
+        if (dx > 4000 || dy > 4000) return;
 
         int sx = x1 < x2 ? 1 : -1;
         int sy = y1 < y2 ? 1 : -1;
