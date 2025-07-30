@@ -7,6 +7,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -15,6 +16,7 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.debug.NetworkScreen;
 import welbre.ambercraft.debug.NetworkWrapperModule;
+import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
 import java.io.*;
@@ -22,9 +24,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Base64;
 
 public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
-    public NetworkViewerPayLoad(HeatConductorBE conductor)
+    public <T extends BlockEntity & ModulesHolder> NetworkViewerPayLoad(T blockEntity)
     {
-        this(convert(conductor));
+        this(convert(blockEntity));
     }
 
 
@@ -33,7 +35,7 @@ public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
             ByteArrayInputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(payLoad.data()));
 
             ObjectInputStream inputStream = new ObjectInputStream(stream);
-            NetworkWrapperModule wrapper = (NetworkWrapperModule) inputStream.readObject();
+            NetworkWrapperModule<?> wrapper = (NetworkWrapperModule<?>) inputStream.readObject();
             inputStream.close();
 
             //pedaço de merda para fazer um sistema ridículo funcionar
@@ -62,7 +64,7 @@ public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
         return TYPE;
     }
 
-    private static String convert(HeatConductorBE conductor)
+    private static <T extends BlockEntity & ModulesHolder> String convert(T conductor)
     {
         try
         {

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.List;
 
@@ -22,9 +23,9 @@ public class ScreenNode implements Renderable {
     public int height;
     public int backGround;
     public int[] worldPos;
-    public HeatModule module;
+    public NetworkModule module;
 
-    public ScreenNode(int x, int y, int width, int height, int backGround, HeatModule module) {
+    public ScreenNode(int x, int y, int width, int height, int backGround, NetworkModule module) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -36,9 +37,9 @@ public class ScreenNode implements Renderable {
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         guiGraphics.fill(x-1, y-1, x + width + 1, y + height + 1, 0xff000000);
         guiGraphics.fill(x, y, x + width, y + height, backGround);
-        if ((boolean) NetworkScreen.forcedGet(module, "isMaster"))
+        if (module.getMaster() != null)
             guiGraphics.fill(x + width - 5, y + width - 5, x + width, y + height, 0xffff0000);
-        if (NetworkScreen.forcedGet(module, "father") == null)
+        if (module.getFather() == null)
             guiGraphics.fill(x + width - 10, y + width - 5, x + width-5, y + height, 0xFF7b4d18);
 
         guiGraphics.drawString(Minecraft.getInstance().font, "@" + Integer.toHexString(module.ID), x, y, 0xFFFFFFFF);

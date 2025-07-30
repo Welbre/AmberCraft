@@ -17,6 +17,7 @@ public class HeatNode extends Node implements Serializable {
     protected double thermal_conductivity = 1.0;
     protected double envTemperature = 0;
     protected double envConductivity = 0;
+    protected double softHeat = 0;//used to a more precise simulation, first compute all heat that will be transfer in this node, and after update the temperature.
 
     public HeatNode() {
     }
@@ -25,11 +26,16 @@ public class HeatNode extends Node implements Serializable {
         this.temperature = temperature;
     }
 
-    private void transferHeatToChildren(Node[] nodes)
+    public void computeSoftHeatWithChildren(Node[] nodes)
     {
         for (Node node : nodes)
             if (node instanceof HeatNode heatNode)
                 this.transferHeat(heatNode, DEFAULT_TIME_STEP);
+    }
+
+    public void computeSoftHeatToEnvironment(){
+        if (this.envConductivity > 0)
+            computeSoftHeatToEnvironment(envTemperature, envConductivity, DEFAULT_TIME_STEP);
     }
 
     /**
@@ -40,7 +46,7 @@ public class HeatNode extends Node implements Serializable {
      * @param env_conductivity how good the environment is to transfer heat.
      * @param dt the time to simulate the heat transfer.
      */
-    public void transferHeatToEnvironment(double env_temperature, double env_conductivity, double dt){
+    public void computeSoftHeatToEnvironment(double env_temperature, double env_conductivity, double dt){
         double resistence = (1.0/thermal_conductivity) + (1.0/env_conductivity);
         double power, heat;
 
@@ -76,6 +82,7 @@ public class HeatNode extends Node implements Serializable {
         double t1 = teq + (this.temperature - teq) * Math.pow(Math.E, -dt / tau);
         double t2 = teq + (target.temperature - teq) * Math.pow(Math.E, -dt / tau);
 
+        //this.softHeat = (t1 - this.temperature) * this.thermal_mass;
         this.temperature = t1;
         target.temperature = t2;
     }
@@ -105,12 +112,6 @@ public class HeatNode extends Node implements Serializable {
         envConductivity = heatTag.getDouble("e_c");
         envTemperature = heatTag.getDouble("e_t");
         return node;
-    }
-
-    public void run(Node[] nodes) {
-        transferHeatToChildren(nodes);
-        if (this.envConductivity > 0)
-            transferHeatToEnvironment(envTemperature, envConductivity, DEFAULT_TIME_STEP);
     }
 
     public double getTemperature() {

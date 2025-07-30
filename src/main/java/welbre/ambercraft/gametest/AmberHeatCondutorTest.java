@@ -12,6 +12,7 @@ import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -199,18 +200,18 @@ public class AmberHeatCondutorTest {
                     helper.fail("The nodes don't agree about the root!");
             }
             else
-                root = module.getRoot();
+                root = (HeatModule) module.getRoot();
         }
 
         //compute the connection amount.
         int connections = 0;
-        List<HeatModule> visited = new ArrayList<>();
-        Queue<HeatModule> queue = new ArrayDeque<>(List.of(root));
+        List<NetworkModule> visited = new ArrayList<>();
+        Queue<NetworkModule> queue = new ArrayDeque<>(List.of(root));
 
         while (!queue.isEmpty())
         {
             var next = queue.poll();
-            for (HeatModule child : next.getChildren())
+            for (NetworkModule child : next.getChildren())
             {
                 connections++;
                 if (!visited.contains(child))

@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
@@ -24,6 +25,7 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.debug.NetworkWrapperModule;
 import welbre.ambercraft.module.ModuleType;
+import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.network.NetworkViewerPayLoad;
 
 public class HeatModuleType implements ModuleType<HeatModule> {
@@ -57,7 +59,10 @@ public class HeatModuleType implements ModuleType<HeatModule> {
                 return InteractionResult.SUCCESS;
             }
             else if (stack.getItem() == AmberCraft.Items.MULTIMETER.get()) {
-                PacketDistributor.sendToPlayer((ServerPlayer) player, new NetworkViewerPayLoad((HeatConductorBE) level.getBlockEntity(pos)));
+                BlockEntity entity = level.getBlockEntity(pos);
+                if (entity instanceof ModulesHolder)
+                    PacketDistributor.sendToPlayer((ServerPlayer) player, new NetworkViewerPayLoad((BlockEntity & ModulesHolder) entity));
+
                 return InteractionResult.SUCCESS;
             }
         } else {

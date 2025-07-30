@@ -68,7 +68,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
                             SoundEvents.FIRE_EXTINGUISH,
                             SoundSource.BLOCKS, 0.5f, 1f, false
                     );
-                    sink.getHeatModule().getHeatNode().transferHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
+                    sink.getHeatModule().getHeatNode().computeSoftHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
                     return InteractionResult.SUCCESS;
 
                 }

@@ -2,6 +2,7 @@ package welbre.ambercraft.debug;
 
 import org.checkerframework.checker.units.qual.A;
 import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,12 +15,12 @@ public class OnionViewerSort {
     public static void sort(NetworkScreen network)
     {
         int count = 0;
-        HeatModule oldestFather = network.main;
-        HeatModule temp = NetworkScreen.forcedGet(network.main, "father");
+        NetworkModule oldestFather = network.main;
+        NetworkModule temp = network.main.getFather();
 
         while (temp != null){
             oldestFather = temp;
-            temp = NetworkScreen.forcedGet(temp, "father");
+            temp = temp.getFather();
 
             if (count++ > 50000)
                 throw new IllegalStateException("Circular dependency detected!");
@@ -87,7 +88,7 @@ public class OnionViewerSort {
         layers.get(deep).add(helper);
 
         //recursive insertion.
-        for (HeatModule child : node.module.getChildren())
+        for (NetworkModule child : node.module.getChildren())
         {
             ScreenNode childNode = network.getScreenNode(child);
             assert childNode != null;

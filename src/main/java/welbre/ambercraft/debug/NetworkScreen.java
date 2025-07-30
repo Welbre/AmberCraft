@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 import java.lang.reflect.Field;
@@ -34,20 +35,20 @@ public class NetworkScreen extends Screen {
     private int dragStartX;
     private int dragStartY;
 
-    final HeatModule main;
-    final NetworkWrapperModule wrapper;
+    final NetworkModule main;
+    final NetworkWrapperModule<?> wrapper;
     final List<ScreenNode> nodes = new ArrayList<>();
     final List<Connection> connections = new ArrayList<>();
     final List<Animation> animations = new ArrayList<>();
 
-    public NetworkScreen(NetworkWrapperModule main) {
+    public NetworkScreen(NetworkWrapperModule<?> main) {
         super(Component.literal("Network viewer").withColor(DyeColor.PURPLE.getTextColor()));
-        this.main = main.getModule();
+        this.main = main.getModule()[0];
         this.wrapper = main;
     }
 
 
-    ScreenNode getScreenNode(HeatModule module)
+    ScreenNode getScreenNode(NetworkModule module)
     {
         for (ScreenNode screenNode : nodes)
             if (screenNode.module == module)
@@ -56,12 +57,12 @@ public class NetworkScreen extends Screen {
         return null;
     }
 
-    private void addModule(HeatModule module)
+    private void addModule(NetworkModule module)
     {
         if (getScreenNode(module) != null)
             return;
 
-        HeatModule father = forcedGet(module, "father");
+        NetworkModule father = module.getFather();
 
         var node = new ScreenNode(
                 0,0,60,60,
@@ -84,9 +85,9 @@ public class NetworkScreen extends Screen {
         if (ok != null)
             node.applyError(ok);
 
-        HeatModule[] children = module.getChildren();
+        NetworkModule[] children = module.getChildren();
         if (children != null)
-            for (HeatModule child : children)
+            for (NetworkModule child : children)
             {
                 this.addModule(child);
 
@@ -164,7 +165,7 @@ public class NetworkScreen extends Screen {
             if (node.isMouseOver(mouseX, mouseY))
             {
                 RENDER_TOOL_TIPS(guiGraphics, mouseX, mouseY, partialTick, node);
-                ScreenNode nFather = getScreenNode(forcedGet(node.module, "father"));
+                ScreenNode nFather = getScreenNode(node.module.getFather());
                 if (nFather != null)
                     new Connection(node, nFather, 0xFFCC0000).render(guiGraphics, mouseX, mouseY, partialTick);
             }
@@ -199,7 +200,7 @@ public class NetworkScreen extends Screen {
                     BlockEntity entity = wrapper.findBlockEntity(node.module);
                     if (entity != null)
                     {
-                        boolean isMaster = forcedGet(node.module, "isMaster");
+                        boolean isMaster = node.module.getMaster() != null;
                         PacketDistributor.sendToAllPlayers(
                                 new GameTestAddMarkerDebugPayload(entity.getBlockPos(), isMaster ? 0xcc880000: ( node.module ==  this.main ? 0xdd7f00ff : 0xccFFFFFF), "@%x".formatted(node.module.ID), 1500)
                         );
@@ -337,11 +338,11 @@ public class NetworkScreen extends Screen {
 
     private void checkCyclical() {
         //check cyclical connection.
-        HeatModule root;
+        NetworkModule root;
         {
-            Set<HeatModule> visited = new HashSet<>();
+            Set<NetworkModule> visited = new HashSet<>();
             root = this.main;
-            HeatModule temp = forcedGet(this.main, "father");
+            NetworkModule temp = this.main.getFather();
 
             while (temp != null)
             {
@@ -356,13 +357,9 @@ public class NetworkScreen extends Screen {
                 }
                 visited.add(temp);
                 root = temp;
-                temp = forcedGet(temp, "father");
+                temp = temp == null ? null : temp.getFather();
             }
         }
-
-        if (root == null)
-            return;
-
     }
 
     private int[] nextCenter(ScreenNode father)
@@ -419,28 +416,11 @@ public class NetworkScreen extends Screen {
         };
     }
 
-    public static <T> T forcedGet(Object object, String fieldName) {
-        if (object == null)
-            return null;
-        try
-        {
-            Field declaredField = object.getClass().getDeclaredField(fieldName);
-            declaredField.setAccessible(true);
-            //noinspection unchecked
-            T filed = (T) declaredField.get(object);
-            declaredField.setAccessible(false);
-            return filed;
-        } catch (Exception e)
-        {
-            AmberCraft.LOGGER.error("",new IllegalAccessException("don't contains field " + e.getMessage()));
-        }
-        return null;
-    }
-
     public void RENDER_TOOL_TIPS(GuiGraphics graphics, int mouseX, int mouseY, float parcialTick, ScreenNode node){
-        HeatModule father = forcedGet(node.module, "father");
-        boolean isMaster = forcedGet(node.module, "isMaster");
-        HeatNode heatNode = node.module.getHeatNode();
+        NetworkModule father = node.module.getFather();
+        boolean isMaster = node.module.getMaster() != null;
+        HeatNode heatNode = node.module instanceof HeatModule heat? heat.getHeatNode() : null;
+
         ArrayList<Component> list = new ArrayList<>(List.of(
                 Component.literal("ID: " + Integer.toHexString(node.module.ID)).withColor(10494192),
                 Component.literal("IsMaster: " + (isMaster ? "true " : "false")).withColor(10494192),
@@ -448,8 +428,8 @@ public class NetworkScreen extends Screen {
                 Component.literal("Children: ").withColor(10494192)
 
         ));
-        HeatModule[] children = forcedGet(node.module, "children");
-        for (HeatModule module : children)
+        NetworkModule[] children = node.module.getChildren();
+        for (NetworkModule module : children)
             list.add(Component.literal("-->Child: " + Integer.toHexString(module.ID)).withColor(10494192));
 
         BlockEntity entity = this.wrapper.findBlockEntity(node.module);
@@ -464,9 +444,9 @@ public class NetworkScreen extends Screen {
 
         if (heatNode != null)
         {
-            list.add(Component.literal("Temperature: %.2fºC".formatted(node.module.getHeatNode().getTemperature())));
-            list.add(Component.literal("Conductivity: %.2f W/ºC".formatted(node.module.getHeatNode().getThermalConductivity())));
-            list.add(Component.literal("Capacidade: %.2f J/ºC".formatted(node.module.getHeatNode().getThermalMass())));
+            list.add(Component.literal("Temperature: %.2fºC".formatted(heatNode.getTemperature())));
+            list.add(Component.literal("Conductivity: %.2f W/ºC".formatted(heatNode.getThermalConductivity())));
+            list.add(Component.literal("Capacidade: %.2f J/ºC".formatted(heatNode.getThermalMass())));
         } else {
             list.add(Component.literal("Heat not is null!").withColor(DyeColor.RED.getTextColor()));
         }

@@ -10,24 +10,17 @@ import net.neoforged.neoforge.network.PacketDistributor
 import welbre.ambercraft.blockentity.HeatConductorBE
 import welbre.ambercraft.module.ModulesHolder
 import welbre.ambercraft.module.heat.HeatModule
+import welbre.ambercraft.module.network.NetworkModule
 import java.io.Serializable
 
-class NetworkWrapperModule : Serializable
+class NetworkWrapperModule<T>(entity: T): Serializable where T : BlockEntity, T : ModulesHolder
 {
-    val module: HeatModule;
-    val posX: Int;
-    val posY: Int;
-    val posZ: Int;
-
-    constructor(conductor: HeatConductorBE)
-    {
-        module = conductor.heatModule;
-        posX = conductor.blockPos.x
-        posY = conductor.blockPos.y
-        posZ = conductor.blockPos.z
-    }
+    val module: Array<NetworkModule> = entity.modules.filterIsInstance<NetworkModule>().toTypedArray();
+    val posX: Int = entity.blockPos.x;
+    val posY: Int = entity.blockPos.y;
+    val posZ: Int = entity.blockPos.z;
     
-    private fun findBlockEntity(visited: MutableList<BlockEntity>, level: Level, where: BlockPos, entity: BlockEntity, target: HeatModule) : BlockEntity?
+    private fun findBlockEntity(visited: MutableList<BlockEntity>, level: Level, where: BlockPos, entity: BlockEntity, target: NetworkModule) : BlockEntity?
     {
         visited.add(entity);
         if (entity is ModulesHolder)
@@ -51,7 +44,7 @@ class NetworkWrapperModule : Serializable
         return null;
     }
     
-    fun findBlockEntity(targetModule: HeatModule): BlockEntity? {
+    fun findBlockEntity(targetModule: NetworkModule): BlockEntity? {
         val level:Level = Minecraft.getInstance().level?: throw IllegalStateException("BlockEntity is not in father world!")
         val visited: MutableList<BlockEntity> = ArrayList()
         val pos = BlockPos(posX, posY, posZ)
