@@ -90,7 +90,7 @@ public class HeatModuleMaster extends Master {
         AmberCraft.LOGGER.info("Queue Status:\n master -> {}\t current-> {}\nstack:\n{}##redundancy##\nlinks:\n{}", master, current, stackBuilder, linksBuilder);
 
         AmberCraft.LOGGER.error("Fail while ticking!", new IllegalStateException("Circular dependency detected while ticking!"));
-        this.isCompiled = false;
+        this.dirt();
     }
 
     private record Link(HeatNode father, HeatNode[] child) implements Serializable {

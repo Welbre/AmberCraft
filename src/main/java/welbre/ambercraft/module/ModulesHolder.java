@@ -14,15 +14,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Used to represent father java object that can contains modules.<br>
+ * Used to represent an object that can contains modules.<br>
  * At the moment, only BlockEntity is compatible with this,
- * and maybe this class will be reimplemented as father {@link net.neoforged.neoforge.capabilities.Capabilities}
+ * and maybe this class will be reimplemented as a {@link net.neoforged.neoforge.capabilities.Capabilities}
+ * <p>
+ *     This interface contains only 3 methods that are very similar to each other.<br>
+ *     {@link ModulesHolder#getModules()} is used to read/write data in the holder, and other internal operations like diagnostic tools and debugging.<br>
+ *     {@link ModulesHolder#getModule(Direction direction)} is used to handle the connections, this method should return all modules that can be connected at <code>direction</code>.<br>
+ *     {@link ModulesHolder#getModule(Object obj)} should be used in yours ModulesHolder implementation instead of {@link ModulesHolder#getModule(Direction)},
+ *     the <code>obj</code> can be cast to a direction or any type you want.<br>Exemple: <pre>
+Module[] getModule(Object object){
+    if (object instanceof Direction dir){
+        return getModule(dir);
+    }
+    else if(...any other type check){
+
+    } else {
+        return new Module[0]; //return a empty array, don't return null!
+    }
+}
+ *     </pre>
+ * </p>
  */
 public interface ModulesHolder {
     /// Returns all modules that this instance holds.
-    Module[] getModules();
-    /// Returns all modules in certain face.
-    Module[] getModule(Direction direction);
+    @NotNull Module[] getModules();
+
+    /// Returns all modules in <code>direction</code> face.
+    @Deprecated
+    @NotNull Module[] getModule(Direction direction);
+    /// Similar to {@link ModulesHolder#getModule(Direction) but used a generic object as extra data.}
+    @NotNull Module[] getModule(Object object);
 
     default void tickModules(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
     {

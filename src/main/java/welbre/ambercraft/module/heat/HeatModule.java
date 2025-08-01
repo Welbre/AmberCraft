@@ -15,7 +15,6 @@ import welbre.ambercraft.sim.Node;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 import java.io.Serializable;
-import java.util.*;
 
 public class HeatModule extends NetworkModule implements Serializable {
     HeatNode node;

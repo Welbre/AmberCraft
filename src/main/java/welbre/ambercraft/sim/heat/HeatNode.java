@@ -57,11 +57,11 @@ public class HeatNode extends Node implements Serializable {
         deltaTemp += (t - this.temperature);
     }
 
-    ///This method will be re-implemented to father better simulation.
+    ///This method will be re-implemented to a better simulation.
     @Deprecated
     public void transferHeat(HeatNode target, double dt)
     {
-        //todo need to implement father fast way to simulate this, pre-calculating the power for each connection, and only updating the temperature after all power be calculated.
+        //todo need to implement a fast way to simulate this, pre-calculating the power for each connection, and only updating the temperature after all power be calculated.
         double resistance = this.thermal_resistence +target.thermal_resistence;
         double teq = (temperature * thermal_mass + target.temperature * target.thermal_mass) / (thermal_mass + target.thermal_mass);
         double itau = (this.thermal_mass + target.thermal_mass) / (resistance*this.thermal_mass*target.thermal_mass);

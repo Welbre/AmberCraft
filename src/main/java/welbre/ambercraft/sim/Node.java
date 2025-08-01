@@ -24,7 +24,7 @@ public class Node {
             if (Node.class.isAssignableFrom(aClass))
                 return (Node) aClass.getDeclaredConstructor().newInstance();
             else
-                throw new IllegalArgumentException("Class %s isn't father Node class!".formatted(aClass.getName()));
+                throw new IllegalArgumentException("Class %s isn't a Node class!".formatted(aClass.getName()));
         } catch (Exception e)
         {
             throw new RuntimeException(e);

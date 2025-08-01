@@ -16,7 +16,6 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 public class HeatFurnaceBE extends HeatConductorBE {
-    private int timer = 0;
     private int power = 1;
     private boolean isOn = false;
 
@@ -30,15 +29,11 @@ public class HeatFurnaceBE extends HeatConductorBE {
         {
             if (furnace.isOn)
             {
-                if (furnace.timer++ >= 5)
-                {
-                    HeatNode node = furnace.heatModule.getHeatNode();
-                    if (node.getTemperature() < 100)
-                        furnace.burnout();
-                    if (node.getTemperature() < 1000)
-                        node.transferHeat(furnace.power);
-                    furnace.timer = 0;
-                }
+                HeatNode node = furnace.heatModule.getHeatNode();
+                if (node.getTemperature() < 100)
+                    furnace.burnout();
+                if (node.getTemperature() < 1000)
+                    node.transferHeat(furnace.power / 5.0);
             }
         }
     }

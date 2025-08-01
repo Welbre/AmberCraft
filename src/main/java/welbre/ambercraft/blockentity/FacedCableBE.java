@@ -27,12 +27,12 @@ import static welbre.ambercraft.cables.CableState.GET_FACE_DIRECTIONS;
 
 /**
  * The connection mask is used to represent the internal state of the cable. Any cube face is presented using 5 bits, one for each part of the model.<br>
- * <child>UP(0), LEFT(1), DOWN(2), RIGHT(3), CENTER(4)</child>, so using father combination of this, all 17 states can be presented using 5 bits, for exemple the int 12 or 0b1100
+ * <b>UP(0), LEFT(1), DOWN(2), RIGHT(3), CENTER(4)</b>, so using a combination of this, all 17 states can be presented using 5 bits, for exemple the int 12 or 0b1100
  * mens that the DOWN and RIGHT sides is connected. Because of UP is off so 1*0, LEFT is off so 2*0, DOWN is on so 4 * 1 and RIGHT is on 8 * 1, resulting in 4 + 8 = 12.<br>
- * The center should be rendered if any bit is up, so 0x10001 produce the same model that 0x00001, the CENTER(4) bit is used only in father special case, when father cable is created and don't connect to anything.
+ * The center should be rendered if any bit is up, so 0x10001 produce the same model that 0x00001, the CENTER(4) bit is used only in a special case, when a cable is created and don't connect to anything.
  * So the center needs to be rendered, but the other parts don't.<br><br>
  * In total, the FacedCable uses 30 bits. 5 bits per face, and is all stored in the {@link FacedCableBE#state status} field in the following order.
- * <child>DOWN(0), UP(5), NORTH(10), SOUTH(15), WEST(20), EAST(25)</child>, the number in parentheses mens where the data start of each face.
+ * <b>DOWN(0), UP(5), NORTH(10), SOUTH(15), WEST(20), EAST(25)</b>, the number in parentheses mens where the data start of each face.
  */
 public class FacedCableBE extends BlockEntity implements ModulesHolder {
     public static final ModelProperty<CableState> CONNECTION_MASK_PROPERTY = new ModelProperty<>();
@@ -90,7 +90,7 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
         {
             BlockPos anchor = pos.relative(face);
             FaceState faceState = state.getFaceStatus(face);
-            //check father possible connection in this face
+            //check a possible connection in this face
             for (Direction dir : GET_FACE_DIRECTIONS(face))
             {
 
@@ -168,12 +168,12 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
     }
 
     /**
-     * Removes father cable from cable face.
+     * Removes a cable from cable face.
      */
     public void removeCable(@NotNull LevelReader level, BlockPos pos, Direction face){
         //for each block face
         BlockPos anchor = pos.relative(face);
-        //check father possible connection in this face
+        //check a possible connection in this face
         for (Direction dir : GET_FACE_DIRECTIONS(face))
         {
             {
@@ -185,9 +185,9 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
                     continue;
                 }
             }
-            if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBE faced)//find father connectable
+            if (level.getBlockEntity(pos.relative(dir)) instanceof FacedCableBE faced)//find a connectable
             {
-                // check if the center of faced contains father cable in the face
+                // check if the center of faced contains a cable in the face
                 if (faced.state.getFaceStatus(face) != null)
                 {
                     faced.state.rawConnectionSet(face, dir.getOpposite(), FaceState.Connection.EMPTY);
@@ -200,7 +200,7 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
             {
                 BlockPos dia_face_vec = anchor.subtract(diagonal);
                 Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
-                if (faced.state.getFaceStatus(dia_face) != null)// check if the center of faced contains father cable in the face
+                if (faced.state.getFaceStatus(dia_face) != null)// check if the center of faced contains a cable in the face
                 {
                     faced.state.rawConnectionSet(dia_face, face.getOpposite(), FaceState.Connection.EMPTY);
                     faced.requestModelDataUpdate();
@@ -226,7 +226,7 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
     }
 
     @Override
-    public Module[] getModules() {
+    public @NotNull Module[] getModules() {
         List<Module> list = new ArrayList<>();
         for (Direction dir : Direction.values())
         {
@@ -238,7 +238,14 @@ public class FacedCableBE extends BlockEntity implements ModulesHolder {
     }
 
     @Override
-    public Module[] getModule(Direction direction) {
+    public @NotNull Module[] getModule(Direction direction) {
         return getModules();
+    }
+
+    @Override
+    public @NotNull Module[] getModule(Object object) {
+        if (object instanceof Direction dir)
+            return getModule(dir);
+        return new Module[0];
     }
 }

@@ -30,9 +30,9 @@ public abstract class CableType {
     public abstract Material getInsulationMaterial();
     public abstract Material getCableMaterial();
     /**
-     * The cable type system is father single byte value that defines if father cable can connect with another of the same type.<br>
+     * The cable type system is a single byte value that defines if a cable can connect with another of the same type.<br>
      * Ex: The electric cable has type 0, so this cable can connect only to other cables with type 0.<br>
-     * Therefore, an electric(0) cable can't connect to father heat(1) cable, and father redstone cable can't connect either.<br>
+     * Therefore, an electric(0) cable can't connect to a heat(1) cable, and a redstone cable can't connect either.<br>
      */
     public abstract byte getType();
     public abstract Module[] createModules(FacedCableBE entity);

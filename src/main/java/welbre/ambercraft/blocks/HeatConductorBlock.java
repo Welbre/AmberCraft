@@ -115,12 +115,14 @@ public abstract class HeatConductorBlock extends AmberBasicBlock implements Enti
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
+        //when a heatConductor is placed on the side, the block state updates the property and calls this function, so only if the block it-self changes, call the create function.
         if (!state.is(oldState.getBlock()))
             factory.create(level,pos);
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        //when a heatConductor is removed on the side, the block state updates the property and calls this function, so only if the block it-self changes, call the create function.
         if (!state.is(newState.getBlock()))
             factory.destroy(level, pos);
         super.onRemove(state, level, pos, newState, movedByPiston);

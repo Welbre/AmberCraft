@@ -4,13 +4,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.CreativeHeatConductorBE;
+import welbre.ambercraft.blockentity.HeatConductorBE;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 public class CreativeHeatConductorBlock extends HeatConductorBlock{
     public CreativeHeatConductorBlock(Properties p) {
         super(p, 0.25f);
-        this.factory.setInit(module -> {
+        this.factory.setInitializer(module -> {
             HeatNode node = module.alloc();
             node.setThermalConductivity(50.0);
         });
@@ -18,6 +18,6 @@ public class CreativeHeatConductorBlock extends HeatConductorBlock{
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new CreativeHeatConductorBE(pos, state);
+        return new HeatConductorBE(pos, state);
     }
 }

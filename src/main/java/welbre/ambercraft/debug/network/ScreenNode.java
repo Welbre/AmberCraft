@@ -1,15 +1,11 @@
-package welbre.ambercraft.debug;
+package welbre.ambercraft.debug.network;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.List;

@@ -17,7 +17,7 @@ public class CentredCableLoaderBuilder extends CustomLoaderBuilder {
         super(
                 // Your model loader's id.
                 ID,
-                // Whether the loader allows inline vanilla elements as father fallback if the loader is absent.
+                // Whether the loader allows inline vanilla elements as a fallback if the loader is absent.
                 false
         );
     }
@@ -26,7 +26,7 @@ public class CentredCableLoaderBuilder extends CustomLoaderBuilder {
 
     @Override
     protected @NotNull CustomLoaderBuilder copyInternal() {
-        // Create father new instance of your loader builder and copy the properties from this builder
+        // Create a new instance of your loader builder and copy the properties from this builder
         // to the new instance.
         CentredCableLoaderBuilder builder = new CentredCableLoaderBuilder();
         // builder.<field> = this.<field>;

@@ -1,4 +1,4 @@
-package welbre.ambercraft.debug;
+package welbre.ambercraft.debug.network;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Transformation;
@@ -23,7 +23,6 @@ import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.sim.heat.HeatNode;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 @OnlyIn(Dist.CLIENT)

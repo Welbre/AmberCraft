@@ -1,4 +1,4 @@
-package welbre.ambercraft.debug
+package welbre.ambercraft.debug.network
 
 import java.util.function.Function
 import kotlin.math.pow

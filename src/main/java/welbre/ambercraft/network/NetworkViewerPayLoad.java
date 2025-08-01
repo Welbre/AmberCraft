@@ -8,16 +8,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatConductorBE;
-import welbre.ambercraft.debug.NetworkScreen;
-import welbre.ambercraft.debug.NetworkWrapperModule;
+import welbre.ambercraft.debug.network.NetworkWrapperModule;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.heat.HeatModule;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -39,7 +34,7 @@ public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
             inputStream.close();
 
             //pedaço de merda para fazer um sistema ridículo funcionar
-            Object obj = Class.forName("welbre.ambercraft.debug.NetworkScreen").getDeclaredConstructor(NetworkWrapperModule.class).newInstance(wrapper);
+            Object obj = Class.forName("welbre.ambercraft.debug.network.NetworkScreen").getDeclaredConstructor(NetworkWrapperModule.class).newInstance(wrapper);
             Minecraft.getInstance().getClass().getMethod("setScreen", Screen.class).invoke(Minecraft.getInstance(), obj);
 
 

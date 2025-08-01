@@ -26,6 +26,11 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
         super(type, pos, blockState);
     }
 
+    public HeatConductorBE(BlockPos pos, BlockState state)
+    {
+        super(AmberCraft.BlockEntity.HEAT_CONDUCTOR_BE.get(), pos, state);
+    }
+
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
@@ -85,6 +90,13 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
     @Override
     public Module[] getModule(Direction direction) {
         return new Module[]{heatModule};
+    }
+
+    @Override
+    public @NotNull Module[] getModule(Object object) {
+        if (object instanceof Direction dir)
+            return getModule(dir);
+        return new Module[0];
     }
 
     public void setHeatModule(HeatModule module) {

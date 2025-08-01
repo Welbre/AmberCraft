@@ -1,13 +1,10 @@
-package welbre.ambercraft.debug
+package welbre.ambercraft.debug.network
 
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
-import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
-import net.neoforged.neoforge.network.PacketDistributor
-import welbre.ambercraft.blockentity.HeatConductorBE
 import welbre.ambercraft.module.ModulesHolder
 import welbre.ambercraft.module.heat.HeatModule
 import welbre.ambercraft.module.network.NetworkModule

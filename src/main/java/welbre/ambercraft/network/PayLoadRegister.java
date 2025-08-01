@@ -2,7 +2,6 @@ package welbre.ambercraft.network;
 
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import welbre.ambercraft.debug.NetworkScreen;
 
 public class PayLoadRegister {
     public static void registerPayLoads(RegisterPayloadHandlersEvent event)

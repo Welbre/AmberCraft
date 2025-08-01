@@ -1,6 +1,5 @@
-package welbre.ambercraft.debug;
+package welbre.ambercraft.debug.network;
 
-import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.ArrayList;
