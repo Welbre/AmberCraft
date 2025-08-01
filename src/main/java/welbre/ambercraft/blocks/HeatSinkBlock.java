@@ -1,6 +1,7 @@
 package welbre.ambercraft.blocks;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -41,7 +42,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
             HeatSinkBE::getHeatModule
     ).setConstructor((a,b,c,d,e) -> {
         a.init(b,c,d,e);
-        a.getHeatNode().setEnvConditions(HeatNode.GET_AMBIENT_TEMPERATURE(d,e),2.0);
+        a.getHeatNode().setEnvConditions(HeatNode.GET_AMBIENT_TEMPERATURE(d,e),0.01);
     });
 
     public HeatSinkBlock(Properties p) {
@@ -57,26 +58,27 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof HeatSinkBE sink)
         {
-            if (stack.getItem() == Items.WATER_BUCKET) {
-                if (sink.getHeatModule().getHeatNode().getTemperature() >= 100) {
-                    if (!player.isCreative()) {
-                        player.getInventory().removeItem(stack);
-                        player.getInventory().add(new ItemStack(Items.BUCKET));
+            if (stack.getItem() == Items.WATER_BUCKET)
+            {
+                if (level instanceof ServerLevel) {
+                    if (sink.getHeatModule().getHeatNode().getTemperature() >= 100)
+                    {
+                        level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 1f);
+                        sink.getHeatModule().getHeatNode().computeSoftHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
+                        return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(new ItemStack(Items.BUCKET));
                     }
-                    level.playLocalSound(
-                            pos,
-                            SoundEvents.FIRE_EXTINGUISH,
-                            SoundSource.BLOCKS, 0.5f, 1f, false
-                    );
-                    sink.getHeatModule().getHeatNode().computeSoftHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
-                    return InteractionResult.SUCCESS;
-
+                    else
+                        return InteractionResult.SUCCESS_SERVER;
                 }
+
                 return InteractionResult.CONSUME;
             }
-            return AmberCraft.Modules.HEAT_MODULE_TYPE.get().useItemOn(sink.getHeatModule(), stack,state,level,pos,player,hand, hitResult);
+
+            var result = factory.getType().useItemOn(sink.getHeatModule(), stack, state, level, pos, player, hand, hitResult);
+            if (result.consumesAction())
+                return result;
         }
-        return super.useItemOn(stack,state,level,pos,player,hand,hitResult);
+        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
@@ -105,7 +107,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return HeatConductorBE::tick;
+        return HeatSinkBE::TICK;
     }
 
     private static void MODULE_INIT(HeatModule module)

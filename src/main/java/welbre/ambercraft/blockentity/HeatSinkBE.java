@@ -5,27 +5,20 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
-import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.heat.HeatModule;
 
-public class HeatSinkBE extends BlockEntity implements ModulesHolder {
-    private HeatModule heatModule = new HeatModule();
+public class HeatSinkBE extends HeatConductorBE {
+    public double clientTemperature = 0;
 
     public HeatSinkBE(BlockPos pos, BlockState blockState) {
         super(AmberCraft.BlockEntity.HEAT_SINK_BLOCK_BE.get(), pos, blockState);
-    }
-
-    @Override
-    public Module[] getModules() {
-        return new Module[]{heatModule};
     }
 
     @Override
@@ -36,41 +29,21 @@ public class HeatSinkBE extends BlockEntity implements ModulesHolder {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        saveData(tag, registries);
-    }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        loadData(tag,registries);
-    }
-
-    @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, registries);
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        var tag = super.getUpdateTag(registries);
+        tag.putDouble("t", this.heatModule.getHeatNode().getTemperature());
         return tag;
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        // The packet uses the CompoundTag returned by #getUpdateTag. An alternative overload of #create exists
-        // that allows you to specify father custom update tag, including the ability to omit data the client might not need.
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+    public void onDataPacket(@NotNull Connection net, @NotNull ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
+        clientTemperature = pkt.getTag().getDouble("t");
     }
 
-    public HeatModule getHeatModule() {
-        return heatModule;
-    }
-
-    public void setHeatModule(HeatModule heatModule) {
-        this.heatModule = heatModule;
+    public static void TICK(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
+    {
+        HeatConductorBE.TICK(level, pos, state, blockEntity);
+        level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
     }
 }

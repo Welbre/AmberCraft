@@ -95,7 +95,7 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
         return heatModule;
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
+    public static void TICK(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
     {
         if (blockEntity instanceof ModulesHolder holder)
             holder.tickModules(level, pos, state, blockEntity);

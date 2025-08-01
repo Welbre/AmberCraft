@@ -444,9 +444,11 @@ public class NetworkScreen extends Screen {
 
         if (heatNode != null)
         {
-            list.add(Component.literal("Temperature: %.2fºC".formatted(heatNode.getTemperature())));
+            list.add(Component.literal("Temperature: %.2f ºC".formatted(heatNode.getTemperature())));
             list.add(Component.literal("Conductivity: %.2f W/ºC".formatted(heatNode.getThermalConductivity())));
             list.add(Component.literal("Capacidade: %.2f J/ºC".formatted(heatNode.getThermalMass())));
+            list.add(Component.literal("Ambient temperature: %.2f ºC".formatted(heatNode.getEnvTemperature())));
+            list.add(Component.literal("Ambient conductivity: %.2f W/ºC".formatted(heatNode.getEnvConductivity())));
         } else {
             list.add(Component.literal("Heat not is null!").withColor(DyeColor.RED.getTextColor()));
         }

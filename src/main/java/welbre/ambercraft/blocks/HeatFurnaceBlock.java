@@ -2,6 +2,9 @@ package welbre.ambercraft.blocks;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -107,5 +110,15 @@ public class HeatFurnaceBlock extends AmberHorizontalBlock implements EntityBloc
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FurnaceBlock.LIT);
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (state.getValue(FurnaceBlock.LIT))
+        {
+            if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
+                if (random.nextDouble() < 0.1 * furnace.getPower() / 10.0)
+                    level.playLocalSound(pos, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, (float) (1.0f * furnace.getPower() / 20f), 1.5f, false);
+        }
     }
 }

@@ -44,7 +44,7 @@ public class AmberHeatCondutorTest {
                     "heat_conductor_breaking_test"+index++,
                     "ambercraft:heat_source_and_heat_sink",
                     Rotation.NONE,
-                    100,
+                    200,
                     0,
                     true,
                     false,

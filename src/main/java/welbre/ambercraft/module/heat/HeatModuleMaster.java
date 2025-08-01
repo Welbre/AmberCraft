@@ -106,6 +106,8 @@ public class HeatModuleMaster extends Master {
                 node.computeSoftHeatToEnvironment();
             for (Link link : links)
                 link.father.computeSoftHeatWithChildren(link.child);
+            for (HeatNode node : nodes)
+                node.updateSoftHeat();
         }
     }
 

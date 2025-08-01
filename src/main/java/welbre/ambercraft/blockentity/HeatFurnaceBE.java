@@ -3,12 +3,15 @@ package welbre.ambercraft.blockentity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.sim.heat.HeatNode;
 
@@ -22,7 +25,9 @@ public class HeatFurnaceBE extends HeatConductorBE {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        if (!level.isClientSide && blockEntity instanceof HeatFurnaceBE furnace) {
+        HeatConductorBE.TICK(level, pos, state, blockEntity);
+        if (!level.isClientSide && blockEntity instanceof HeatFurnaceBE furnace)
+        {
             if (furnace.isOn)
             {
                 if (furnace.timer++ >= 5)
@@ -36,7 +41,6 @@ public class HeatFurnaceBE extends HeatConductorBE {
                 }
             }
         }
-        HeatConductorBE.tick(level, pos, state, blockEntity);
     }
 
     @Override
@@ -51,6 +55,21 @@ public class HeatFurnaceBE extends HeatConductorBE {
         super.saveAdditional(tag, registries);
         tag.putInt("power", power);
         tag.putBoolean("isOne", isOn);
+    }
+
+    @Override
+    public void onDataPacket(@NotNull Connection net, @NotNull ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider lookupProvider) {
+        super.onDataPacket(net, pkt, lookupProvider);
+        power = pkt.getTag().getInt("power");
+        isOn = pkt.getTag().getBoolean("isOn");
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("power", power);
+        tag.putBoolean("isOn", isOn);
+        return tag;
     }
 
     public void burnout() {
@@ -77,5 +96,11 @@ public class HeatFurnaceBE extends HeatConductorBE {
     public void addPower() {
         power +=10;
         setChanged();
+        if (level != null)
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+    }
+
+    public double getPower() {
+        return power;
     }
 }
