@@ -25,7 +25,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blocks.HeatConductorBlock;
+import welbre.ambercraft.blocks.heat.HeatConductorBlock;
 
 import java.util.ArrayList;
 import java.util.List;

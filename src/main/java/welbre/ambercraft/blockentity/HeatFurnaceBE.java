@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.sim.heat.HeatNode;
 
-public class HeatFurnaceBE extends HeatConductorBE {
+public class HeatFurnaceBE extends HeatBE {
     private int power = 1;
     private boolean isOn = false;
 
@@ -24,7 +24,7 @@ public class HeatFurnaceBE extends HeatConductorBE {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        HeatConductorBE.TICK(level, pos, state, blockEntity);
+        HeatBE.TICK(level, pos, state, blockEntity);
         if (!level.isClientSide && blockEntity instanceof HeatFurnaceBE furnace)
         {
             if (furnace.isOn)

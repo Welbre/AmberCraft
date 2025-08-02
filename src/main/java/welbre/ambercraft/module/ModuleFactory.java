@@ -127,7 +127,7 @@ public class ModuleFactory<T extends Module, V extends BlockEntity & ModulesHold
 
     public Optional<T> getModuleOn(LevelAccessor level, BlockPos pos){
         BlockEntity entity = level.getBlockEntity(pos);
-        if (condition.test(entity) && !level.isClientSide())
+        if (condition.test(entity))
             //noinspection unchecked, is checked in condition predicate.
             return Optional.of(getter.apply((V) entity));
         else

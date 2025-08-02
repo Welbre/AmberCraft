@@ -1,4 +1,4 @@
-package welbre.ambercraft.blocks;
+package welbre.ambercraft.blocks.heat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -63,7 +63,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
                     if (sink.getHeatModule().getHeatNode().getTemperature() >= 100)
                     {
                         level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 1f);
-                        sink.getHeatModule().getHeatNode().computeSoftHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, HeatNode.DEFAULT_TIME_STEP);
+                        sink.getHeatModule().getHeatNode().computeSoftHeatToEnvironment(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 30.0, 1.0);
                         return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(new ItemStack(Items.BUCKET));
                     }
                     else

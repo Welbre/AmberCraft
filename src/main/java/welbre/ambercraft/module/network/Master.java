@@ -4,26 +4,40 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.io.Serializable;
 
+/**
+ * A class to handle all logic in the {@link NetworkModule}.<br>
+ * Uses a flag system to call {@link Master#compile} each time that the network changes.<br>
+ * The tick logic
+ */
 public abstract class Master implements Serializable {
-    private boolean isCompiled = false;
     protected final NetworkModule master;
+    private boolean isClean = false;
 
     public Master(NetworkModule master) {
         this.master = master;
     }
 
-    protected void compile()
+    /// compile the master using the NetworkModule obs the module is the master!.
+    /// @return if the compilation was a success.
+    protected abstract boolean compile(NetworkModule master);
+
+    protected abstract void tick(BlockEntity entity, boolean isClientSide);
+
+    private void compile()
     {
-        isCompiled = true;
+        if (compile(master))
+            isClean = true;
     }
 
-    public void dirt()
-    {
-        isCompiled = false;
-    }
-
-    public void tick(BlockEntity entity) {
-        if (!isCompiled)
+    public final void tick(BlockEntity entity) {
+        if (!isClean)
             compile();
+        if (entity.getLevel() != null && entity.getLevel().isClientSide())
+            tick(entity, true);
+        else
+            tick(entity, false);
     }
+
+    public void dirt() {isClean = false;}
+    public boolean isClean() {return isClean;}
 }

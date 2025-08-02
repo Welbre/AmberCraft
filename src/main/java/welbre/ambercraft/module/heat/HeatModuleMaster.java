@@ -18,9 +18,7 @@ public class HeatModuleMaster extends Master {
     }
 
     @Override
-    protected void compile() {
-        super.compile();
-
+    public boolean compile(NetworkModule master) {
         int count = 0;
         ArrayList<HeatModule> visited = new ArrayList<>();
         Stack<HeatModule> stack = new Stack<>();
@@ -48,21 +46,18 @@ public class HeatModuleMaster extends Master {
             if (count++ > 1_000_000)
             {
                 CRASH(next, stack, builder.build());
-                return;
+                return false;
             }
         }
 
         connections = builder.build();
+        return true;
     }
 
     @Override
-    public void tick(BlockEntity entity) {
-        if (entity.getLevel() != null)
-            if (!entity.getLevel().isClientSide())//run only on the server side
-            {
-                super.tick(entity);
-                connections.tick();
-            }
+    protected void tick(BlockEntity entity, boolean isClientSide) {
+        if (!isClientSide)
+            connections.tick();
     }
 
     private void CRASH(NetworkModule current, Stack<? extends NetworkModule> stack, Connections connections)

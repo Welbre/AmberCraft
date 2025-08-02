@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatConductorBE;
+import welbre.ambercraft.blockentity.HeatBE;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.module.heat.HeatModule;
@@ -116,7 +116,7 @@ public class AmberHeatCondutorTest {
                 {
                     reachCoolDown.set(true);
                     helper.setBlock(pos, AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK.get());
-                    HeatConductorBE conductorBE = helper.getBlockEntity(pos);
+                    HeatBE conductorBE = helper.getBlockEntity(pos);
                     conductorBE.getHeatModule().getHeatNode().setTemperature(temperature);
                     furnace.addPower();
                     furnace.addPower();
@@ -187,7 +187,7 @@ public class AmberHeatCondutorTest {
         HeatModule root = null;
         for (BlockPos pos : posList)
         {
-            HeatConductorBE conductor = helper.getBlockEntity(pos);
+            HeatBE conductor = helper.getBlockEntity(pos);
             HeatModule module = conductor.getHeatModule();
 
             var exception = module.checkInconsistencies();
@@ -227,7 +227,7 @@ public class AmberHeatCondutorTest {
         helper.runAfterDelay(2, () -> {
             for (BlockPos pos : posList)
             {
-                HeatConductorBE conductor = helper.getBlockEntity(pos);//check if the block entity still there.
+                HeatBE conductor = helper.getBlockEntity(pos);//check if the block entity still there.
                 var error = conductor.getHeatModule().checkInconsistencies();
                 if (error != null)
                     helper.fail(error.getMessage(), conductor.getBlockPos());

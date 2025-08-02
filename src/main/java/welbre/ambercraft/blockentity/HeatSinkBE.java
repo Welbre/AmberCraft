@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 
-public class HeatSinkBE extends HeatConductorBE {
+public class HeatSinkBE extends HeatBE {
     public double clientTemperature = 0;
 
     public HeatSinkBE(BlockPos pos, BlockState blockState) {
@@ -43,7 +43,7 @@ public class HeatSinkBE extends HeatConductorBE {
 
     public static void TICK(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
     {
-        HeatConductorBE.TICK(level, pos, state, blockEntity);
+        HeatBE.TICK(level, pos, state, blockEntity);
         level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
     }
 }

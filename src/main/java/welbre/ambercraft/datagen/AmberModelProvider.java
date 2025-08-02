@@ -66,6 +66,8 @@ public class AmberModelProvider extends ModelProvider {
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.GROUND_BLOCK.get(),
                 "connection_creative_block", "ground_block","ground_block");
 
+        blocks.createTrivialCube(AmberCraft.Blocks.HEAT_SOURCE_BLOCK.get());
+
         CREATE_HEAT_FURNACE(blocks);
         CREATE_AMBER_FREE_BLOCK_STATE(blocks, AmberCraft.Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get());
 

@@ -1,6 +1,7 @@
 package welbre.ambercraft.network;
 
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class PayLoadRegister {
@@ -13,5 +14,11 @@ public class PayLoadRegister {
                 NetworkViewerPayLoad.STREAM_CODEC,
                 NetworkViewerPayLoad::handleOnClient
         );
+
+        registrar.playToServer(
+                HeatSourceSetterPayload.TYPE,
+                HeatSourceSetterPayload.STREAM_CODEC,
+                HeatSourceSetterPayload::handleOnServer
+                );
     }
 }

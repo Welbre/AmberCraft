@@ -1,4 +1,4 @@
-package welbre.ambercraft.blocks;
+package welbre.ambercraft.blocks.heat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +12,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FurnaceBlock;
@@ -21,7 +23,9 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
@@ -31,15 +35,22 @@ import welbre.ambercraft.module.heat.HeatModule;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class HeatFurnaceBlock extends AmberHorizontalBlock implements EntityBlock {
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
+
+public class HeatFurnaceBlock extends HeatBlock {
+    public static final EnumProperty<Direction> FACING = HORIZONTAL_FACING;
+
     public ModuleFactory<HeatModule, HeatFurnaceBE> factory = new ModuleFactory<>(
             HeatFurnaceBE.class,
             AmberCraft.Modules.HEAT_MODULE_TYPE,
-            heatModule -> {heatModule.alloc(); heatModule.getHeatNode().setThermalConductivity(100.0);},
+            HeatModule::alloc,
             HeatModule::free,
             HeatFurnaceBE::setHeatModule,
             HeatFurnaceBE::getHeatModule
-    ).setConstructor(HeatModule::init);
+    ).setConstructor((module, entity, factory, level, pos) -> {
+        module.init(entity, factory, level, pos);
+        module.getHeatNode().setThermalConductivity(100.0);
+    });
 
     public HeatFurnaceBlock(Properties p) {
         super(p);
@@ -48,29 +59,30 @@ public class HeatFurnaceBlock extends AmberHorizontalBlock implements EntityBloc
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        AtomicReference<InteractionResult> result = new AtomicReference<>();
-        factory.getModuleOn(level,pos).ifPresent(m -> result.set(factory.getType().useItemOn(m, stack, state, level, pos, player, hand, hitResult)));
-        if (result.get() != null && result.get().consumesAction())
-            return result.get();
+        var result = factory.getType().useItemOn(factory.getModuleOn(level,pos).orElse(null),stack,state,level,pos,player,hand,hitResult);
+        if (result.consumesAction())
+            return result;
 
-        if (!level.isClientSide){
-             if (stack.getItem() == Items.COAL) {
-                if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace) {
+        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
+        {
+            if (stack.getItem() == Items.COAL)
+            {
+                if (!level.isClientSide)
+                {
                     furnace.addPower();
                     stack.consume(10, player);
-                    return InteractionResult.SUCCESS;
                 }
-            } else if (stack.getItem() == Items.FLINT_AND_STEEL) {
-                if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
+                return InteractionResult.SUCCESS;
+            } else if (stack.getItem() == Items.FLINT_AND_STEEL)
+            {
+                if (!level.isClientSide)
                 {
                     furnace.ignite();
                     stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
-                    return InteractionResult.SUCCESS;
                 }
+                return InteractionResult.SUCCESS;
             }
         }
-        if (stack.getItem() == Items.LEVER || stack.getItem() == Items.FLINT_AND_STEEL || stack.getItem() == Items.COAL)
-            return InteractionResult.SUCCESS;
 
         return super.useItemOn(stack,state,level,pos,player,hand, hitResult);
     }
@@ -110,6 +122,12 @@ public class HeatFurnaceBlock extends AmberHorizontalBlock implements EntityBloc
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FurnaceBlock.LIT);
+        builder.add(HeatFurnaceBlock.FACING);
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Override

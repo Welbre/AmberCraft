@@ -19,14 +19,16 @@ import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
-public class HeatConductorBE extends BlockEntity implements ModulesHolder {
+/// A ready to use BlockEntity with all {@link HeatModule} stuff set.<br>
+/// Remember to add the block that will use this class in {@link AmberCraft.Blocks#HEAT_BE_USES}.
+public class HeatBE extends BlockEntity implements ModulesHolder {
     protected HeatModule heatModule = new HeatModule();
 
-    public HeatConductorBE(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
+    public HeatBE(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
     }
 
-    public HeatConductorBE(BlockPos pos, BlockState state)
+    public HeatBE(BlockPos pos, BlockState state)
     {
         super(AmberCraft.BlockEntity.HEAT_CONDUCTOR_BE.get(), pos, state);
     }
@@ -45,7 +47,7 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
 
     @Override
     public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        super.handleUpdateTag(tag, lookupProvider);
+        //super.handleUpdateTag(tag, lookupProvider);
         heatModule.ID = tag.getInt("id");
     }
 
@@ -60,7 +62,7 @@ public class HeatConductorBE extends BlockEntity implements ModulesHolder {
 
     @Override
     public void onDataPacket(@NotNull Connection net, @NotNull ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider lookupProvider) {
-        super.onDataPacket(net, pkt, lookupProvider);
+        //super.onDataPacket(net, pkt, lookupProvider);
         heatModule.ID = pkt.getTag().getInt("id");
     }
 

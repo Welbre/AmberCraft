@@ -13,7 +13,7 @@ public class Handler {
         var out = generator.getPackOutput();
         var provider = event.getLookupProvider();
 
-        generator.addProvider(true, new AmberLanguageProvider(out));
+        generator.addProvider(true, new EN_US_LanguageProvider(out));
         generator.addProvider(true, new AmberModelProvider(out));
         //generator.addProvider(true, new AmberModelProvider(out));
     }
