@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.FurnaceBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
@@ -23,17 +22,18 @@ public class HeatFurnaceBE extends HeatBE {
         super(AmberCraft.BlockEntity.HEAT_FURNACE_BE.get(), pos, blockState);
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        HeatBE.TICK(level, pos, state, blockEntity);
-        if (!level.isClientSide && blockEntity instanceof HeatFurnaceBE furnace)
+    @Override
+    public void tick(Level level, BlockPos pos, BlockState state) {
+        super.tick(level, pos, state);
+        if (!level.isClientSide)
         {
-            if (furnace.isOn)
+            if (this.isOn)
             {
-                HeatNode node = furnace.heatModule.getHeatNode();
+                HeatNode node = this.heatModule.getHeatNode();
                 if (node.getTemperature() < 100)
-                    furnace.burnout();
+                    this.burnout();
                 if (node.getTemperature() < 1000)
-                    node.transferHeat(furnace.power / 5.0);
+                    node.transferHeat(this.power / 5.0);
             }
         }
     }

@@ -8,7 +8,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
@@ -41,9 +40,9 @@ public class HeatSinkBE extends HeatBE {
         clientTemperature = pkt.getTag().getDouble("t");
     }
 
-    public static void TICK(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity)
-    {
-        HeatBE.TICK(level, pos, state, blockEntity);
+    @Override
+    public void tick(Level level, BlockPos pos, BlockState state) {
+        super.tick(level, pos, state);
         level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
     }
 }

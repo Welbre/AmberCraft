@@ -34,7 +34,7 @@ import static welbre.ambercraft.cables.CableState.GET_FACE_DIRECTIONS;
  * In total, the FacedCable uses 30 bits. 5 bits per face, and is all stored in the {@link FacedCableBE#state status} field in the following order.
  * <b>DOWN(0), UP(5), NORTH(10), SOUTH(15), WEST(20), EAST(25)</b>, the number in parentheses mens where the data start of each face.
  */
-public class FacedCableBE extends BlockEntity implements ModulesHolder {
+public class FacedCableBE extends ModulesHolder {
     public static final ModelProperty<CableState> CONNECTION_MASK_PROPERTY = new ModelProperty<>();
     private CableState state = new CableState();
     private CableBrain brain = new CableBrain();

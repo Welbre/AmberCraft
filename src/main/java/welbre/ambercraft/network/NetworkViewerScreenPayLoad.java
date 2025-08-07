@@ -7,7 +7,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
@@ -18,14 +17,14 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Base64;
 
-public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
-    public <T extends BlockEntity & ModulesHolder> NetworkViewerPayLoad(T blockEntity)
+public record NetworkViewerScreenPayLoad(String data) implements CustomPacketPayload {
+    public <T extends ModulesHolder> NetworkViewerScreenPayLoad(T blockEntity)
     {
         this(convert(blockEntity));
     }
 
 
-    public static void handleOnClient(final NetworkViewerPayLoad payLoad, final IPayloadContext context) {
+    public static void handleOnClient(final NetworkViewerScreenPayLoad payLoad, final IPayloadContext context) {
         try {
             ByteArrayInputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(payLoad.data()));
 
@@ -45,13 +44,13 @@ public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
         }
     }
 
-    public static final CustomPacketPayload.Type<NetworkViewerPayLoad> TYPE =
+    public static final CustomPacketPayload.Type<NetworkViewerScreenPayLoad> TYPE =
             new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(AmberCraft.MOD_ID, "network_viewer_payload"));
 
-    public static final StreamCodec<ByteBuf, NetworkViewerPayLoad> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<ByteBuf, NetworkViewerScreenPayLoad> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8,
-            NetworkViewerPayLoad::data,
-            NetworkViewerPayLoad::new
+            NetworkViewerScreenPayLoad::data,
+            NetworkViewerScreenPayLoad::new
     );
 
     @Override
@@ -59,7 +58,7 @@ public record NetworkViewerPayLoad(String data) implements CustomPacketPayload {
         return TYPE;
     }
 
-    private static <T extends BlockEntity & ModulesHolder> String convert(T conductor)
+    private static <T extends ModulesHolder> String convert(T conductor)
     {
         try
         {

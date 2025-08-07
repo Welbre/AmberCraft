@@ -58,7 +58,7 @@ import java.util.function.*;
  * </dl>
  * @see ModuleType
  */
-public class ModuleFactory<T extends Module, V extends BlockEntity & ModulesHolder> implements Supplier<T> {
+public class ModuleFactory<T extends Module, V extends ModulesHolder> implements Supplier<T> {
     private final DeferredHolder<ModuleType<?>,? extends ModuleType<T>> holder;
     private Consumer<T> initializer;
     private ModuleConstructor<T, V, ModuleFactory<T, V>> constructor;
@@ -92,6 +92,16 @@ public class ModuleFactory<T extends Module, V extends BlockEntity & ModulesHold
         this.setter = setter;
         this.getter = getter;
         this.condition = blockEntityClass::isInstance;
+    }
+
+    private ModuleFactory(ModuleFactory<T, V> factory) {
+        this.holder = factory.holder;
+        this.initializer = factory.initializer;
+        this.constructor = factory.constructor;
+        this.destroyer = factory.destroyer;
+        this.setter = factory.setter;
+        this.getter = factory.getter;
+        this.condition = factory.condition;
     }
 
     public ModuleType<T> getType(){
@@ -141,24 +151,31 @@ public class ModuleFactory<T extends Module, V extends BlockEntity & ModulesHold
         return module;
     }
 
-    public void setInitializer(Consumer<T> initializer) {
+    public ModuleFactory<T, V> copy() {return new ModuleFactory<>(this);}
+
+    public ModuleFactory<T,V> setInitializer(Consumer<T> initializer) {
         this.initializer = initializer;
+        return this;
     }
 
-    public void setDestroyer(Consumer<T> destroyer) {
+    public ModuleFactory<T,V> setDestroyer(Consumer<T> destroyer) {
         this.destroyer = destroyer;
+        return this;
     }
 
-    public void setSetter(BiConsumer<V, T> setter) {
+    public ModuleFactory<T,V> setSetter(BiConsumer<V, T> setter) {
         this.setter = setter;
+        return this;
     }
 
-    public void setCondition(Predicate<BlockEntity> condition) {
+    public ModuleFactory<T,V> setCondition(Predicate<BlockEntity> condition) {
         this.condition = condition;
+        return this;
     }
 
-    public void setGetter(Function<V, T> getter) {
+    public ModuleFactory<T,V> setGetter(Function<V, T> getter) {
         this.getter = getter;
+        return this;
     }
 
     public ModuleFactory<T,V> setConstructor(ModuleConstructor<T, V, ModuleFactory<T,V>> constructor) {
@@ -167,7 +184,7 @@ public class ModuleFactory<T extends Module, V extends BlockEntity & ModulesHold
     }
 
     @FunctionalInterface
-    public interface ModuleConstructor<T extends Module, V extends BlockEntity & ModulesHolder, J extends ModuleFactory<T,V>> {
+    public interface ModuleConstructor<T extends Module, V extends ModulesHolder, J extends ModuleFactory<T,V>> {
         void build(T module, V entity, J factory, LevelAccessor level, BlockPos pos);
     }
 }

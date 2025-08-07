@@ -15,6 +15,7 @@ import welbre.ambercraft.sim.Node;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 import java.io.Serializable;
+import java.util.Random;
 
 public class HeatModule extends NetworkModule implements Serializable {
     HeatNode node;
@@ -42,6 +43,10 @@ public class HeatModule extends NetworkModule implements Serializable {
             n.fromTag(tag.getCompound("node"));
             node = n;
         }
+    }
+
+    public String getMultimeterString(){
+        return "%.3fºC".formatted(node.getTemperature());
     }
 
     @Override
@@ -74,41 +79,13 @@ public class HeatModule extends NetworkModule implements Serializable {
      *
      * Server side only!
      */
-    public <T extends BlockEntity & ModulesHolder> void init(T entity, ModuleFactory<HeatModule,T> factory, LevelAccessor level, BlockPos pos)
+    public <T extends ModulesHolder> void init(T entity, ModuleFactory<HeatModule,T> factory, LevelAccessor level, BlockPos pos)
     {
         refresh(entity);
         this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
 
         if (shouldBeMaster())
             master = createMaster();
-    }
-
-    /**
-     * Rebuild the reference for this module.
-     */
-    public void refresh(BlockEntity entity) {
-        if (isFresh)
-            return;
-
-        var level = entity.getLevel();
-        if (level == null)
-            throw new IllegalStateException("Trying to refresh module while the game isn't loaded!");
-        if (level.isClientSide())
-            return;
-
-        var pos = entity.getBlockPos();
-
-        for (Direction dir : Direction.values())
-            if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
-                for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
-                        this.connect(heatModule);
-
-        if (isMaster() && father != null)
-            throw new IllegalStateException("corrupted module!");
-        if (!isMaster() && father == null)
-            throw new IllegalStateException("corrupted module!");
-
-        isFresh = true;
     }
 
     /**

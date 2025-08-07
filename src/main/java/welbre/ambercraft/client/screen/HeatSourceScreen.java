@@ -1,23 +1,23 @@
-package welbre.ambercraft.menu;
+package welbre.ambercraft.client.screen;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.component.TooltipProvider;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 import welbre.ambercraft.blockentity.HeatSourceBE;
 import welbre.ambercraft.network.HeatSourceSetterPayload;
 
-import java.util.List;
 
 import static welbre.ambercraft.blockentity.HeatSourceBE.Mode;
 
 @OnlyIn(Dist.CLIENT)
-public class HeatSourceScreen extends Screen {
+public class HeatSourceScreen extends Screen{
     public EditBox input;
     public CycleButton<Mode> modeButton;
     public Button doneButton;
@@ -26,9 +26,9 @@ public class HeatSourceScreen extends Screen {
     public Mode mode;
     public final HeatSourceBE entity;
 
-    public HeatSourceScreen(HeatSourceBE entity) {
+    public HeatSourceScreen(FriendlyByteBuf buf) {
         super(Component.literal("Heat source"));
-        this.entity = entity;
+        this.entity = (HeatSourceBE) Minecraft.getInstance().level.getBlockEntity(buf.readBlockPos());
         this.mode = entity.mode;
     }
 

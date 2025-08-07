@@ -1,8 +1,12 @@
 package welbre.ambercraft.module.network;
 
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.module.Module;
+import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.heat.HeatModule;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,26 +37,6 @@ public abstract class NetworkModule implements Module, Serializable {
     public int ID = new Random().nextInt(0,0xffffff);
 
     public NetworkModule() {
-    }
-
-    @Override
-    public void writeData(CompoundTag tag, HolderLookup.Provider registries) {
-        tag.putInt("ID", ID);
-    }
-
-    @Override
-    public void readData(CompoundTag tag, HolderLookup.Provider registries) {
-        ID = tag.getInt("ID");
-    }
-
-    /// Returns a copy of children
-    public NetworkModule[] getChildren() {
-        return Arrays.copyOf(this.children,this.children.length);
-    }
-
-    /// Dirt the {@link Master} from any module in the network.
-    public void dirtMaster(){
-        getRoot().master.dirt();
     }
 
     private void setRoot()
@@ -288,6 +272,74 @@ public abstract class NetworkModule implements Module, Serializable {
         }
 
         return null;
+    }
+
+    /**
+     * Rebuild the reference for this module.
+     */
+    public void refresh(BlockEntity entity) {
+        if (isFresh)
+            return;
+
+        var level = entity.getLevel();
+        if (level == null)
+            throw new IllegalStateException("Trying to refresh module while the game isn't loaded!");
+        if (level.isClientSide())
+            return;
+
+        var pos = entity.getBlockPos();
+
+        for (Direction dir : Direction.values())
+            if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
+                for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
+                    this.connect(heatModule);
+
+        if (isMaster() && father != null)
+            throw new IllegalStateException("corrupted module!");
+        if (!isMaster() && father == null)
+            throw new IllegalStateException("corrupted module!");
+
+        isFresh = true;
+    }
+
+
+    @Override
+    public void writeData(CompoundTag tag, HolderLookup.Provider registries) {
+        tag.putInt("ID", ID);
+    }
+
+    @Override
+    public void readData(CompoundTag tag, HolderLookup.Provider registries) {
+        ID = tag.getInt("ID");
+    }
+
+    public void writeUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        tag.putShort("ID", (short) ID);
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        ID = tag.getShort("ID");
+    }
+
+    @Override
+    public int getID() {
+        return ID;
+    }
+
+    @Override
+    public void onLoad(BlockEntity entity) {
+        refresh(entity);
+    }
+
+    /// Returns a copy of children
+    public NetworkModule[] getChildren() {
+        return Arrays.copyOf(this.children,this.children.length);
+    }
+
+    /// Dirt the {@link Master} from any module in the network.
+    public void dirtMaster(){
+        getRoot().master.dirt();
     }
 
     public NetworkModule getFather() {

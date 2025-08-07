@@ -1,26 +1,23 @@
 package welbre.ambercraft.blocks.heat;
 
-import net.minecraft.client.Minecraft;
+import io.netty.buffer.Unpooled;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatBE;
 import welbre.ambercraft.blockentity.HeatSourceBE;
-import welbre.ambercraft.menu.HeatSourceScreen;
-import welbre.ambercraft.module.ModuleFactory;
-import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.client.AmberCraftScreenHelper;
+import welbre.ambercraft.module.ModulesHolder;
 
 public class HeatSourceBlock extends HeatBlock {
     public HeatSourceBlock(Properties p_49795_) {
@@ -41,7 +38,7 @@ public class HeatSourceBlock extends HeatBlock {
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return HeatSourceBE::TICK;
+        return ModulesHolder::TICK_HELPER;
     }
 
     @Override
@@ -49,9 +46,9 @@ public class HeatSourceBlock extends HeatBlock {
         if (level.getBlockEntity(pos) instanceof HeatSourceBE source)
         {
             if (level.isClientSide)
-                Minecraft.getInstance().setScreen(new HeatSourceScreen(source));
+                AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.HEAT_SOURCE, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(pos), (LocalPlayer) player);
             else
-                ((ServerPlayer) player).connection.send(ClientboundBlockEntityDataPacket.create(source));
+                ((ServerPlayer)player).connection.send(ClientboundBlockEntityDataPacket.create(source));
         }
         return InteractionResult.SUCCESS;
     }

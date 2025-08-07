@@ -10,7 +10,7 @@ import welbre.ambercraft.module.heat.HeatModule
 import welbre.ambercraft.module.network.NetworkModule
 import java.io.Serializable
 
-class NetworkWrapperModule<T>(entity: T): Serializable where T : BlockEntity, T : ModulesHolder
+class NetworkWrapperModule<T>(entity: T): Serializable where T : ModulesHolder
 {
     val module: Array<NetworkModule> = entity.modules.filterIsInstance<NetworkModule>().toTypedArray();
     val posX: Int = entity.blockPos.x;
@@ -23,7 +23,7 @@ class NetworkWrapperModule<T>(entity: T): Serializable where T : BlockEntity, T 
         if (entity is ModulesHolder)
         for (module in entity.modules)
             if (module is HeatModule)
-                if (module.ID == target.ID)
+                if (module.id == target.ID)
                     return entity
 
         for (dir in Direction.entries)

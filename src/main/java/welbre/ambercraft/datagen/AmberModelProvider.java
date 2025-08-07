@@ -19,8 +19,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.FurnaceBlock;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.blocks.heat.HeatPumpBlock;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
 import welbre.ambercraft.client.item.CableSpecialRender;
+import welbre.ambercraft.datagen.template.AmberModelTemplate;
 
 import java.util.HashMap;
 
@@ -58,6 +60,8 @@ public class AmberModelProvider extends ModelProvider {
     private static void registerBlocks(@NotNull BlockModelGenerators blocks) {
         blocks.createTrivialCube(AmberCraft.Blocks.IRON_MACHINE_CASE_BLOCK.get());
         blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(AmberCraft.Blocks.HEAT_SINK_BLOCK.get(), new Variant().with(VariantProperties.MODEL, ResourceLocation.parse("minecraft:block/air"))));
+        CREATE_HEAT_PUMP(blocks);
+        blocks.createTrivialCube(AmberCraft.Blocks.HEAT_SOURCE_BLOCK.get());
 
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.VOLTAGE_SOURCE_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "voltage_source_block");
@@ -65,8 +69,6 @@ public class AmberModelProvider extends ModelProvider {
                 "connection_creative_block", "connection_creative_block", "resistor_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.GROUND_BLOCK.get(),
                 "connection_creative_block", "ground_block","ground_block");
-
-        blocks.createTrivialCube(AmberCraft.Blocks.HEAT_SOURCE_BLOCK.get());
 
         CREATE_HEAT_FURNACE(blocks);
         CREATE_AMBER_FREE_BLOCK_STATE(blocks, AmberCraft.Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get());
@@ -77,6 +79,21 @@ public class AmberModelProvider extends ModelProvider {
         CABLES.CREATE_CENTRED(blocks, AmberCraft.Blocks.CREATIVE_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("ambercraft:block/creative_machine_base"));
 
         CABLES.CREATE_FACED(blocks, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), ResourceLocation.parse("minecraft:block/white_wool"));
+    }
+
+    private static void CREATE_HEAT_PUMP(@NotNull BlockModelGenerators blocks) {
+        var model = AmberModelTemplate.CREATE_AMBER_SIDED_BLOCK_MODEL(blocks, AmberCraft.Blocks.HEAT_PUMP_BLOCK.get(), "connection_thermal_creative", "connection_thermal_creative", "heat_pump");
+        blocks.blockStateOutput.accept(
+                MultiVariantGenerator.multiVariant(AmberCraft.Blocks.HEAT_PUMP_BLOCK.get())
+                        .with(PropertyDispatch.property(HeatPumpBlock.FACING)
+                                .select(Direction.NORTH, Variant.variant().with(VariantProperties.MODEL, model))
+                                .select(Direction.SOUTH, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.WEST, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270))
+                                .select(Direction.EAST, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))
+                                .select(Direction.UP, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270))
+                                .select(Direction.DOWN, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90))
+                        )
+        );
     }
 
     private static void CREATE_HEAT_FURNACE(BlockModelGenerators g){

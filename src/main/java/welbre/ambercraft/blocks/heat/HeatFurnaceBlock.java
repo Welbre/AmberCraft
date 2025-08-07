@@ -31,6 +31,7 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatFurnaceBE;
 import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
 import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -115,7 +116,7 @@ public class HeatFurnaceBlock extends HeatBlock {
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return type == AmberCraft.BlockEntity.HEAT_FURNACE_BE.get() ? HeatFurnaceBE::tick : null;
+        return ModulesHolder::TICK_HELPER;
     }
 
     @Override

@@ -58,7 +58,7 @@ public abstract class HeatConductorBlock extends HeatBlock {
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return HeatBE::TICK;
+        return ModulesHolder::TICK_HELPER;
     }
 
     @Override

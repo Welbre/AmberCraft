@@ -21,8 +21,9 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addBlock(AmberCraft.Blocks.IRON_HEAT_CONDUCTOR_BLOCK, "Iron heat conductor");
         addBlock(AmberCraft.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK, "Gold heat conductor");
         addBlock(AmberCraft.Blocks.CREATIVE_HEAT_CONDUCTOR_BLOCK, "Creative heat conductor");
-        addBlock(AmberCraft.Blocks.HEAT_SOURCE_BLOCK, "Heat source");
         addBlock(AmberCraft.Blocks.HEAT_SINK_BLOCK, "Heat sink");
+        addBlock(AmberCraft.Blocks.HEAT_SOURCE_BLOCK, "Heat source");
+        addBlock(AmberCraft.Blocks.HEAT_PUMP_BLOCK, "Heat pump");
 
         addBlock(AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK, "Abstract cable");
 

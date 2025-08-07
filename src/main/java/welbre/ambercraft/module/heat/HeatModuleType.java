@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.network.NetworkViewerPayLoad;
+import welbre.ambercraft.network.NetworkViewerScreenPayLoad;
 
 public class HeatModuleType implements ModuleType<HeatModule> {
 
@@ -52,13 +52,13 @@ public class HeatModuleType implements ModuleType<HeatModule> {
     public InteractionResult useItemOn(HeatModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide){
             if (stack.getItem() == Items.LEVER){
-                player.displayClientMessage(Component.literal(module.getHeatNode().getTemperature() + "ºC").withColor(DyeColor.ORANGE.getTextColor()), false);
+                player.displayClientMessage(Component.literal(module.getMultimeterString()).withColor(DyeColor.ORANGE.getTextColor()), false);
                 return InteractionResult.SUCCESS;
             }
             else if (stack.getItem() == AmberCraft.Items.MULTIMETER.get()) {
                 BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ModulesHolder)
-                    PacketDistributor.sendToPlayer((ServerPlayer) player, new NetworkViewerPayLoad((BlockEntity & ModulesHolder) entity));
+                if (entity instanceof ModulesHolder holder)
+                    PacketDistributor.sendToPlayer((ServerPlayer) player, new NetworkViewerScreenPayLoad(holder));
 
                 return InteractionResult.SUCCESS;
             }

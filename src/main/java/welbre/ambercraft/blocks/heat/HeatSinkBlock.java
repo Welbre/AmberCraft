@@ -27,6 +27,7 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatSinkBE;
 import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.sim.heat.HeatNode;
 
@@ -106,7 +107,7 @@ public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return HeatSinkBE::TICK;
+        return ModulesHolder::TICK_HELPER;
     }
 
     private static void MODULE_INIT(HeatModule module)
