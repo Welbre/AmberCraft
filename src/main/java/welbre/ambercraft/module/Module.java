@@ -21,10 +21,12 @@ public interface Module {
     void writeData(CompoundTag tag, HolderLookup.Provider registries);
     /// Read the data from the NBT tag.
     void readData(CompoundTag tag, HolderLookup.Provider registries);
-    /// Write need data to when this module receives an update;
+    /// Write necessary data in a chunk update.
     void writeUpdateTag(CompoundTag tag, HolderLookup.Provider registries);
-    /// The operation o be performed in an update;
+    /// Handle the data wrote in {@link Module#writeUpdateTag(CompoundTag, HolderLookup.Provider)}.
     void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider);
+    /// Called when the block entity receives an update via network.
+    void onDataPacket(Connection net, CompoundTag compound, HolderLookup.Provider lookupProvider);
     /// Get the Identifier, should be a number between 0 and 0xffffff
     int getID();
     /// Only in BlockEntity!
@@ -32,4 +34,5 @@ public interface Module {
 
     /// Used in Client and Server sides when the entity is ticking.
     void tick(BlockEntity entity);
+
 }

@@ -8,13 +8,12 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -30,33 +29,35 @@ public class NetworkScreen extends Screen {
     private final PoseStack poseStack = new PoseStack();
     private double zoomLevel = 1.0;
 
+    public int selectedLayer = 0;
     private ScreenNode selectedNode = null;
     private int dragStartX;
     private int dragStartY;
 
-    final NetworkModule main;
-    final NetworkWrapperModule<?> wrapper;
-    final List<ScreenNode> nodes = new ArrayList<>();
+    final List<NetworkModule> main;
+    final NetworkDebugHelper helper;
+    final List<List<ScreenNode>> nodes_per_layer = new ArrayList<>();
     final List<Connection> connections = new ArrayList<>();
     final List<Animation> animations = new ArrayList<>();
 
-    public NetworkScreen(NetworkWrapperModule<?> main) {
+    public NetworkScreen(FriendlyByteBuf buf) {
         super(Component.literal("Network viewer").withColor(DyeColor.PURPLE.getTextColor()));
-        this.main = main.getModule()[0];
-        this.wrapper = main;
+        this.helper = NetworkDebugHelper.Companion.parser(buf);
+        this.main = Arrays.asList(helper.getModule());
     }
 
 
     ScreenNode getScreenNode(NetworkModule module)
     {
-        for (ScreenNode screenNode : nodes)
-            if (screenNode.module == module)
-                return screenNode;
+        for (List<ScreenNode> nodes : nodes_per_layer)
+            for (ScreenNode screenNode : nodes)
+                if (screenNode.module == module)
+                    return screenNode;
 
         return null;
     }
 
-    private void addModule(NetworkModule module)
+    private void addModule(NetworkModule module, int layer)
     {
         if (getScreenNode(module) != null)
             return;
@@ -65,13 +66,13 @@ public class NetworkScreen extends Screen {
 
         var node = new ScreenNode(
                 0,0,60,60,
-                module == main ? 0xff7f00ff : 0xFFAE8094,
+                main.contains(module) ? 0xff7f00ff : 0xFFAE8094,
                 module
         );
-        nodes.add(node);
+        nodes_per_layer.get(layer).add(node);
 
         if (father != null)
-            this.addModule(father);
+            this.addModule(father, layer);
 
         @Nullable ScreenNode fatherNode = getScreenNode(father);
 
@@ -88,7 +89,7 @@ public class NetworkScreen extends Screen {
         if (children != null)
             for (NetworkModule child : children)
             {
-                this.addModule(child);
+                this.addModule(child, layer);
 
                 ScreenNode childNode = getScreenNode(child);
 
@@ -100,29 +101,34 @@ public class NetworkScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        addModule(main);
-        ScreenNode screenNode = getScreenNode(main);
-
-        if (screenNode == null)
-            return;
-        int centerX = this.width / 2;
-        int centerY = this.height / 2;
-        int[] dir = {centerX - screenNode.x, centerY - screenNode.y};
-        for (ScreenNode node : nodes)
+        for (int layer = 0; layer < main.size(); layer++)
         {
-            node.x += dir[0];
-            node.y += dir[1];
+            nodes_per_layer.add(new ArrayList<>());
+            addModule(main.get(layer), layer);
+
+            ScreenNode screenNode = getScreenNode(main.get(layer));
+
+            if (screenNode == null)
+                return;
+            int centerX = this.width / 2;
+            int centerY = this.height / 2;
+            int[] dir = {centerX - screenNode.x, centerY - screenNode.y};
+            for (ScreenNode node : nodes_per_layer.get(layer))
+            {
+                node.x += dir[0];
+                node.y += dir[1];
+            }
+
+            checkCyclical();
+
+            for (ScreenNode node : this.nodes_per_layer.get(layer))
+                node.setWorldPos(helper.findBlockEntity(node.module));
+
+
+            this.addRenderableWidget(Button.builder(Component.literal("Tree viewer"), (a) -> TreeViewerSort.sort(this)).pos(0, 0).size(100, 18).build());
+            this.addRenderableWidget(Button.builder(Component.literal("Orbital viewer"), (a) -> OrbitalViewerSort.sort(this)).pos(100, 0).size(100, 18).build());
+            this.addRenderableWidget(Button.builder(Component.literal("Onion viewer"), (a) -> OnionViewerSort.sort(this)).pos(200, 0).size(100, 18).build());
         }
-
-        checkCyclical();
-
-        for (ScreenNode node : this.nodes)
-            node.setWorldPos(wrapper.findBlockEntity(node.module));
-
-
-        this.addRenderableWidget(Button.builder(Component.literal("Tree viewer"), (a) -> TreeViewerSort.sort(this)).pos(0,0).size(100,18).build());
-        this.addRenderableWidget(Button.builder(Component.literal("Orbital viewer"), (a) -> OrbitalViewerSort.sort(this)).pos(100,0).size(100,18).build());
-        this.addRenderableWidget(Button.builder(Component.literal("Onion viewer"), (a) -> OnionViewerSort.sort(this)).pos(200,0).size(100,18).build());
     }
 
     @Override
@@ -130,15 +136,18 @@ public class NetworkScreen extends Screen {
         super.tick();
 
         // Check and resolve collisions between all pairs of nodes
-        for (int i = 0; i < nodes.size(); i++)
+        for (List<ScreenNode> nodes : nodes_per_layer)
         {
-            for (int j = i + 1; j < nodes.size(); j++)
+            for (int i = 0; i < nodes.size(); i++)
             {
-                ScreenNode node1 = nodes.get(i);
-                ScreenNode node2 = nodes.get(j);
+                for (int j = i + 1; j < nodes.size(); j++)
+                {
+                    ScreenNode node1 = nodes.get(i);
+                    ScreenNode node2 = nodes.get(j);
 
-                if (node1.areNodesColliding(node2))
-                    node1.resolveCollision(node2,animations);
+                    if (node1.areNodesColliding(node2))
+                        node1.resolveCollision(node2, animations);
+                }
             }
         }
     }
@@ -159,7 +168,7 @@ public class NetworkScreen extends Screen {
         for (Connection connection : connections) connection.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.flush();
 
-        for (ScreenNode node : nodes)
+        for (ScreenNode node : nodes_per_layer.get(selectedLayer))
         {
             if (node.isMouseOver(mouseX, mouseY))
             {
@@ -191,18 +200,16 @@ public class NetworkScreen extends Screen {
         mouseY = transformed.y;
 
         if (button == 0) { // Left click
-            for (ScreenNode node : nodes) {
+            for (ScreenNode node : nodes_per_layer.get(selectedLayer)) {
                 if (node.isMouseOver((int)mouseX, (int)mouseY)) {
                     selectedNode = node;
                     dragStartX = (int)mouseX - node.x;
                     dragStartY = (int)mouseY - node.y;
-                    BlockEntity entity = wrapper.findBlockEntity(node.module);
+                    BlockEntity entity = helper.findBlockEntity(node.module);
                     if (entity != null)
                     {
                         boolean isMaster = node.module.getMaster() != null;
-                        PacketDistributor.sendToAllPlayers(
-                                new GameTestAddMarkerDebugPayload(entity.getBlockPos(), isMaster ? 0xcc880000: ( node.module ==  this.main ? 0xdd7f00ff : 0xccFFFFFF), "@%x".formatted(node.module.ID), 1500)
-                        );
+                        Minecraft.getInstance().debugRenderer.gameTestDebugRenderer.addMarker(entity.getBlockPos(), isMaster ? 0xcc880000 : (node.module == this.main ? 0xdd7f00ff : 0xccFFFFFF), "@%x".formatted(node.module.ID), 1500);
                     }
                     return true;
                 }
@@ -227,7 +234,7 @@ public class NetworkScreen extends Screen {
             }
             else
             {
-                for (ScreenNode node : nodes) {
+                for (ScreenNode node : nodes_per_layer.get(selectedLayer)) {
                     node.x += (int) dragX;
                     node.y += (int) dragY;
                 }
@@ -259,7 +266,7 @@ public class NetworkScreen extends Screen {
     {
         int x = (this.width/2) - node.x;
         int y = (this.height/2) - node.y;
-        for (ScreenNode n : nodes)
+        for (ScreenNode n : nodes_per_layer.get(selectedLayer))
             animations.add(new Animation(n, n.x + x, n.y + y, 20, Animation.Interpolations.EASE_OUT_QUART));
     }
 
@@ -267,18 +274,18 @@ public class NetworkScreen extends Screen {
     {
         int x = 0;
         int y = 0;
-        for (ScreenNode node : nodes)
+        for (ScreenNode node : nodes_per_layer.get(selectedLayer))
         {
             x += node.x;
             y += node.y;
         }
-        x /= nodes.size();
-        y /= nodes.size();
+        x /= nodes_per_layer.size();
+        y /= nodes_per_layer.size();
 
         x = x - (this.width / 2);
         y = y - (this.height / 2);
 
-        for (ScreenNode node : nodes)
+        for (ScreenNode node : nodes_per_layer.get(selectedLayer))
             animations.add(new Animation(node, node.x - x, node.y - y, 10, Animation.Interpolations.EASE_OUT_QUART));
     }
 
@@ -308,18 +315,23 @@ public class NetworkScreen extends Screen {
 
 
                 text = text.toLowerCase();
-                for (var node : nodes)
+                for (int i = 0; i < nodes_per_layer.size(); i++)
                 {
-                    if (String.format("%x",node.module.ID).contains(text))
+                    var layer = nodes_per_layer.get(i);
+                    for (var node : layer)
                     {
-                        this.centralize(node);
-                        if (String.format("%x",node.module.ID).equals(text))//remove if findit
+                        if (String.format("%x", node.module.ID).contains(text))
                         {
-                            this.removeWidget(SEARCH);
-                            SEARCH = null;
-                        }
+                            this.centralize(node);
+                            if (String.format("%x", node.module.ID).equals(text))//remove if findit
+                            {
+                                this.selectedLayer = i;
+                                this.removeWidget(SEARCH);
+                                SEARCH = null;
+                            }
 
-                        return;
+                            return;
+                        }
                     }
                 }
             });
@@ -337,11 +349,10 @@ public class NetworkScreen extends Screen {
 
     private void checkCyclical() {
         //check cyclical connection.
-        NetworkModule root;
+        for (var m : main)
         {
             Set<NetworkModule> visited = new HashSet<>();
-            root = this.main;
-            NetworkModule temp = this.main.getFather();
+            NetworkModule temp = m.getFather();
 
             while (temp != null)
             {
@@ -355,7 +366,6 @@ public class NetworkScreen extends Screen {
                         AmberCraft.LOGGER.warn("Cyclical connection detected on Null!");
                 }
                 visited.add(temp);
-                root = temp;
                 temp = temp == null ? null : temp.getFather();
             }
         }
@@ -368,7 +378,7 @@ public class NetworkScreen extends Screen {
 
         if (father== null)
             return new int[]{this.width / 2 -30, this.height / 2 -30};
-        if (nodes.size() == 1)
+        if (nodes_per_layer.size() == 1)
         {
             final double angle = new Random().nextDouble(0D, Math.PI * 2D);
             return new int[]{
@@ -381,7 +391,7 @@ public class NetworkScreen extends Screen {
         double weigh = 0;
 
         //average
-        for (ScreenNode node : nodes)
+        for (ScreenNode node : nodes_per_layer.get(selectedLayer))
         {
             if (node == father)
                 continue;
@@ -431,7 +441,7 @@ public class NetworkScreen extends Screen {
         for (NetworkModule module : children)
             list.add(Component.literal("-->Child: " + Integer.toHexString(module.ID)).withColor(10494192));
 
-        BlockEntity entity = this.wrapper.findBlockEntity(node.module);
+        BlockEntity entity = this.helper.findBlockEntity(node.module);
         if (entity != null)
             list.add(Component.literal("Pos: x=%d, y=%d, z=%d".formatted(
                     entity.getBlockPos().getX(),

@@ -4,11 +4,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 
 import java.lang.reflect.Array;
@@ -44,7 +49,11 @@ public abstract class ModulesHolder extends BlockEntity {
         super(type, pos, blockState);
     }
 
-    /// Returns all modules that this instance holds.
+    /**
+     *  Returns all modules that this instance holds.<br>The order of this array is <code color="orange">extremely</code> important, because is used save/loading/synchronization!<br>
+     *  The order must be immutable; If you want to add a new Module in your block entity, add in the array <code color="orange">end</code>!
+     *  <b>Don't follow this instruction can cause world corruption!</b>
+     */
     public abstract @NotNull Module[] getModules();
 
     /// Returns all modules in <code>direction</code> face.
@@ -56,51 +65,70 @@ public abstract class ModulesHolder extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        CompoundTag main = tag.getCompound("modules");
-        for (Module module : getModules())
-        {
-            CompoundTag _tag = main.getCompound(module.getClass().getName());
-            module.readData(_tag, registries);
-        }
+        CompoundTag modules = tag.getCompound("modules");
+        var mods = getModules();
+        for (String localID : modules.getAllKeys())
+            mods[Integer.parseInt(localID)].readData(modules.getCompound(localID), registries);
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        CompoundTag main = new CompoundTag();
-        for (Module module : getModules())
+
+        CompoundTag modules_tag = new CompoundTag();
+        Module[] modules = getModules();
+
+        for (int i = 0; i < modules.length; i++)
         {
+            Module module = modules[i];
             var _tag = new CompoundTag();
             module.writeData(_tag, registries);
-            main.put(module.getClass().getName(), _tag);
+            modules_tag.put(Integer.toString(i), _tag);
         }
-        tag.put("modules", main);
+        tag.put("modules", modules_tag);
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         var tag = super.getUpdateTag(registries);
-        CompoundTag main = new CompoundTag();
-        for (Module module : getModules())
+
+        CompoundTag modules_tag = new CompoundTag();
+        Module[] modules = getModules();
+
+        for (int i = 0; i < modules.length; i++)
         {
-            var moduleTag = new CompoundTag();
-            module.writeUpdateTag(moduleTag, registries);
-            main.put(module.getClass().getName(), moduleTag);
+            Module module = modules[i];
+            var _tag = new CompoundTag();
+            module.writeUpdateTag(_tag, registries);
+            modules_tag.put(Integer.toString(i), _tag);
         }
-        tag.put("modules", main);
+        tag.put("modules", modules_tag);
 
         return tag;
     }
 
     @Override
     public void handleUpdateTag(CompoundTag compoundTag, HolderLookup.Provider lookupProvider) {
-        super.handleUpdateTag(compoundTag, lookupProvider);
         var tag = compoundTag.getCompound("modules");
-        for (Module module : getModules())
-        {
-            var moduleTag = tag.getCompound(module.getClass().getName());
-            module.handleUpdateTag(moduleTag, lookupProvider);
-        }
+        var mods = getModules();
+
+        for (String loadID : tag.getAllKeys())
+            mods[Integer.parseInt(loadID)].handleUpdateTag(tag.getCompound(loadID), lookupProvider);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+        CompoundTag tag = pkt.getTag();
+        CompoundTag main = tag.getCompound("modules");
+        var mods = getModules();
+
+        for (String loadID : main.getAllKeys())
+            mods[Integer.parseInt(loadID)].onDataPacket(net, main.getCompound(loadID), lookupProvider);
+    }
+
+    @Override
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

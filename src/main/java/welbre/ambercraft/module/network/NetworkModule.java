@@ -3,6 +3,7 @@ package welbre.ambercraft.module.network;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
@@ -314,12 +315,17 @@ public abstract class NetworkModule implements Module, Serializable {
     }
 
     public void writeUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
-        tag.putShort("ID", (short) ID);
+        tag.putInt("ID", ID);
     }
 
     @Override
     public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        ID = tag.getShort("ID");
+        ID = tag.getInt("ID");
+    }
+
+    @Override
+    public void onDataPacket(Connection net, CompoundTag compound, HolderLookup.Provider lookupProvider) {
+        handleUpdateTag(compound, lookupProvider);
     }
 
     @Override

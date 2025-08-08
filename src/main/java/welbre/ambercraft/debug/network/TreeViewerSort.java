@@ -12,8 +12,8 @@ class TreeViewerSort {
     public static void sort(NetworkScreen network)
     {
         int count = 0;
-        NetworkModule oldestFather = network.main;
-        NetworkModule temp = network.main.getFather();
+        NetworkModule oldestFather = network.main.get(network.selectedLayer);
+        NetworkModule temp = network.main.get(network.selectedLayer).getFather();
 
         while (temp != null){
             oldestFather = temp;
