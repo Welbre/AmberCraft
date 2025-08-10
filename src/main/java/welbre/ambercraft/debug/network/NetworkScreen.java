@@ -123,12 +123,18 @@ public class NetworkScreen extends Screen {
 
             for (ScreenNode node : this.nodes_per_layer.get(layer))
                 node.setWorldPos(helper.findBlockEntity(node.module));
-
-
-            this.addRenderableWidget(Button.builder(Component.literal("Tree viewer"), (a) -> TreeViewerSort.sort(this)).pos(0, 0).size(100, 18).build());
-            this.addRenderableWidget(Button.builder(Component.literal("Orbital viewer"), (a) -> OrbitalViewerSort.sort(this)).pos(100, 0).size(100, 18).build());
-            this.addRenderableWidget(Button.builder(Component.literal("Onion viewer"), (a) -> OnionViewerSort.sort(this)).pos(200, 0).size(100, 18).build());
         }
+
+        this.addRenderableWidget(Button.builder(Component.literal("Tree viewer"), (a) -> TreeViewerSort.sort(this)).pos(0, 0).size(100, 18).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Orbital viewer"), (a) -> OrbitalViewerSort.sort(this)).pos(100, 0).size(100, 18).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Onion viewer"), (a) -> OnionViewerSort.sort(this)).pos(200, 0).size(100, 18).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Layer: ").append(Component.literal("%d".formatted(selectedLayer)).withColor(0xFFFF8000)), this::nextLayer).pos(300, 0).size(50, 18).build());
+    }
+
+    private void nextLayer(Button button) {
+        if (++this.selectedLayer >= this.main.size())
+            selectedLayer = 0;
+        button.setMessage(Component.literal("Layer: ").append(Component.literal("%d".formatted(selectedLayer)).withColor(0xFFFF8000)));
     }
 
     @Override

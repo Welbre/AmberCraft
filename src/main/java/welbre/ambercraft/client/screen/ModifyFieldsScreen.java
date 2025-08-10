@@ -1,10 +1,17 @@
 package welbre.ambercraft.client.screen;
 
+import com.mojang.serialization.codecs.KeyDispatchCodec;
+import com.sun.jna.platform.KeyboardUtils;
 import io.netty.buffer.Unpooled;
+import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -13,7 +20,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforgespi.Environment;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.network.ModifyFieldsPayLoad;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
@@ -67,9 +76,20 @@ public class ModifyFieldsScreen extends Screen {
         for (int i = 0; i < fieldList.size(); i++)
         {
             Field field = fieldList.get(i);
-            var box = createBox(0,i*25, field);
+            var box = createBox(this.width / 2 - 100, i * 25, field);
             this.addRenderableWidget(box);
+            var name = new StringWidget(Component.literal(field.getName()).append(":").append(Component.literal(field.getType().getName()).withColor(0xFFCF8E6D)), this.font);
+            name.alignLeft();
+            name.setPosition(this.width / 2 - 110 - name.getWidth(), i * 25 + 5);
+            var bg = new Renderable(){
+                @Override
+                public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                    guiGraphics.fill(name.getX()-5, name.getY()-5, name.getX() + name.getWidth()+5, name.getY() + name.getHeight()+5, 0xcc787878);
+                }
+            };
+            this.addRenderableOnly(bg);
             this.boxes.add(box);
+            this.addRenderableOnly(name);
         }
     }
 
@@ -86,6 +106,27 @@ public class ModifyFieldsScreen extends Screen {
         }
         PacketDistributor.sendToServer(new ModifyFieldsPayLoad(UpdateAmberSecureKeyPayload.CLIENT_KEY, entity.getClass(), fieldList, values));
         super.onClose();
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ENTER)
+            this.setFocused(null);
+        else if (keyCode == GLFW.GLFW_KEY_TAB)
+        {
+            if (this.getFocused() != null && this.getFocused() instanceof EditBox box)
+            {
+                int i = boxes.indexOf(box);
+                if (i + 1 < boxes.size())
+                    this.setFocused(boxes.get(i + 1));
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     public static FriendlyByteBuf GET_BUFFER(BlockPos pos, String... fields)
@@ -153,11 +194,5 @@ public class ModifyFieldsScreen extends Screen {
         box.setResponder(string -> reponder.accept(box, string));
         setEditBoxValue(box, field);
         return box;
-    }
-
-    @Override
-    public void setFocused(@Nullable GuiEventListener listener) {
-        super.setFocused(listener);
-        System.out.println("focus changed!");
     }
 }

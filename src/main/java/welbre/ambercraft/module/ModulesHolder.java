@@ -118,6 +118,7 @@ public abstract class ModulesHolder extends BlockEntity {
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+        super.onDataPacket(net, pkt, lookupProvider);
         CompoundTag tag = pkt.getTag();
         CompoundTag main = tag.getCompound("modules");
         var mods = getModules();

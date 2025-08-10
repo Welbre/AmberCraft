@@ -114,6 +114,9 @@ public class HeatPumpBlock extends Block implements EntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (!player.isCreative())
+            return InteractionResult.PASS;
+
         if (level.isClientSide)
             AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.MODIFY_FIELDS, ModifyFieldsScreen.GET_BUFFER(pos, "power"), (LocalPlayer) player);
         else

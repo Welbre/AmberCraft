@@ -36,6 +36,13 @@ public class HeatPumpBE extends ModulesHolder {
     }
 
     @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        var tag = super.getUpdateTag(registries);
+        tag.putDouble("power", power);
+        return tag;
+    }
+
+    @Override
     public void tick(Level level, BlockPos pos, BlockState state) {
         if (!level.isClientSide)
         {
