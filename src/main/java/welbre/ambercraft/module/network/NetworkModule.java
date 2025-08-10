@@ -4,7 +4,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
@@ -278,7 +277,7 @@ public abstract class NetworkModule implements Module, Serializable {
     /**
      * Rebuild the reference for this module.
      */
-    public void refresh(BlockEntity entity) {
+    public void refresh(ModulesHolder entity) {
         if (isFresh)
             return;
 
@@ -290,10 +289,11 @@ public abstract class NetworkModule implements Module, Serializable {
 
         var pos = entity.getBlockPos();
 
-        for (Direction dir : Direction.values())
-            if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)
-                for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))
-                    this.connect(heatModule);
+        for (Direction dir : Direction.values())//check all faces in the BlockEntity
+            if (List.of(entity.getModule(dir)).contains(this))//if dir face contains "this" module
+                if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)//check if the block in the face direction is a ModulesHolder
+                    for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))//get all modules in the opposite face of dir.
+                        this.connect(heatModule);
 
         if (isMaster() && father != null)
             throw new IllegalStateException("corrupted module!");
@@ -334,7 +334,7 @@ public abstract class NetworkModule implements Module, Serializable {
     }
 
     @Override
-    public void onLoad(BlockEntity entity) {
+    public void onLoad(ModulesHolder entity) {
         refresh(entity);
     }
 

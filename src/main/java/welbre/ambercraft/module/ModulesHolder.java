@@ -57,7 +57,6 @@ public abstract class ModulesHolder extends BlockEntity {
     public abstract @NotNull Module[] getModules();
 
     /// Returns all modules in <code>direction</code> face.
-    @Deprecated
     public abstract @NotNull Module[] getModule(Direction direction);
     /// Similar to {@link ModulesHolder#getModule(Direction) but used a generic object as extra data.}
     public abstract @NotNull Module[] getModule(Object object);

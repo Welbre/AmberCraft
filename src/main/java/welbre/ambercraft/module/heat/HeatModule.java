@@ -55,7 +55,7 @@ public class HeatModule extends NetworkModule implements Serializable {
     }
 
     @Override
-    public void tick(BlockEntity entity){
+    public void tick(ModulesHolder entity){
         if (!this.isMaster())
             return;
         Profiler.get().push("HeatModuleTick");

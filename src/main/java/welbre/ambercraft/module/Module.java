@@ -30,9 +30,9 @@ public interface Module {
     /// Get the Identifier, should be a number between 0 and 0xffffff
     int getID();
     /// Only in BlockEntity!
-    void onLoad(BlockEntity entity);
+    void onLoad(ModulesHolder entity);
 
     /// Used in Client and Server sides when the entity is ticking.
-    void tick(BlockEntity entity);
+    void tick(ModulesHolder entity);
 
 }

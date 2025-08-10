@@ -61,7 +61,6 @@ public class HeatNode extends Node implements Serializable {
     @Deprecated
     public void transferHeat(HeatNode target, double dt)
     {
-        //todo need to implement a fast way to simulate this, pre-calculating the power for each connection, and only updating the temperature after all power be calculated.
         double resistance = this.thermal_resistence +target.thermal_resistence;
         double teq = (temperature * thermal_mass + target.temperature * target.thermal_mass) / (thermal_mass + target.thermal_mass);
         double itau = (this.thermal_mass + target.thermal_mass) / (resistance*this.thermal_mass*target.thermal_mass);
@@ -71,9 +70,7 @@ public class HeatNode extends Node implements Serializable {
         double t2 = teq + (target.temperature - teq) * Math.pow(Math.E, -dt * itau);
 
         this.deltaTemp += (t1 - this.temperature);
-        //this.temperature = t1;
         target.deltaTemp += (t2 - target.temperature);
-        //target.temperature = t2;
     }
 
     public void updateSoftHeat()

@@ -116,9 +116,9 @@ public class ModuleFactory<T extends Module, V extends ModulesHolder> implements
         if (condition.test(entity))
         {
             T module = get();
+            setter.accept((V) entity, module);
             if (constructor != null)
                 constructor.build(module,(V) entity,this, level, pos);
-            setter.accept((V) entity, module);
         }
     }
 
