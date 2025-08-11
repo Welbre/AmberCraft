@@ -48,7 +48,7 @@ public class HeatPumpBlock extends Block implements EntityBlock {
             HeatModule::free,
             HeatPumpBE::setColdModule,
             HeatPumpBE::getColdModule
-            );
+            ).setConstructor(HeatModule::init);
     public static final ModuleFactory<HeatModule, HeatPumpBE> HOT_FACTORY = COLD_FACTORY.copy().setGetter(HeatPumpBE::getHotModule).setSetter(HeatPumpBE::setHotModule);
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;

@@ -295,9 +295,7 @@ public abstract class NetworkModule implements Module, Serializable {
                     for (HeatModule heatModule : modular.getModule(HeatModule.class, dir.getOpposite()))//get all modules in the opposite face of dir.
                         this.connect(heatModule);
 
-        if (isMaster() && father != null)
-            throw new IllegalStateException("corrupted module!");
-        if (!isMaster() && father == null)
+        if ((isMaster() && father != null) || (!isMaster() && father == null))
             throw new IllegalStateException("corrupted module!");
 
         isFresh = true;
