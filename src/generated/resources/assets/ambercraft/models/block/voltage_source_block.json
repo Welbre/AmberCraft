@@ -1,9 +1,0 @@
-{
-  "parent": "ambercraft:block/sided_block",
-  "textures": {
-    "base": "ambercraft:block/voltage_source_block",
-    "c0": "ambercraft:block/connection_creative_block",
-    "c1": "ambercraft:block/connection_creative_block",
-    "particle": "ambercraft:block/voltage_source_block"
-  }
-}

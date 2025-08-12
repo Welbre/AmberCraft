@@ -26,7 +26,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.HeatBE;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 

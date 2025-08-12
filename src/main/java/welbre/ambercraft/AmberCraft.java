@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.heat.*;
-import welbre.ambercraft.blocks.parent.AmberFreeBlock;
 import welbre.ambercraft.cables.AmberFCableComponent;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.TestCableType;
@@ -63,14 +62,14 @@ public class AmberCraft {
         public static final DeferredRegister.Blocks REGISTER = DeferredRegister.createBlocks(MOD_ID);
 
         public static final DeferredHolder<Block, Block> IRON_MACHINE_CASE_BLOCK = REGISTER.registerSimpleBlock("iron_machine_case_block");
-        public static final DeferredHolder<Block, VoltageSourceBlockAmberBasic> VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("voltage_source_block", VoltageSourceBlockAmberBasic::new);
+        public static final DeferredHolder<Block, VoltageSourceBlock> VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("voltage_source_block", VoltageSourceBlock::new);
         public static final DeferredHolder<Block, ResistorBlock> RESISTOR_BLOCK = REGISTER.registerBlock("resistor_block", ResistorBlock::new);
         public static final DeferredHolder<Block, Ground> GROUND_BLOCK = REGISTER.registerBlock("ground_block", Ground::new);
 
         public static final DeferredHolder<Block, HeatPumpBlock> HEAT_PUMP_BLOCK = REGISTER.registerBlock("heat_pump", HeatPumpBlock::new);
         public static final DeferredHolder<Block, HeatSourceBlock> HEAT_SOURCE_BLOCK = REGISTER.registerBlock("heat_source", HeatSourceBlock::new);
         public static final DeferredHolder<Block, HeatFurnaceBlock> HEAT_FURNACE_BLOCK = REGISTER.registerBlock("heat_furnace", HeatFurnaceBlock::new);
-        public static final DeferredHolder<Block, AmberFreeBlock> CREATIVE_HEAT_FURNACE_BLOCK = REGISTER.registerBlock("creative_heat_furnace", AmberFreeBlock::new);
+        public static final DeferredHolder<Block, CreativeHeatFurnaceBlock> CREATIVE_HEAT_FURNACE_BLOCK = REGISTER.registerBlock("creative_heat_furnace", CreativeHeatFurnaceBlock::new);
 
         public static final DeferredHolder<Block, CopperHeatConductorBlock> COPPER_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("copper_heat_conductor", CopperHeatConductorBlock::new);
         public static final DeferredHolder<Block, IronHeatConductorBlock> IRON_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("iron_heat_conductor", IronHeatConductorBlock::new);
@@ -117,6 +116,7 @@ public class AmberCraft {
         public static final Supplier<BlockEntityType<HeatBE>> HEAT_CONDUCTOR_BE = REGISTER.register("heat_conductor", () -> new BlockEntityType<>(HeatBE::new, Blocks.HEAT_BE_USES.stream().map(DeferredHolder::get).toArray(Block[]::new)));
         public static final Supplier<BlockEntityType<HeatSourceBE>> HEAT_SOURCE_BE = REGISTER.register("heat_source", () -> new BlockEntityType<>(HeatSourceBE::new,Blocks.HEAT_SOURCE_BLOCK.get()));
         public static final Supplier<BlockEntityType<HeatPumpBE>> HEAT_PUMP_BE = REGISTER.register("heat_pump", () -> new BlockEntityType<>(HeatPumpBE::new, Blocks.HEAT_PUMP_BLOCK.get()));
+        public static final Supplier<BlockEntityType<CreativeHeatFurnaceBE>> CREATIVE_HEAT_FURNACE_BE = REGISTER.register("creative_heat_furnace", () -> new BlockEntityType<>(CreativeHeatFurnaceBE::new,Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get()));
 
         public static final Supplier<BlockEntityType<HeatSinkBE>> HEAT_SINK_BLOCK_BE = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBE::new,Blocks.HEAT_SINK_BLOCK.get()));
         public static final Supplier<BlockEntityType<FacedCableBE>> FACED_CABLE_BLOCK_BE = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBE::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));

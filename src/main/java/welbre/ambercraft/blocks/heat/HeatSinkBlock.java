@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -25,13 +26,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatSinkBE;
-import welbre.ambercraft.blocks.parent.AmberBasicBlock;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.sim.heat.HeatNode;
 
-public class HeatSinkBlock extends AmberBasicBlock implements EntityBlock {
+public class HeatSinkBlock extends Block implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
     public ModuleFactory<HeatModule,HeatSinkBE> factory = new ModuleFactory<>(
             HeatSinkBE.class,

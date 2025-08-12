@@ -9,58 +9,26 @@ import net.minecraft.client.data.models.model.*;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import net.neoforged.neoforge.client.model.generators.template.FaceRotation;
 import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.blocks.VoltageSourceBlockAmberBasic;
-import welbre.ambercraft.blocks.parent.AmberFreeBlock;
-import welbre.ambercraft.blocks.parent.AmberHorizontalBlock;
-import welbre.ambercraft.blocks.parent.AmberSidedBasicBlock;
 
 import static welbre.ambercraft.AmberCraft.MOD_ID;
 
 public class AmberModelTemplate {
+    public static final EnumProperty<Rotation> ROTATION = EnumProperty.create("rotation", Rotation.class);
     public static final TextureSlot connection0 = TextureSlot.create("c0");
     public static final TextureSlot connection1 = TextureSlot.create("c1");
     public static final TextureSlot base = TextureSlot.create("base");
 
-    public static void CREATE_AMBER_FREE_BLOCK_STATE(BlockModelGenerators g, AmberFreeBlock block){
-        g.blockStateOutput.accept(
-                MultiVariantGenerator.multiVariant(block)//todo finish this
-                        .with(PropertyDispatch.properties(AmberFreeBlock.FACING, AmberFreeBlock.ROTATION)
-                                .select(Direction.NORTH, AmberFreeBlock.FaceRotation.UP,Variant.variant())
-                                .select(Direction.SOUTH, AmberFreeBlock.FaceRotation.UP,Variant.variant())
-                                .select(Direction.WEST, AmberFreeBlock.FaceRotation.UP,Variant.variant())
-                                .select(Direction.EAST, AmberFreeBlock.FaceRotation.UP,Variant.variant())
-                                .select(Direction.UP, AmberFreeBlock.FaceRotation.UP,Variant.variant())
-                                .select(Direction.DOWN, AmberFreeBlock.FaceRotation.UP, Variant.variant())
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------Templates-----------------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-                                .select(Direction.NORTH, AmberFreeBlock.FaceRotation.LEFT,Variant.variant())
-                                .select(Direction.SOUTH, AmberFreeBlock.FaceRotation.LEFT,Variant.variant())
-                                .select(Direction.WEST, AmberFreeBlock.FaceRotation.LEFT,Variant.variant())
-                                .select(Direction.EAST, AmberFreeBlock.FaceRotation.LEFT,Variant.variant())
-                                .select(Direction.UP, AmberFreeBlock.FaceRotation.LEFT,Variant.variant())
-                                .select(Direction.DOWN, AmberFreeBlock.FaceRotation.LEFT,Variant.variant())
-
-                                .select(Direction.NORTH, AmberFreeBlock.FaceRotation.DOWN,Variant.variant())
-                                .select(Direction.SOUTH, AmberFreeBlock.FaceRotation.DOWN,Variant.variant())
-                                .select(Direction.WEST, AmberFreeBlock.FaceRotation.DOWN,Variant.variant())
-                                .select(Direction.EAST, AmberFreeBlock.FaceRotation.DOWN,Variant.variant())
-                                .select(Direction.UP, AmberFreeBlock.FaceRotation.DOWN,Variant.variant())
-                                .select(Direction.DOWN, AmberFreeBlock.FaceRotation.DOWN,Variant.variant())
-
-                                .select(Direction.NORTH, AmberFreeBlock.FaceRotation.RIGHT,Variant.variant())
-                                .select(Direction.SOUTH, AmberFreeBlock.FaceRotation.RIGHT,Variant.variant())
-                                .select(Direction.WEST, AmberFreeBlock.FaceRotation.RIGHT,Variant.variant())
-                                .select(Direction.EAST, AmberFreeBlock.FaceRotation.RIGHT,Variant.variant())
-                                .select(Direction.UP, AmberFreeBlock.FaceRotation.RIGHT,Variant.variant())
-                                .select(Direction.DOWN, AmberFreeBlock.FaceRotation.RIGHT,Variant.variant())
-                        )
-        );
-    }
-
-    //todo modify this to accept more generic textures, to be able to use in furnaces, grounds, voltage source and all blocks
-    //can face to all 6 directions, up, down, east, west, north, south.
+    ///can face to all 6 directions, up, down, east, west, north, south.
     public static final ModelTemplate SIDED_BLOCK_TEMPLATE = ExtendedModelTemplateBuilder.builder() // locate at asserts\ambercraft\models\blocks\sided_block
             .parent(ResourceLocation.parse("minecraft:block/block"))
             .requiredTextureSlot(connection0)
@@ -76,6 +44,117 @@ public class AmberModelTemplate {
                         cons.face(Direction.EAST, face -> face.uvs(0, 0, 16, 16).texture(base).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.EAST));
                     }
             ).build();
+
+
+    public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_Z_270 = ExtendedModelTemplateBuilder.builder()
+            .parent(ResourceLocation.parse("ambercraft:block/block"))
+            .requiredTextureSlot(TextureSlot.NORTH)
+            .requiredTextureSlot(TextureSlot.SOUTH)
+            .requiredTextureSlot(TextureSlot.WEST)
+            .requiredTextureSlot(TextureSlot.EAST)
+            .requiredTextureSlot(TextureSlot.UP)
+            .requiredTextureSlot(TextureSlot.DOWN)
+            .requiredTextureSlot(TextureSlot.PARTICLE)
+            .element( cons -> {
+                cons.from(0, 0, 0).to(16, 16, 16);
+                cons.face(Direction.NORTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.NORTH).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.NORTH));
+                cons.face(Direction.SOUTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.SOUTH).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.SOUTH));
+                cons.face(Direction.WEST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.UP).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.WEST));
+                cons.face(Direction.EAST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.DOWN).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.EAST));
+                cons.face(Direction.UP, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.EAST).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.UP));
+                cons.face(Direction.DOWN, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.WEST).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.DOWN));
+            })
+            .suffix("_z_270")
+            .build();
+
+    public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_Z_180 = ExtendedModelTemplateBuilder.builder()
+            .parent(ResourceLocation.parse("ambercraft:block/block"))
+            .requiredTextureSlot(TextureSlot.NORTH)
+            .requiredTextureSlot(TextureSlot.SOUTH)
+            .requiredTextureSlot(TextureSlot.WEST)
+            .requiredTextureSlot(TextureSlot.EAST)
+            .requiredTextureSlot(TextureSlot.UP)
+            .requiredTextureSlot(TextureSlot.DOWN)
+            .requiredTextureSlot(TextureSlot.PARTICLE)
+            .element( cons -> {
+                cons.from(0, 0, 0).to(16, 16, 16);
+                cons.face(Direction.NORTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.NORTH).rotation(FaceRotation.UPSIDE_DOWN).cullface(Direction.NORTH));
+                cons.face(Direction.SOUTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.SOUTH).rotation(FaceRotation.UPSIDE_DOWN).cullface(Direction.SOUTH));
+                cons.face(Direction.WEST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.EAST).rotation(FaceRotation.UPSIDE_DOWN).cullface(Direction.WEST));
+                cons.face(Direction.EAST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.WEST).rotation(FaceRotation.UPSIDE_DOWN).cullface(Direction.EAST));
+                cons.face(Direction.UP, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.DOWN).rotation(FaceRotation.UPSIDE_DOWN).cullface(Direction.UP));
+                cons.face(Direction.DOWN, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.UP).rotation(FaceRotation.UPSIDE_DOWN).cullface(Direction.DOWN));
+            })
+            .suffix("_z_180")
+            .build();
+
+    public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_Z_90 = ExtendedModelTemplateBuilder.builder()
+            .parent(ResourceLocation.parse("ambercraft:block/block"))
+            .requiredTextureSlot(TextureSlot.NORTH)
+            .requiredTextureSlot(TextureSlot.SOUTH)
+            .requiredTextureSlot(TextureSlot.WEST)
+            .requiredTextureSlot(TextureSlot.EAST)
+            .requiredTextureSlot(TextureSlot.UP)
+            .requiredTextureSlot(TextureSlot.DOWN)
+            .requiredTextureSlot(TextureSlot.PARTICLE)
+            .element( cons -> {
+                cons.from(0, 0, 0).to(16, 16, 16);
+                cons.face(Direction.NORTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.NORTH).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.NORTH));
+                cons.face(Direction.SOUTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.SOUTH).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.SOUTH));
+                cons.face(Direction.WEST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.DOWN).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.WEST));
+                cons.face(Direction.EAST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.UP).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.EAST));
+                cons.face(Direction.UP, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.WEST).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.UP));
+                cons.face(Direction.DOWN, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.EAST).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.DOWN));
+            })
+            .suffix("_z_90")
+            .build();
+
+    public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_FACING_XN = ExtendedModelTemplateBuilder.builder()
+            .parent(ResourceLocation.parse("ambercraft:block/block"))
+            .requiredTextureSlot(TextureSlot.NORTH)
+            .requiredTextureSlot(TextureSlot.SOUTH)
+            .requiredTextureSlot(TextureSlot.WEST)
+            .requiredTextureSlot(TextureSlot.EAST)
+            .requiredTextureSlot(TextureSlot.UP)
+            .requiredTextureSlot(TextureSlot.DOWN)
+            .requiredTextureSlot(TextureSlot.PARTICLE)
+            .element( cons -> {
+                cons.from(0, 0, 0).to(16, 16, 16);
+                cons.face(Direction.NORTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.EAST).cullface(Direction.NORTH));
+                cons.face(Direction.SOUTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.WEST).cullface(Direction.SOUTH));
+                cons.face(Direction.WEST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.NORTH).cullface(Direction.WEST));
+                cons.face(Direction.EAST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.SOUTH).cullface(Direction.EAST));
+                cons.face(Direction.UP, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.UP).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.UP));
+                cons.face(Direction.DOWN, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.DOWN).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.DOWN));
+            })
+            .suffix("_xn")
+            .build();
+
+    public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_FACING_XP = ExtendedModelTemplateBuilder.builder()
+            .parent(ResourceLocation.parse("ambercraft:block/block"))
+            .requiredTextureSlot(TextureSlot.NORTH)
+            .requiredTextureSlot(TextureSlot.SOUTH)
+            .requiredTextureSlot(TextureSlot.WEST)
+            .requiredTextureSlot(TextureSlot.EAST)
+            .requiredTextureSlot(TextureSlot.UP)
+            .requiredTextureSlot(TextureSlot.DOWN)
+            .requiredTextureSlot(TextureSlot.PARTICLE)
+            .element( cons -> {
+                cons.from(0, 0, 0).to(16, 16, 16);
+                cons.face(Direction.NORTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.WEST).cullface(Direction.NORTH));
+                cons.face(Direction.SOUTH, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.EAST).cullface(Direction.SOUTH));
+                cons.face(Direction.WEST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.SOUTH).cullface(Direction.WEST));
+                cons.face(Direction.EAST, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.NORTH).cullface(Direction.EAST));
+                cons.face(Direction.UP, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.UP).rotation(FaceRotation.CLOCKWISE_90).cullface(Direction.UP));
+                cons.face(Direction.DOWN, face -> face.uvs(0, 0, 16, 16).texture(TextureSlot.DOWN).rotation(FaceRotation.COUNTERCLOCKWISE_90).cullface(Direction.DOWN));
+            })
+            .suffix("_xp")
+            .build();
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------Templates users-----------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     public static final ModelTemplate SIDED_BLOCK_USER = ExtendedModelTemplateBuilder.builder()
             .parent(ResourceLocation.fromNamespaceAndPath(MOD_ID,"block/sided_block"))
             .requiredTextureSlot(connection0)
@@ -84,10 +163,55 @@ public class AmberModelTemplate {
             .requiredTextureSlot(TextureSlot.PARTICLE)
             .build();
 
-    public static void CREATE_AMBER_SIDED_BLOCK_STATE(BlockModelGenerators g, AmberSidedBasicBlock block, ResourceLocation model){
+    public static void CREATE_AMBER_FREE_BLOCK_STATE(BlockModelGenerators g, Block block, TextureMapping mapping){
+        var model = ModelTemplates.CUBE.create(block, mapping, g.modelOutput);
+        var z90 = FREE_BLOCK_MODEL_TEMPLATE_Z_90.create(block, mapping, g.modelOutput);
+        var z180 = FREE_BLOCK_MODEL_TEMPLATE_Z_180.create(block, mapping, g.modelOutput);
+        var z270 = FREE_BLOCK_MODEL_TEMPLATE_Z_270.create(block, mapping, g.modelOutput);
+
+        var xp = FREE_BLOCK_MODEL_TEMPLATE_FACING_XP.create(block, mapping, g.modelOutput);
+        var xn = FREE_BLOCK_MODEL_TEMPLATE_FACING_XN.create(block, mapping, g.modelOutput);
+
         g.blockStateOutput.accept(
                 MultiVariantGenerator.multiVariant(block)
-                        .with(PropertyDispatch.property(VoltageSourceBlockAmberBasic.FACING)
+                        .with(PropertyDispatch.properties(BlockStateProperties.FACING, ROTATION)
+                                .select(Direction.NORTH, Rotation.NONE,Variant.variant().with(VariantProperties.MODEL, model))
+                                .select(Direction.NORTH, Rotation.COUNTERCLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, z90))
+                                .select(Direction.NORTH, Rotation.CLOCKWISE_180,Variant.variant().with(VariantProperties.MODEL, z180))
+                                .select(Direction.NORTH, Rotation.CLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, z270))
+
+                                .select(Direction.SOUTH, Rotation.NONE,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.SOUTH, Rotation.COUNTERCLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, z90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.SOUTH, Rotation.CLOCKWISE_180,Variant.variant().with(VariantProperties.MODEL, z180).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.SOUTH, Rotation.CLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, z270).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+
+                                .select(Direction.WEST, Rotation.NONE,Variant.variant().with(VariantProperties.MODEL, xn))
+                                .select(Direction.WEST, Rotation.COUNTERCLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, xn).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90))
+                                .select(Direction.WEST, Rotation.CLOCKWISE_180,Variant.variant().with(VariantProperties.MODEL, xn).with(VariantProperties.X_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.WEST, Rotation.CLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, xn).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270))
+
+                                .select(Direction.EAST, Rotation.NONE,Variant.variant().with(VariantProperties.MODEL, xp))
+                                .select(Direction.EAST, Rotation.COUNTERCLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, xp).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270))
+                                .select(Direction.EAST, Rotation.CLOCKWISE_180,Variant.variant().with(VariantProperties.MODEL, xp).with(VariantProperties.X_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.EAST, Rotation.CLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, xp).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90))
+
+                                .select(Direction.UP, Rotation.NONE,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270))
+                                .select(Direction.UP, Rotation.COUNTERCLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270))
+                                .select(Direction.UP, Rotation.CLOCKWISE_180,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.UP, Rotation.CLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))
+
+                                .select(Direction.DOWN, Rotation.NONE, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90))
+                                .select(Direction.DOWN, Rotation.COUNTERCLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))
+                                .select(Direction.DOWN, Rotation.CLOCKWISE_180,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
+                                .select(Direction.DOWN, Rotation.CLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270))
+                        )
+        );
+    }
+
+    public static void CREATE_AMBER_SIDED_BLOCK_STATE(BlockModelGenerators g, Block block, ResourceLocation model){
+        g.blockStateOutput.accept(
+                MultiVariantGenerator.multiVariant(block)
+                        .with(PropertyDispatch.property(BlockStateProperties.FACING)
                                 .select(Direction.DOWN, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90))
                                 .select(Direction.UP,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.X_ROT, VariantProperties.Rotation.R270))
                                 .select(Direction.NORTH,Variant.variant().with(VariantProperties.MODEL, model))
@@ -98,10 +222,10 @@ public class AmberModelTemplate {
         );
     }
 
-    public static void CREATE_AMBER_HORIZONTAL_BLOCK(BlockModelGenerators g, AmberHorizontalBlock block, ResourceLocation model){
+    public static void CREATE_AMBER_HORIZONTAL_BLOCK(BlockModelGenerators g, Block block, ResourceLocation model){
         g.blockStateOutput.accept(
                 MultiVariantGenerator.multiVariant(block)
-                        .with(PropertyDispatch.property(AmberHorizontalBlock.FACING)
+                        .with(PropertyDispatch.property(BlockStateProperties.FACING)
                                 .select(Direction.NORTH, Variant.variant().with(VariantProperties.MODEL, model))
                                 .select(Direction.SOUTH, Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180))
                                 .select(Direction.WEST,Variant.variant().with(VariantProperties.MODEL, model).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270))
@@ -142,11 +266,11 @@ public class AmberModelTemplate {
                                 CREATE_MINECRAFT_CUBE_BLOCK_MODEL(g,block,north,south,east,west,up,down, particle))));
     }
 
-    public static void CREATE_AMBER_SIDED_BLOCK(BlockModelGenerators g, AmberSidedBasicBlock block, String connectionTexture0, String connectionTexture1, String sides){
+    public static void CREATE_AMBER_SIDED_BLOCK(BlockModelGenerators g, Block block, String connectionTexture0, String connectionTexture1, String sides){
         CREATE_AMBER_SIDED_BLOCK_STATE(g, block, CREATE_AMBER_SIDED_BLOCK_MODEL(g,block,connectionTexture0,connectionTexture1,sides));
     }
 
-    public static void CREATE_AMBER_HORIZONTAL_BLOCK(BlockModelGenerators g, AmberHorizontalBlock block, String top, String front, String sides){
+    public static void CREATE_AMBER_HORIZONTAL_BLOCK(BlockModelGenerators g, Block block, String top, String front, String sides){
         CREATE_AMBER_HORIZONTAL_BLOCK(g, block, ModelTemplates.CUBE_ORIENTABLE.create(block,
                 new TextureMapping()
                         .put(TextureSlot.TOP, ResourceLocation.parse(MOD_ID + ":block/"+top))

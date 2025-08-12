@@ -1,6 +1,0 @@
-{
-  "loader": "ambercraft:centred_cable_loader",
-  "textures": {
-    "cable": "ambercraft:block/creative_machine_base"
-  }
-}

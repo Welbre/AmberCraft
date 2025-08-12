@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "ambercraft:block/furnace_base_block",
-    "side": "ambercraft:block/iron_machine_base_beauty_block",
-    "top": "ambercraft:block/brick_machine_block"
-  }
-}

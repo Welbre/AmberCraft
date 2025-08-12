@@ -1,4 +1,5 @@
-package welbre.ambercraft.blocks.parent;
+package welbre.ambercraft.blocks;
+
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -9,10 +10,10 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.Nullable;
 
-public class AmberSidedBasicBlock extends AmberBasicBlock {
+public class VoltageSourceBlock extends Block {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
-    public AmberSidedBasicBlock(Properties p) {
+    public VoltageSourceBlock(Properties p) {
         super(p);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }

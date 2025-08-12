@@ -1,9 +1,0 @@
-{
-  "parent": "ambercraft:block/sided_block",
-  "textures": {
-    "base": "ambercraft:block/heat_pump",
-    "c0": "ambercraft:block/connection_thermal_creative",
-    "c1": "ambercraft:block/connection_thermal_creative",
-    "particle": "ambercraft:block/heat_pump"
-  }
-}
