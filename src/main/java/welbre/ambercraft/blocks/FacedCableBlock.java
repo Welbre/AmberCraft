@@ -17,6 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -54,7 +55,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
      */
     public FacedCableBlock(Properties p) {
         super(p);
-        p.noOcclusion().sound(SoundType.METAL).strength(1f);
+        p.noOcclusion().sound(SoundType.METAL).strength(1f).destroyTime(0.5f);
     }
 
     @Override
@@ -68,16 +69,27 @@ public class FacedCableBlock extends Block implements EntityBlock {
         super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
         if (level.getBlockEntity(pos) instanceof FacedCableBE cable && level instanceof ServerLevel serverLevel)
         {
+            boolean changed = false;
+            //check anchors
+            for (Direction face : cable.getState().getCenterDirections())
+            {
+                if (!level.getBlockState(pos.relative(face)).isFaceSturdy(level, pos, face.getOpposite()))//remove if the anchor is ar
+                {
+                    changed = true;
+                    cable.dropCenter(face);
+                    cable.removeCenter(face);
+                }
+            }
+            if (cable.getState().isEmpty())//remove if is empty
+            {
+                level.removeBlock(pos, false);
+                return;
+            }
+
             final FacedCableBE.UpdateShapeResult result = cable.updateState();
-            if (result.changed())
+            if (result.changed() || changed)
                 PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
         }
-    }
-
-    /// Trigger in BlockEntity#setChanged() client/server
-    @Override
-    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
-        super.onNeighborChange(state, level, pos, neighbor);
     }
 
     /// Server only, used in the case that non-player set the block in the world, like /setblock (x) (y) (z) ambercraft: abstract_faced_cable{...}.<br>
@@ -89,7 +101,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
         {
             var result = cable.updateState();
             for (var blockPos : result.diagonal())
-                serverLevel.neighborChanged(blockPos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
+                serverLevel.neighborChanged(blockPos, this, null);
             PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
         }
     }

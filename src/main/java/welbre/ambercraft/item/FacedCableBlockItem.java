@@ -70,12 +70,13 @@ public class FacedCableBlockItem extends BlockItem {
                 item.consume(1, player);
 
                 cable.addCenter(clickedFace.getOpposite(),component);
-                final FacedCableBE.UpdateShapeResult result = cable.updateState();
-
+                FacedCableBE.UpdateShapeResult result = cable.updateState();
                 if (level instanceof ServerLevel serverLevel)
                 {
                     PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
-                    serverLevel.updateNeighborsAt(pos, block);
+                    level.updateNeighborsAt(pos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get());
+                    for (var p : result.diagonal())
+                        serverLevel.neighborChanged(p, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
                 }
 
                 cable.setChanged();//server save data

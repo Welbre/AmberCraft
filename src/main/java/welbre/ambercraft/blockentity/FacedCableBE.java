@@ -11,8 +11,11 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
@@ -21,7 +24,6 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.cables.*;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.ArrayList;
@@ -173,8 +175,14 @@ public class FacedCableBE extends ModulesHolder {
         return new UpdateShapeResult(changed, diagonals.toArray(BlockPos[]::new));
     }
 
-    public void updateNeighborhood() {
+    /// Update all possible diagonals based on face passed.
+    public void updateFaceNeighborhood(Direction face)
+    {
+        assert level != null;
+        Block block = AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get();
 
+        for (Direction dir : CableState.GET_FACE_DIRECTIONS(face))
+            level.neighborChanged(getBlockPos().relative(dir).relative(face), block, null);
     }
 
     public void reRender()
@@ -328,6 +336,20 @@ public class FacedCableBE extends ModulesHolder {
     {
         state.removeCenter(face);
         brain.removeCenter(face);
+    }
+
+    /// This method only drops the ItemStack in the world, don't remove the center from the state!
+    public void dropCenter(Direction face)
+    {
+        FaceState faceState = state.getFaceStatus(face);
+        if (faceState == null)
+            return;
+
+        ItemStack stack = new ItemStack(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM.get(), 1);
+        stack.set(AmberCraft.Components.CABLE_DATA_COMPONENT.get(), new FacedCableComponent(faceState.type, faceState.data.color));
+        BlockPos pos = getBlockPos();
+        ItemEntity item = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+        level.addFreshEntity(item);
     }
 
     @Override
