@@ -12,7 +12,7 @@ public class CableData {
     public boolean ignoreColor;
 
     public CableData(int color, byte type, boolean ignoreColor) {
-        this.color = color;
+        this.color = color & 0xffffff;
         this.type = type;
         this.ignoreColor = ignoreColor;
     }

@@ -2,6 +2,8 @@ package welbre.ambercraft.network;
 
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import welbre.ambercraft.network.facedcable.FacedCableRemoveFacePayload;
+import welbre.ambercraft.network.facedcable.FacedCableStateChangePayload;
 
 public class PayLoadRegister {
     public static void registerPayLoads(RegisterPayloadHandlersEvent event) {
@@ -30,5 +32,9 @@ public class PayLoadRegister {
                 ModifyFieldsPayLoad.STREAM_CODEC,
                 ModifyFieldsPayLoad::handleOnServer
         );
+
+        //faced cables payloads
+        registrar.playToServer(FacedCableRemoveFacePayload.TYPE, FacedCableRemoveFacePayload.STREAM_CODEC, FacedCableRemoveFacePayload::handleOnServer);
+        registrar.playToClient(FacedCableStateChangePayload.TYPE, FacedCableStateChangePayload.STREAM_CODEC, FacedCableStateChangePayload::handleOnClient);
     }
 }

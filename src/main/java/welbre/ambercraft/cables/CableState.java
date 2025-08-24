@@ -1,9 +1,24 @@
 package welbre.ambercraft.cables;
 
+import io.netty.buffer.ByteBuf;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.FaceState.Connection;
+import welbre.ambercraft.module.Module;
+import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.network.NetworkModule;
 
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +57,7 @@ public class CableState {
     }
 
     /**
-     * Get all centers faces.
+     * Returns a list of all faces that contains a cable.
      */
     public List<Direction> getCenterDirections(){
         List<Direction> dir = new ArrayList<>();
@@ -67,8 +82,7 @@ public class CableState {
      * @param globalDir uses the default directions documented in {@link FacedCableBE FacedCableBlockEntity}.
      */
     public void rawConnectionSet(Direction face, Direction globalDir, Connection connection){
-        FaceState status = getFaceStatus(face);
-        status.connection[getConnectionIndexByGlobalDir(face,globalDir)] = connection;
+        getFaceStatus(face).connection[getConnectionIndexByGlobalDir(face,globalDir)] = connection;
     }
 
     /**
@@ -76,7 +90,7 @@ public class CableState {
      * Sets the bit CENTER(5) in corresponded face bits in connection_mask.
      * @param face FacedCable face
      */
-    public void addCenter(Direction face, AmberFCableComponent component){
+    public void addCenter(Direction face, FacedCableComponent component){
         switch (face){
             case UP -> up = new FaceState(component);
             case DOWN -> down = new FaceState(component);
@@ -210,4 +224,39 @@ public class CableState {
             };
         };
     }
+
+    public void clearAllConnections() {
+        if (this.down != null)
+            down.connection = new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY};
+        if (this.up != null)
+            up.connection = new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY};
+        if (this.north != null)
+            north.connection = new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY};
+        if (this.south != null)
+            south.connection = new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY};
+        if (this.west != null)
+            west.connection = new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY};
+        if (this.east != null)
+            east.connection = new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY};
+    }
+
+
+    public static final StreamCodec<ByteBuf, CableState> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BYTE_ARRAY, state -> {
+                final long[] data = state.toRawData();
+                ByteBuffer buffer = ByteBuffer.allocate(data.length * Long.BYTES);
+                for (long l : data)
+                    buffer.putLong(l);
+                return buffer.array();
+            },
+            (array) -> {
+                long[] longs = new long[array.length / Long.BYTES];
+
+                ByteBuffer buffer = ByteBuffer.wrap(array);
+                for (int i = 0; i < longs.length; i++)
+                    longs[i] = buffer.getLong();
+
+                return CableState.fromRawData(longs);
+            }
+    );
 }

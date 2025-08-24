@@ -7,7 +7,7 @@ import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.heat.HeatModule;
 
-public class TestCableType extends CableType{
+public class TestCableType extends CableType {
     @Override
     public Material getInsulationMaterial() {
         return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/white_wool"));
@@ -37,7 +37,12 @@ public class TestCableType extends CableType{
     @Override
     public Module[] createModules(FacedCableBE entity) {
         HeatModule module = new HeatModule();
-        module.getHeatNode().setThermalConductivity(50);
+        module.alloc();
+        if (entity.getLevel() != null && !entity.getLevel().isClientSide())
+        {
+            module.init(entity, entity.getLevel(), entity.getBlockPos());
+            module.getHeatNode().setThermalConductivity(50);
+        }
         return new Module[]{module};
     }
 }

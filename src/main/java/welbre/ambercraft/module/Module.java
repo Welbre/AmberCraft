@@ -3,9 +3,6 @@ package welbre.ambercraft.module;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * This class represents a module, an object used to store AmberCraft related data in the minecraft block entity.<br>
@@ -35,4 +32,6 @@ public interface Module {
     /// Used in Client and Server sides when the entity is ticking.
     void tick(ModulesHolder entity);
 
+    /// Returns the module type in the register.
+    <T extends ModuleType<Module>> T getType();
 }

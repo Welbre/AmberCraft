@@ -3,11 +3,14 @@ package welbre.ambercraft;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -18,7 +21,7 @@ import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.heat.*;
-import welbre.ambercraft.cables.AmberFCableComponent;
+import welbre.ambercraft.cables.FacedCableComponent;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.TestCableType;
 import welbre.ambercraft.commands.Event;
@@ -150,9 +153,9 @@ public class AmberCraft {
     public static final class Components {
         public static final DeferredRegister.DataComponents REGISTER = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE,MOD_ID);
 
-        public static final Supplier<DataComponentType<AmberFCableComponent>> CABLE_DATA_COMPONENT = REGISTER.registerComponentType(
+        public static final Supplier<DataComponentType<FacedCableComponent>> CABLE_DATA_COMPONENT = REGISTER.registerComponentType(
                 "cable_data",
-                builder -> builder.persistent(AmberFCableComponent.CODEC).networkSynchronized(AmberFCableComponent.STREAM_CODEC)
+                builder -> builder.persistent(FacedCableComponent.CODEC).networkSynchronized(FacedCableComponent.STREAM_CODEC)
         );
     }
 
@@ -197,7 +200,7 @@ public class AmberCraft {
             {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
                 stack.set(Components.CABLE_DATA_COMPONENT.get(),
-                        new AmberFCableComponent(CableTypes.TEST_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
+                        new FacedCableComponent(CableTypes.TEST_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
                 list.add(stack);
             }
             return list;

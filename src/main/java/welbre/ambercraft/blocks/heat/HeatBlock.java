@@ -19,8 +19,6 @@ import welbre.ambercraft.blockentity.HeatBE;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.heat.HeatModule;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 public abstract class HeatBlock extends Block implements EntityBlock {
     protected ModuleFactory<HeatModule, HeatBE> factory = new ModuleFactory<>(
             HeatBE.class,
@@ -29,7 +27,7 @@ public abstract class HeatBlock extends Block implements EntityBlock {
             HeatModule::free,
             HeatBE::setHeatModule,
             HeatBE::getHeatModule
-    ).setConstructor(HeatModule::init);
+    ).setConstructor((module, entity, factory1, level, pos) -> module.init(entity, level, pos));
 
     public HeatBlock(Properties p_49795_) {
         super(p_49795_);

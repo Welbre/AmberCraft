@@ -24,7 +24,7 @@ public class HeatSourceBlock extends HeatBlock {
         super(p_49795_);
         factory.setConstructor(
                 (module, entity, factory, level, pos) -> {
-                    module.init(entity, factory, level, pos);
+                    module.init(entity, level, pos);
                     if (entity instanceof HeatSourceBE source)
                         source.temperature = module.getHeatNode().getTemperature();
                 }

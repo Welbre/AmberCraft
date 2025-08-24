@@ -1,13 +1,13 @@
 package welbre.ambercraft.module.heat;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.module.Module;
+import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
@@ -15,7 +15,6 @@ import welbre.ambercraft.sim.Node;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 import java.io.Serializable;
-import java.util.Random;
 
 public class HeatModule extends NetworkModule implements Serializable {
     HeatNode node;
@@ -79,7 +78,7 @@ public class HeatModule extends NetworkModule implements Serializable {
      *
      * Server side only!
      */
-    public <T extends ModulesHolder> void init(T entity, ModuleFactory<HeatModule,T> factory, LevelAccessor level, BlockPos pos)
+    public <T extends ModulesHolder> void init(T entity, LevelAccessor level, BlockPos pos)
     {
         refresh(entity);
         this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
@@ -100,5 +99,11 @@ public class HeatModule extends NetworkModule implements Serializable {
     @Override
     public Master createMaster() {
         return new HeatModuleMaster(this);
+    }
+
+    @Override
+    public <T extends ModuleType<Module>> T getType() {
+        ModuleType<? extends Module> x = AmberCraft.Modules.HEAT_MODULE_TYPE.get();
+        return (T) x;
     }
 }

@@ -1,10 +1,8 @@
 package welbre.ambercraft.blocks.heat;
 
-import io.netty.buffer.Unpooled;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +25,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.HeatPumpBE;
@@ -36,7 +33,6 @@ import welbre.ambercraft.client.screen.ModifyFieldsScreen;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.network.ModifyFieldsPayLoad;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 
 import java.util.UUID;
@@ -48,7 +44,7 @@ public class HeatPumpBlock extends Block implements EntityBlock {
             HeatModule::free,
             HeatPumpBE::setColdModule,
             HeatPumpBE::getColdModule
-            ).setConstructor(HeatModule::init);
+            ).setConstructor((module, entity, factory, level, pos) -> module.init(entity, level, pos));
     public static final ModuleFactory<HeatModule, HeatPumpBE> HOT_FACTORY = COLD_FACTORY.copy().setGetter(HeatPumpBE::getHotModule).setSetter(HeatPumpBE::setHotModule);
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;

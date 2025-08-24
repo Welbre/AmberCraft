@@ -82,6 +82,8 @@ public abstract class NetworkModule implements Module, Serializable {
             else
                 root.master.dirt();
         }
+
+        this.children = new NetworkModule[0];
     }
 
     /**
@@ -195,10 +197,13 @@ public abstract class NetworkModule implements Module, Serializable {
             return;
         NetworkModule[] newChildren = new NetworkModule[children.length - 1];
 
-        int index = 0;
-        for (NetworkModule module : children)
-            if (module != child)
-                newChildren[index++] = module;
+        if (newChildren.length > 0)
+        {
+            int index = 0;
+            for (NetworkModule module : children)
+                if (module != child)
+                    newChildren[index++] = module;
+        }
 
         children = newChildren;
     }

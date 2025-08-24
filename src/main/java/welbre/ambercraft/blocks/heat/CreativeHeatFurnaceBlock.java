@@ -27,7 +27,7 @@ public class CreativeHeatFurnaceBlock extends FreeRotationBlock implements Entit
             HeatModule::free,
             HeatBE::setHeatModule,
             HeatBE::getHeatModule
-    ).setConstructor(HeatModule::init);
+    ).setConstructor((module, entity, factory1, level, pos) -> module.init(entity, level, pos));
 
     public CreativeHeatFurnaceBlock(Properties p_49795_) {
         super(p_49795_);

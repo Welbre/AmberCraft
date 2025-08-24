@@ -3,6 +3,7 @@ package welbre.ambercraft.item;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -18,16 +19,20 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.blocks.FacedCableBlock;
-import welbre.ambercraft.cables.AmberFCableComponent;
+import welbre.ambercraft.cables.FacedCableComponent;
+import welbre.ambercraft.network.facedcable.FacedCableStateChangePayload;
 
 public class FacedCableBlockItem extends BlockItem {
     public FacedCableBlockItem(Item.Properties properties) {
         super(AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(),properties);
     }
+
+    //client and server side.
     @Override
     public @NotNull InteractionResult place(BlockPlaceContext context) {
         Level level = context.getLevel();
@@ -35,19 +40,19 @@ public class FacedCableBlockItem extends BlockItem {
         BlockEntity be = level.getBlockEntity(pos);
         Direction clickedFace = context.getClickedFace();
 
-        AmberFCableComponent component = context.getItemInHand().getComponents().get(AmberCraft.Components.CABLE_DATA_COMPONENT.get());
+        FacedCableComponent component = context.getItemInHand().getComponents().get(AmberCraft.Components.CABLE_DATA_COMPONENT.get());
         if (component == null)
             return InteractionResult.FAIL;
 
-
-        if (be instanceof FacedCableBE faced){
-            if (faced.getState().getFaceStatus(clickedFace.getOpposite()) == null) {
+        //add the cable in a block face
+        if (be instanceof FacedCableBE cable){
+            if (cable.getState().getFaceStatus(clickedFace.getOpposite()) == null) {
                 ItemStack item = context.getItemInHand();
                 Block block = getBlock();
                 BlockState state = block.defaultBlockState();
                 Player player = context.getPlayer();
 
-                faced.applyComponentsFromItemStack(item);
+                cable.applyComponentsFromItemStack(item);
                 block.setPlacedBy(level,pos, state, player, item);
                 if (player instanceof ServerPlayer)
                     CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer) player,pos, item);
@@ -64,23 +69,28 @@ public class FacedCableBlockItem extends BlockItem {
                 level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, state));
                 item.consume(1, player);
 
-                faced.addCenter(clickedFace.getOpposite(),component);
-                faced.calculateState(level,pos);
-                faced.requestModelDataUpdate();
-                faced.setChanged();
-                level.markAndNotifyBlock(pos,level.getChunkAt(pos),level.getBlockState(pos),level.getBlockState(pos),3,512);
+                cable.addCenter(clickedFace.getOpposite(),component);
+                final FacedCableBE.UpdateShapeResult result = cable.updateState();
+
+                if (level instanceof ServerLevel serverLevel)
+                {
+                    PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
+                    serverLevel.updateNeighborsAt(pos, block);
+                }
+
+                cable.setChanged();//server save data
+
                 return InteractionResult.SUCCESS;
             }
         }
+
+        //at this point a cable doesn't exist where the player has clicked, so we create one.
         InteractionResult result = super.place(context);
-        //put the cable if don't have on the block.
+        //the Block#onPlace is called, but it does nothing because we need to add the center in the BlockEntity, and update the shape again.
         if (result.consumesAction()) {
             if (level.getBlockEntity(pos) instanceof FacedCableBE faced)
             {
                 faced.addCenter(clickedFace.getOpposite(),component);
-                faced.calculateState(level,pos);
-                faced.requestModelDataUpdate();
-                faced.setChanged();
             }
         }
 

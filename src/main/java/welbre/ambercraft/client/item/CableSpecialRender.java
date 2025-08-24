@@ -19,13 +19,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
-import welbre.ambercraft.cables.AmberFCableComponent;
+import welbre.ambercraft.cables.FacedCableComponent;
 import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.client.models.FacedCableBakedModel;
 
-public record CableSpecialRender() implements SpecialModelRenderer<AmberFCableComponent> {
+public record CableSpecialRender() implements SpecialModelRenderer<FacedCableComponent> {
     @Override
-    public void render(@NotNull AmberFCableComponent data, ItemDisplayContext displayContext, PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+    public void render(@NotNull FacedCableComponent data, ItemDisplayContext displayContext, PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         BakedModel model = new FacedCableBakedModel(
                 null
         );
@@ -39,7 +39,7 @@ public record CableSpecialRender() implements SpecialModelRenderer<AmberFCableCo
     }
 
     @Override
-    public @NotNull AmberFCableComponent extractArgument(ItemStack stack) {
+    public @NotNull FacedCableComponent extractArgument(ItemStack stack) {
         return stack.getComponents().get(AmberCraft.Components.CABLE_DATA_COMPONENT.get());
     }
 

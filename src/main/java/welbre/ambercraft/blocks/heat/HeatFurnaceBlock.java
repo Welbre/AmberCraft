@@ -14,9 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -46,7 +44,7 @@ public class HeatFurnaceBlock extends HeatBlock {
             HeatFurnaceBE::setHeatModule,
             HeatFurnaceBE::getHeatModule
     ).setConstructor((module, entity, factory, level, pos) -> {
-        module.init(entity, factory, level, pos);
+        module.init(entity, level, pos);
         module.getHeatNode().setThermalConductivity(100.0);
     });
 

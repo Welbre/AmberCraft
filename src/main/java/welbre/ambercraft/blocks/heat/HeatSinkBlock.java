@@ -41,7 +41,7 @@ public class HeatSinkBlock extends Block implements EntityBlock {
             HeatSinkBE::setHeatModule,
             HeatSinkBE::getHeatModule
     ).setConstructor((a,b,c,d,e) -> {
-        a.init(b,c,d,e);
+        a.init(b, d,e);
         a.getHeatNode().setEnvConditions(HeatNode.GET_AMBIENT_TEMPERATURE(d,e),0.01);
     });
 

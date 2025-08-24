@@ -10,13 +10,13 @@ public class FaceState {
     public CableType type;
     public CableData data;
 
-    public FaceState(Connection[] connection, AmberFCableComponent component) {
+    public FaceState(Connection[] connection, FacedCableComponent component) {
         this.connection = connection;
         this.type = component.getType();
         this.data = component.get();
     }
 
-    public FaceState(AmberFCableComponent component) {
+    public FaceState(FacedCableComponent component) {
         this(new Connection[]{Connection.EMPTY, Connection.EMPTY, Connection.EMPTY, Connection.EMPTY}, component);
     }
 
@@ -65,7 +65,7 @@ public class FaceState {
         }
         //todo check if is working.
         CableType type = CableType.FromCableTypeIndex((byte) ((data >> 8) & 0xFF));
-        return new FaceState(connections, new AmberFCableComponent(type.cable_type_index, new CableData(
+        return new FaceState(connections, new FacedCableComponent(type.cable_type_index, new CableData(
                 (int) ((data >> 16) & 0xffffff),
                 type.getType(),
                 ((data >> 8+8+24+1) & 0x1) == 1
