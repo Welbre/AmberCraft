@@ -1,6 +1,7 @@
 package welbre.ambercraft.network.facedcable;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -25,7 +26,8 @@ public record FacedCableStateChangePayload(BlockPos pos, CableState state) imple
         if (level.getBlockEntity(pos) instanceof FacedCableBE cable)
         {
             cable.setState(state);
-            cable.reRender();
+            Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
+            cable.requestModelDataUpdate();
         }
     }
     

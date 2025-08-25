@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
-import welbre.ambercraft.cables.FaceState;
+import welbre.ambercraft.cables.CableState;
 
 public record FacedCableRemoveFacePayload(BlockPos pos, Direction face) implements CustomPacketPayload {
 
@@ -30,15 +30,20 @@ public record FacedCableRemoveFacePayload(BlockPos pos, Direction face) implemen
             if (!context.player().isCreative())//drop center
                 cable.dropCenter(face);
 
-            cable.getState().removeCenter(face);//remove center
+            //remove center
+            cable.getState().removeCenter(face);
+            cable.getBrain().removeCenter(face);
 
             //update diagonal and neighbors
-            cable.updateFaceNeighborhood(face);
             level.updateNeighborsAt(pos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get());
+            for (Direction dir : CableState.GET_FACE_DIRECTIONS(face))
+                level.neighborChanged(cable.getBlockPos().relative(dir).relative(face), AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
 
             // remove if is empty, else update
             if (cable.getState().isEmpty())
+            {
                 level.removeBlock(pos, false);
+            }
             else
             {
                 cable.updateState();

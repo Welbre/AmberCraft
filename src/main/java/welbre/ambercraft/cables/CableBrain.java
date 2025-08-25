@@ -8,10 +8,7 @@ import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.network.NetworkModule;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 public class CableBrain {
@@ -78,8 +75,14 @@ public class CableBrain {
             east.orElse(null)
     )));
 
-    /// Returns all faces that contains a brain.
+    /// Returns all faces that contain a brain.
     public List<Direction> getCenterDirections() {
         return Arrays.stream(Direction.values()).filter(d -> brains[d.ordinal()] != null).toList();
+    }
+
+    /// Get all face brains
+    public List<FaceBrain> getFaceBrains()
+    {
+        return Arrays.stream(this.brains).filter(Objects::nonNull).toList();
     }
 }

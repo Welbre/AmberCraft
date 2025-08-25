@@ -63,7 +63,6 @@ public class FaceState {
             connections[i] = Connection.values()[(int) ((data >> shift) & 0b11)];
             shift += 2;
         }
-        //todo check if is working.
         CableType type = CableType.FromCableTypeIndex((byte) ((data >> 8) & 0xFF));
         return new FaceState(connections, new FacedCableComponent(type.cable_type_index, new CableData(
                 (int) ((data >> 16) & 0xffffff),

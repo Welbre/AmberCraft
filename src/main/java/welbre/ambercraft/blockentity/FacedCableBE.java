@@ -29,6 +29,8 @@ import welbre.ambercraft.module.network.NetworkModule;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static welbre.ambercraft.cables.CableState.GET_FACE_DIRECTIONS;
 
@@ -104,7 +106,7 @@ public class FacedCableBE extends ModulesHolder {
 
     @Override
     public void onLoad() {
-
+        updateBrain();
     }
 
     public record UpdateShapeResult(boolean changed, BlockPos[] diagonal){}
@@ -140,7 +142,6 @@ public class FacedCableBE extends ModulesHolder {
                     {
                         if (other.state.getFaceStatus(face) != null)
                             this.state.rawConnectionSet(face, dir, other.state.getFaceStatus(face).canConnect(faceState) ? FaceState.Connection.EXTERNAl : FaceState.Connection.EMPTY);
-                            //changed |= CONNECT(this, face, dir, other, face, dir.getOpposite(), other.state.getFaceStatus(face).canConnect(faceState) ? FaceState.Connection.EXTERNAl : FaceState.Connection.EMPTY);
                     }
                     else
                     {
@@ -160,7 +161,6 @@ public class FacedCableBE extends ModulesHolder {
                     FaceState face_state = other.state.getFaceStatus(dia_face);
                     if (face_state != null)
                     {
-                        //changed |= CONNECT(this, face, dir, other, dia_face, face.getOpposite(), faceState.canConnect(face_state) ? FaceState.Connection.DIAGONAL : FaceState.Connection.EMPTY);//todo check if the dir is current
                         this.state.rawConnectionSet(face, dir, faceState.canConnect(face_state) ? FaceState.Connection.DIAGONAL : FaceState.Connection.EMPTY);
                         diagonals.add(diagonal);
                     }
@@ -175,26 +175,6 @@ public class FacedCableBE extends ModulesHolder {
         return new UpdateShapeResult(changed, diagonals.toArray(BlockPos[]::new));
     }
 
-    /// Update all possible diagonals based on face passed.
-    public void updateFaceNeighborhood(Direction face)
-    {
-        assert level != null;
-        Block block = AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get();
-
-        for (Direction dir : CableState.GET_FACE_DIRECTIONS(face))
-            level.neighborChanged(getBlockPos().relative(dir).relative(face), block, null);
-    }
-
-    public void reRender()
-    {
-        if (level != null && level instanceof ClientLevel clientLevel)
-        {
-            var pos = getBlockPos();
-            Minecraft.getInstance().levelRenderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-            requestModelDataUpdate();
-        }
-    }
-
     public void updateBrain() {
         var level = getLevel();
         var pos = getBlockPos();
@@ -203,6 +183,11 @@ public class FacedCableBE extends ModulesHolder {
             return;
         if (level.isClientSide())
             return;
+        //disconnect all first.
+        for (FaceBrain face : brain.getFaceBrains())
+            for (Module module : face.modules())
+                if (module instanceof NetworkModule network)
+                    network.disconnectAll();
 
         for (Direction face : brain.getCenterDirections())
         {
@@ -216,7 +201,8 @@ public class FacedCableBE extends ModulesHolder {
                 {//internal connection
                     FaceBrain face_brain = brain.getFaceBrain(dir);
                     if (face_brain != null)
-                        faceBrain.connectModules(face_brain.modules());
+                        if (state.getFaceStatus(face).canConnect(state.getFaceStatus(dir)))
+                            faceBrain.connectModules(face_brain.modules());
                 }
 
                 //external connection
@@ -225,10 +211,12 @@ public class FacedCableBE extends ModulesHolder {
                 {
                     NetworkModule[] modules = null;
                     if (holder instanceof FacedCableBE other)//check if the cables can connect in the case that holder is a FacedCable
+                    {
                         if (other.state.getFaceStatus(face) != null)
                             if (other.state.getFaceStatus(face).canConnect(state.getFaceStatus(face)))
                                 if (other.getBrain().getFaceBrain(face) != null)
                                     modules = Arrays.stream(other.getBrain().getFaceBrain(face).modules()).filter(module -> module instanceof NetworkModule).toArray(NetworkModule[]::new);
+                    }
                     else
                         modules = holder.getModule(NetworkModule.class, dir.getOpposite());
 
@@ -249,22 +237,6 @@ public class FacedCableBE extends ModulesHolder {
                         faceBrain.connectModules(face_brain.modules());
                 }
             }
-        }
-    }
-
-    /**
-     * update the cable state, disconnect all modules in the brain, and update the modules after mark-andNotifyBlock to render in the client.
-     */
-    public void updateAll(Level level, BlockPos pos) {
-        updateState();
-
-        if (!level.isClientSide())//server only
-        {
-            for (Direction face : brain.getCenterDirections())
-                for (Module module : brain.getFaceBrain(face).modules())
-                    if (module instanceof NetworkModule network)
-                        network.disconnectAll();//todo fix, problem with disconnect/remove modules
-            updateBrain();
         }
     }
 
@@ -365,8 +337,14 @@ public class FacedCableBE extends ModulesHolder {
     }
 
     @Override
-    public @NotNull Module[] getModule(Direction direction) {
-        return getModules();
+    public @NotNull Module[] getModule(Direction dir) {//todo update this method to return the valid modules
+        ArrayList<Module> list = new ArrayList<>();
+        Stream.of(CableState.GET_FACE_DIRECTIONS(dir))
+                .map(d -> brain.getFaceBrain(d))
+                .filter(Objects::nonNull)
+                .map(FaceBrain::modules)
+                .forEach(obj -> list.addAll(Arrays.asList(obj)));
+        return list.toArray(Module[]::new);
     }
 
     @Override

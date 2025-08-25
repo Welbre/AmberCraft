@@ -46,13 +46,18 @@ class NetworkDebugHelper(entity: ModulesHolder): Serializable
 
         for (dir in Direction.entries)
         {
-            val relative = where.relative(dir)
-            val be = level.getBlockEntity(relative)
-            if (be != null && be is ModulesHolder)
+            for (dir2 in Direction.entries)
             {
-                if (!visited.contains(be)) {
-                    val found = findBlockEntity(visited, level, relative, be, target);
-                    if (found != null) return found
+                var relative: BlockPos = where.relative(dir)
+                if (dir.axis != dir2.axis)
+                    relative = relative.relative(dir2)
+
+                val be = level.getBlockEntity(relative)
+                if (be != null && be is ModulesHolder) {
+                    if (!visited.contains(be)) {
+                        val found = findBlockEntity(visited, level, relative, be, target);
+                        if (found != null) return found
+                    }
                 }
             }
         }

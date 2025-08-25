@@ -152,8 +152,8 @@ public abstract class ModulesHolder extends BlockEntity {
 
     public void tick(Level level, BlockPos pos, BlockState state)
     {
-            for (Module module : this.getModules())
-                module.tick(this);
+        for (Module module : this.getModules())
+            module.tick(this);
     }
 
     /// Use on your EntityBlock passing as a method reference;

@@ -71,6 +71,8 @@ public abstract class NetworkModule implements Module, Serializable {
                 father.setRoot();
             else
                 root.master.dirt();
+            father = null;
+            setRoot();
         }
 
         for (NetworkModule child : this.children)

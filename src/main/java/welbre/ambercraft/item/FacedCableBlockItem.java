@@ -3,6 +3,7 @@ package welbre.ambercraft.item;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -70,13 +71,18 @@ public class FacedCableBlockItem extends BlockItem {
                 item.consume(1, player);
 
                 cable.addCenter(clickedFace.getOpposite(),component);
-                FacedCableBE.UpdateShapeResult result = cable.updateState();
+
                 if (level instanceof ServerLevel serverLevel)
                 {
+                    FacedCableBE.UpdateShapeResult result = cable.updateState();
+
                     PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
                     level.updateNeighborsAt(pos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get());
                     for (var p : result.diagonal())
                         serverLevel.neighborChanged(p, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
+
+                    cable.updateBrain();
+                    level.sendBlockUpdated(pos, state, state, 0);
                 }
 
                 cable.setChanged();//server save data
@@ -88,12 +94,9 @@ public class FacedCableBlockItem extends BlockItem {
         //at this point a cable doesn't exist where the player has clicked, so we create one.
         InteractionResult result = super.place(context);
         //the Block#onPlace is called, but it does nothing because we need to add the center in the BlockEntity, and update the shape again.
-        if (result.consumesAction()) {
+        if (result.consumesAction())
             if (level.getBlockEntity(pos) instanceof FacedCableBE faced)
-            {
                 faced.addCenter(clickedFace.getOpposite(),component);
-            }
-        }
 
         return result;
     }

@@ -17,7 +17,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -41,12 +40,9 @@ import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.*;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.network.facedcable.FacedCableRemoveFacePayload;
 import welbre.ambercraft.network.facedcable.FacedCableStateChangePayload;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class FacedCableBlock extends Block implements EntityBlock {
@@ -103,6 +99,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
             for (var blockPos : result.diagonal())
                 serverLevel.neighborChanged(blockPos, this, null);
             PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
+            //The brain is updated in the FacedCableBE#onLoad()
         }
     }
 
@@ -169,8 +166,8 @@ public class FacedCableBlock extends Block implements EntityBlock {
                     FaceState status = cable.getState().getFaceStatus(direction.get());
                     status.data.ignoreColor = !status.data.ignoreColor;
 
-
                     final var result = cable.updateState();
+                    cable.updateBrain();
 
                     cable.setChanged();
 

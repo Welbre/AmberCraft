@@ -32,10 +32,8 @@ public abstract class Master implements Serializable {
     public final void tick(BlockEntity entity) {
         if (!isClean)
             compile();
-        if (entity.getLevel() != null && entity.getLevel().isClientSide())
-            tick(entity, true);
-        else
-            tick(entity, false);
+        if (isClean)
+            tick(entity, entity.getLevel() != null && entity.getLevel().isClientSide());
     }
 
     public void dirt() {isClean = false;}
