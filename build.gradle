@@ -120,6 +120,7 @@ dependencies {
     implementation "curse.maven:sodium-394468:6382663"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation 'thedarkcolour:kotlinforforge-neoforge:5.9.0'
+    implementation "kuse.welbre:ElectricalSim"
 
 
     // Example optional mod dependency with JEI

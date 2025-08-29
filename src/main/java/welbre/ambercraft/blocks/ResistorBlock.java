@@ -1,6 +1,7 @@
 package welbre.ambercraft.blocks;
 
 
+import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;

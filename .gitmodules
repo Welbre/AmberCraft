@@ -1,0 +1,3 @@
+[submodule "libs/MNA"]
+	path = libs/MNA
+	url = https://github.com/Welbre/CircuitSimulation.git
