@@ -1,16 +1,18 @@
-package welbre.ambercraft.cables;
+package welbre.ambercraft.cables.types;
 
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
+import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.heat.HeatModule;
 
-public class TestCableType extends CableType {
+public class HeatCableType extends CableType {
     @Override
     public Material getInsulationMaterial() {
-        return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/white_wool"));
+        return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(AmberCraft.MOD_ID,"block/cable/thermal"));
     }
 
     @Override

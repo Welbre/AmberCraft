@@ -22,7 +22,7 @@ import welbre.ambercraft.module.heat.HeatModule;
 public abstract class HeatBlock extends Block implements EntityBlock {
     protected ModuleFactory<HeatModule, HeatBE> factory = new ModuleFactory<>(
             HeatBE.class,
-            AmberCraft.Modules.HEAT_MODULE_TYPE,
+            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
             HeatModule::alloc,
             HeatModule::free,
             HeatBE::setHeatModule,

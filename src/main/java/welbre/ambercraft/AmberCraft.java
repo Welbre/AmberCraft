@@ -20,10 +20,13 @@ import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.heat.*;
 import welbre.ambercraft.cables.FacedCableComponent;
 import welbre.ambercraft.cables.CableType;
-import welbre.ambercraft.cables.TestCableType;
+import welbre.ambercraft.cables.types.HeatCableType;
+import welbre.ambercraft.cables.types.ElectricalCableType;
 import welbre.ambercraft.commands.Event;
 import welbre.ambercraft.item.FacedCableBlockItem;
+import welbre.ambercraft.item.NetworkTool;
 import welbre.ambercraft.module.ModuleType;
+import welbre.ambercraft.module.electrical.ElectricalModuleType;
 import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.network.PayLoadRegister;
 
@@ -45,7 +48,7 @@ public class AmberCraft {
         Event.register();
 
 
-        Modules.REGISTER.register(modBus);
+        ModuleTypes.REGISTER.register(modBus);
         CableTypes.REGISTER.register(modBus);
 
         Blocks.REGISTER.register(modBus);
@@ -94,7 +97,7 @@ public class AmberCraft {
         public static final DeferredItem<BlockItem> GROUND_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GROUND_BLOCK);
         public static final DeferredItem<BlockItem> HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_FURNACE_BLOCK);
         public static final DeferredItem<BlockItem> CREATIVE_HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CREATIVE_HEAT_FURNACE_BLOCK);
-        public static final DeferredItem<Item> NETWORK_TOOL = REGISTER.registerItem("network_tool", Item::new, new Item.Properties());
+        public static final DeferredItem<NetworkTool> NETWORK_TOOL = REGISTER.registerItem("network_tool", NetworkTool::new, new Item.Properties());
 
         public static final DeferredItem<BlockItem> COPPER_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.COPPER_HEAT_CONDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> IRON_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_HEAT_CONDUCTOR_BLOCK);
@@ -138,13 +141,15 @@ public class AmberCraft {
     public static final class CableTypes {
         public static final DeferredRegister<CableType> REGISTER = DeferredRegister.create(AmberRegisters.CABLE_TYPE_REGISTRY, "cable_type");
 
-        public static final Supplier<TestCableType> TEST_CABLE_TYPE = REGISTER.register("test_cable_type", TestCableType::new);
+        public static final Supplier<HeatCableType> HEAT_CABLE_TYPE = REGISTER.register("heat", HeatCableType::new);
+        public static final Supplier<ElectricalCableType> ELECTRICAL_CABLE_TYPE = REGISTER.register("electrical", ElectricalCableType::new);
     }
 
-    public static final class Modules {
+    public static final class ModuleTypes {
         public static final DeferredRegister<ModuleType<?>> REGISTER = DeferredRegister.create(AmberRegisters.MODULE_TYPE_REGISTRY, "module_type");
 
-        public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat_module_type", HeatModuleType::new);
+        public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat", HeatModuleType::new);
+        public static final DeferredHolder<ModuleType<?>, ElectricalModuleType> ELECTRICAL_MODULE_TYPE = REGISTER.register("electrical", ElectricalModuleType::new);
     }
 
     public static final class Components {
@@ -195,10 +200,18 @@ public class AmberCraft {
             var list = new ArrayList<ItemStack>();
             for (DyeColor color : DyeColor.values())
             {
-                var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),
-                        new FacedCableComponent(CableTypes.TEST_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
-                list.add(stack);
+                {
+                    var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
+                    stack.set(Components.CABLE_DATA_COMPONENT.get(),
+                            new FacedCableComponent(CableTypes.HEAT_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
+                    list.add(stack);
+                }
+                {
+                    var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
+                    stack.set(Components.CABLE_DATA_COMPONENT.get(),
+                            new FacedCableComponent(CableTypes.ELECTRICAL_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
+                    list.add(stack);
+                }
             }
             return list;
         }

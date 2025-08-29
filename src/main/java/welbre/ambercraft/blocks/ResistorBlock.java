@@ -1,7 +1,6 @@
 package welbre.ambercraft.blocks;
 
 
-import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -10,8 +9,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.blocks.Eletrical.ElectricalBlock;
 
-public class ResistorBlock extends Block {
+public class ResistorBlock extends ElectricalBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
     public ResistorBlock(Properties p) {

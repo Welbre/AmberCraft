@@ -39,7 +39,7 @@ import java.util.UUID;
 
 public class HeatPumpBlock extends Block implements EntityBlock {
     public static final ModuleFactory<HeatModule, HeatPumpBE> COLD_FACTORY = new ModuleFactory<>(HeatPumpBE.class,
-            AmberCraft.Modules.HEAT_MODULE_TYPE,
+            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
             module -> {module.alloc(); module.getHeatNode().setThermalConductivity(100.0); module.getHeatNode().setThermalMass(30.0);},
             HeatModule::free,
             HeatPumpBE::setColdModule,

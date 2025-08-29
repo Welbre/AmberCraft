@@ -6,7 +6,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.LevelAccessor;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.Master;
@@ -102,8 +101,7 @@ public class HeatModule extends NetworkModule implements Serializable {
     }
 
     @Override
-    public <T extends ModuleType<Module>> T getType() {
-        ModuleType<? extends Module> x = AmberCraft.Modules.HEAT_MODULE_TYPE.get();
-        return (T) x;
+    public ModuleType<?> getType() {
+        return AmberCraft.ModuleTypes.HEAT_MODULE_TYPE.get();
     }
 }

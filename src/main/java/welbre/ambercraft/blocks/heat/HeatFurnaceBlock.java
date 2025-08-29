@@ -38,7 +38,7 @@ public class HeatFurnaceBlock extends HeatBlock {
 
     public ModuleFactory<HeatModule, HeatFurnaceBE> factory = new ModuleFactory<>(
             HeatFurnaceBE.class,
-            AmberCraft.Modules.HEAT_MODULE_TYPE,
+            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
             HeatModule::alloc,
             HeatModule::free,
             HeatFurnaceBE::setHeatModule,

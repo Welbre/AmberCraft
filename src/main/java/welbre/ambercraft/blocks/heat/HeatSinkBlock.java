@@ -35,7 +35,7 @@ public class HeatSinkBlock extends Block implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
     public ModuleFactory<HeatModule,HeatSinkBE> factory = new ModuleFactory<>(
             HeatSinkBE.class,
-            AmberCraft.Modules.HEAT_MODULE_TYPE,
+            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
             HeatSinkBlock::MODULE_INIT,
             HeatModule::free,
             HeatSinkBE::setHeatModule,

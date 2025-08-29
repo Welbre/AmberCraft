@@ -129,6 +129,11 @@ public class FacedCableBlock extends Block implements EntityBlock {
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState bstate, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        {
+            var result = super.useItemOn(stack, bstate, level, pos, player, hand, hitResult);
+            if (result.consumesAction())
+                return result;
+        }
         if (level.getBlockEntity(pos) instanceof FacedCableBE cable)
         {
             Optional<Direction> dir = GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, player);
@@ -136,7 +141,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
                 return InteractionResult.FAIL;
 
             FaceBrain brain = cable.getBrain().getFaceBrain(dir.get());
-            InteractionResult result = InteractionResult.TRY_WITH_EMPTY_HAND;
+            InteractionResult result = InteractionResult.PASS;
             if (brain != null)
             {
                 for (Module module : brain.modules())
@@ -148,11 +153,16 @@ public class FacedCableBlock extends Block implements EntityBlock {
                 return result;
             }
         }
-        return super.useItemOn(stack, bstate, level, pos, player, hand, hitResult);
+        return InteractionResult.FAIL;
     }
 
     @Override
     protected @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        {
+            var result = super.useWithoutItem(state, level, pos, player, hitResult);
+            if (result.consumesAction())
+                return result;
+        }
         if (level.getBlockEntity(pos) instanceof FacedCableBE cable)
         {
             if (player.isCrouching())

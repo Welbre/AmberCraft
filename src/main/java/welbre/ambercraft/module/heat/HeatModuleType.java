@@ -55,15 +55,8 @@ public class HeatModuleType implements ModuleType<HeatModule> {
                 player.displayClientMessage(Component.literal(module.getMultimeterString()).withColor(DyeColor.ORANGE.getTextColor()), false);
                 return InteractionResult.SUCCESS;
             }
-            else if (stack.getItem() == AmberCraft.Items.NETWORK_TOOL.get()) {
-                BlockEntity entity = level.getBlockEntity(pos);
-                if (entity instanceof ModulesHolder holder)
-                    PacketDistributor.sendToPlayer((ServerPlayer) player, new NetworkViewerScreenPayLoad(holder));
-
-                return InteractionResult.SUCCESS;
-            }
         } else {
-            if (stack.getItem() == Items.LEVER || stack.getItem() == AmberCraft.Items.NETWORK_TOOL.get())
+            if (stack.getItem() == Items.LEVER)
                 return InteractionResult.SUCCESS;
         }
 

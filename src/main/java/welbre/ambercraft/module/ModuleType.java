@@ -19,7 +19,7 @@ import welbre.ambercraft.AmberCraft;
  * Defines how a {@link Module} behavior.<br>
  * To create your one ModulesType,
  * instantiate this interface and implement all methods, after that,
- * register the ModuleType in the {@link AmberCraft.Modules#REGISTER REGISTER}.<br>
+ * register the ModuleType in the {@link AmberCraft.ModuleTypes#REGISTER REGISTER}.<br>
  * The interactions with the Block and BlockEntity isn't handled automatically by AmberCraft or by NeoForge,
  * Remember to call the functions in your custom Blocks.<br>
  * @see ModuleFactory a helper to use modules.
