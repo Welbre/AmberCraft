@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatSourceBE;
+import welbre.ambercraft.blockentity.heat.HeatSourceBE;
 
 public record HeatSourceSetterPayload(BlockPos pos, double temperature, double heat, String mode) implements CustomPacketPayload {
     public static void handleOnServer(HeatSourceSetterPayload payload, IPayloadContext context)

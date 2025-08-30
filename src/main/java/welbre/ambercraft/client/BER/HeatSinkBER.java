@@ -11,7 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import welbre.ambercraft.blockentity.HeatSinkBE;
+import welbre.ambercraft.blockentity.heat.HeatSinkBE;
 import welbre.ambercraft.client.ClientMain;
 
 import java.util.List;

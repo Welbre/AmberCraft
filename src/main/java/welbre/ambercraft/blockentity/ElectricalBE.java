@@ -5,15 +5,21 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.electrical.ElectricalModule;
 
 public class ElectricalBE extends ModulesHolder {
-    public ElectricalModule module = new ElectricalModule();
+    public ElectricalModule module = new ElectricalModule(null);
 
     public ElectricalBE(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         super(type, pos, blockState);
+    }
+
+    public ElectricalBE(BlockPos pos, BlockState state)
+    {
+        this(AmberCraft.BlockEntity.ELECTRICAL_BE.get(), pos, state);
     }
 
     @Override

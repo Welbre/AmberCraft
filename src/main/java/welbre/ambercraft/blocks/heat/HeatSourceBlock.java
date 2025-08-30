@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.HeatSourceBE;
+import welbre.ambercraft.blockentity.heat.HeatSourceBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
 import welbre.ambercraft.module.ModulesHolder;
 

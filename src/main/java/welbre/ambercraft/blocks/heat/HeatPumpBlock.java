@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatPumpBE;
+import welbre.ambercraft.blockentity.heat.HeatPumpBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
 import welbre.ambercraft.client.screen.ModifyFieldsScreen;
 import welbre.ambercraft.module.ModuleFactory;

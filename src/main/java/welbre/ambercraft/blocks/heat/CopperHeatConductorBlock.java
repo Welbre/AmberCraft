@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.HeatBE;
+import welbre.ambercraft.blockentity.heat.HeatBE;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 public class CopperHeatConductorBlock extends HeatConductorBlock {

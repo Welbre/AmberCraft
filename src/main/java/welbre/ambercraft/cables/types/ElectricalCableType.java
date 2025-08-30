@@ -1,5 +1,6 @@
 package welbre.ambercraft.cables.types;
 
+import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +38,6 @@ public class ElectricalCableType extends CableType {
 
     @Override
     public Module[] createModules(FacedCableBE entity) {
-        return new Module[]{new ElectricalModule()};
+        return new Module[]{new ElectricalModule(new Resistor(0.5))};//todo create a module to cables, that computes the current resistence.
     }
 }

@@ -10,11 +10,11 @@ import net.minecraft.world.item.DyeColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
-import welbre.ambercraft.blockentity.HeatSourceBE;
+import welbre.ambercraft.blockentity.heat.HeatSourceBE;
 import welbre.ambercraft.network.HeatSourceSetterPayload;
 
 
-import static welbre.ambercraft.blockentity.HeatSourceBE.Mode;
+import static welbre.ambercraft.blockentity.heat.HeatSourceBE.Mode;
 
 @OnlyIn(Dist.CLIENT)
 public class HeatSourceScreen extends Screen{

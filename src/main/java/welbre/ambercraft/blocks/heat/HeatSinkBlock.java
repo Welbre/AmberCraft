@@ -25,7 +25,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatSinkBE;
+import welbre.ambercraft.blockentity.heat.HeatSinkBE;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;

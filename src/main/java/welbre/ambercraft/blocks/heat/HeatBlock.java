@@ -15,7 +15,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatBE;
+import welbre.ambercraft.blockentity.heat.HeatBE;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.heat.HeatModule;
 

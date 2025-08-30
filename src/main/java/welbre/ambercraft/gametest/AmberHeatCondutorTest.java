@@ -8,9 +8,9 @@ import net.minecraft.world.level.block.Rotation;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.HeatBE;
-import welbre.ambercraft.blockentity.HeatFurnaceBE;
-import welbre.ambercraft.blockentity.HeatSinkBE;
+import welbre.ambercraft.blockentity.heat.HeatBE;
+import welbre.ambercraft.blockentity.heat.HeatFurnaceBE;
+import welbre.ambercraft.blockentity.heat.HeatSinkBE;
 import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.module.network.NetworkModule;
 

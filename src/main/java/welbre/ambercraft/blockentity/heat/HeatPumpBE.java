@@ -1,4 +1,4 @@
-package welbre.ambercraft.blockentity;
+package welbre.ambercraft.blockentity.heat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
