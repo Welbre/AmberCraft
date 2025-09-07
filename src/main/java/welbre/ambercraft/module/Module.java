@@ -3,7 +3,6 @@ package welbre.ambercraft.module;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
-import welbre.ambercraft.module.electrical.ElectricalModuleType;
 
 /**
  * This class represents a module, an object used to store AmberCraft related data in the minecraft block entity.<br>

@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,11 +21,9 @@ import org.joml.Vector3f;
 import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.network.NetworkViewerScreenPayLoad;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
+//todo create a button to toggle the ModulesHolder packer, a function to create one widget to holders that contains more that 1 module.
 public class NetworkViewerScreen extends Screen {
 
     //navigation
@@ -39,14 +38,17 @@ public class NetworkViewerScreen extends Screen {
     //interation
     public NetworkWidget dragging = null;
     public Vec2 drawStart = null;
+    /// -1 is used to show all layers
     public int layer = 0;
+    public boolean showingServerModules = true;
     //interation->GUI
     /// Ignore the navigation and is rendered in the last step to be above other elements.
-    public final ArrayList<AbstractWidget> fixedRenderableWidget = new ArrayList<>();
+    public final List<AbstractWidget> fixedRenderableWidget = new ArrayList<>();
 
     //logical
     public final BlockPos clickedBlock;
-    public final ArrayList<ArrayList<NetworkWidget>> networkWidgets = new ArrayList<>();
+    /// widgets sorted by layer
+    public final List<List<NetworkWidget>> networkWidgets = new ArrayList<>();
     public final NetworkModule[] serverModules;
     public final Scheduler scheduler = new Scheduler();
     public final Scheduler renderScheduler = new Scheduler();
@@ -54,7 +56,7 @@ public class NetworkViewerScreen extends Screen {
     public NetworkViewerScreen(FriendlyByteBuf buf) {
         super(Component.literal("Network Viewer"));
         this.clickedBlock = buf.readBlockPos();//first read the blockPos!
-        this.serverModules = NetworkViewerScreenPayLoad.ModulesFromString(buf.readUtf());
+        this.serverModules = NetworkViewerScreenPayLoad.ModulesFromString(buf.readByteArray());
     }
 
     @Override
@@ -87,15 +89,18 @@ public class NetworkViewerScreen extends Screen {
             addRenderableWidget(networkWidget);
         }
 
-        networkWidgets.addAll(NetworkViewerHelper.SORT_LAYERS(serverModules, widgetList));//if the list isn't clean, this will break!
+        var layers = NetworkViewerHelper.SORT_LAYERS(serverModules, widgetList);
+        initLayersColors(layers);
+        networkWidgets.addAll(layers);//if the list isn't clean, this will break!
 
+        setLayer(0);
         InitButtons();
     }
 
     @Override
     public void tick() {
         super.tick();
-        ArrayList<NetworkWidget> selected = networkWidgets.get(layer);
+        List<NetworkWidget> selected = getVisibleWidgets();
         final int size = selected.size();
         for (int i = 0; i < size; i++)
         {
@@ -114,7 +119,7 @@ public class NetworkViewerScreen extends Screen {
         fixedRenderableWidget.forEach(widget -> widget.mouseMoved(mouseX, mouseY));
 
         super.mouseMoved(vec.x, vec.y);
-        networkWidgets.get(layer).forEach(width -> width.shouldRenderToolTip = width.isMouseOver(vec.x, vec.y));
+        getVisibleWidgets().forEach(width -> width.shouldRenderToolTip = width.isMouseOver(vec.x, vec.y));
     }
 
     @Override
@@ -124,9 +129,9 @@ public class NetworkViewerScreen extends Screen {
 
         if (button == 0)
         {
-            for (NetworkWidget widget : networkWidgets.get(layer))
+            for (NetworkWidget widget : getVisibleWidgets())
             {
-                if (widget.isMouseOver(mouse.x, mouse.y))
+                if (widget.visible && widget.isMouseOver(mouse.x, mouse.y))
                 {
                     dragging = widget;
                     drawStart = new Vec2(mouse.x - widget.getX(), mouse.y - widget.getY());
@@ -210,7 +215,7 @@ public class NetworkViewerScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (getFocused() instanceof EditBox box)//if the edit box is on focus handle and return to avoid other interactions
+        if (getFocused() instanceof EditBox box)//if the edit box is on focus, handle and return to avoid other interactions
             return box.keyPressed(keyCode, scanCode, modifiers);
 
         if (keyCode == 32)// Space bar
@@ -282,7 +287,7 @@ public class NetworkViewerScreen extends Screen {
     {
         final int dx = (this.width/2) - widget.getCenter()[0];
         final int dy = (this.height/2) - widget.getCenter()[1];
-        for (NetworkWidget n : networkWidgets.get(layer))
+        for (NetworkWidget n : getVisibleWidgets())
             scheduler.add(new Animation(n, dx + n.getX(), dy + n.getY(), .5f, Animation.Interpolations.EASE_OUT_QUART));
     }
 
@@ -291,7 +296,7 @@ public class NetworkViewerScreen extends Screen {
     {
         int x = 0;
         int y = 0;
-        for (NetworkWidget node : networkWidgets.get(layer))
+        for (NetworkWidget node : getVisibleWidgets())
         {
             x += node.getX();
             y += node.getY();
@@ -306,7 +311,7 @@ public class NetworkViewerScreen extends Screen {
 
         ComputeNavigation();
 
-        for (NetworkWidget node : networkWidgets.get(layer))
+        for (NetworkWidget node : getVisibleWidgets())
             scheduler.add(new Animation(node, node.getX() - x, node.getY() - y, .5f, Animation.Interpolations.EASE_OUT_QUART));
     }
 
@@ -317,13 +322,13 @@ public class NetworkViewerScreen extends Screen {
             return;
 
         text = text.toLowerCase();
-        for (NetworkWidget widget : networkWidgets.get(layer))
+        for (NetworkWidget widget : getVisibleWidgets())
         {
-            if (String.format("%x", widget.module.ID).contains(text))
+            if (String.format("%x", widget.serverModule.ID).contains(text))
             {
                 this.scheduler.clear(Animation.class);//remove all animations
                 this.centralize(widget);
-                if (String.format("%x", widget.module.ID).equals(text))//remove if findit
+                if (String.format("%x", widget.serverModule.ID).equals(text))//remove if findit
                 {
                     ADD_SEARCH_MARK(this, widget);
                     removeSearch();
@@ -364,12 +369,16 @@ public class NetworkViewerScreen extends Screen {
 
     private void InitButtons()
     {
-        var radialTreeSort = new Button.Builder(Component.literal("Radial tree view"), this::HandleRadialTreeSort).bounds(0,0,100,18).build();
+        var radialTreeSort = new Button.Builder(Component.literal("Radial tree view"), this::handleRadialTreeSort).bounds(0,0,100,18).build();
+        var layerButon = new Button.Builder(Component.literal("0"), this::handleLayer).bounds(width-18,0,18,18).build();
+        var modulesSide = new Button.Builder(Component.literal("serverSide").withColor(DyeColor.LIGHT_BLUE.getTextColor()), this::handleModuleSide).bounds(width-18-60, 0, 60, 18).build();
 
         fixedRenderableWidget.add(radialTreeSort);
+        fixedRenderableWidget.add(layerButon);
+        fixedRenderableWidget.add(modulesSide);
     }
 
-    private void HandleRadialTreeSort(Button button)
+    private void handleRadialTreeSort(Button button)
     {
         renderScheduler.clear();
 
@@ -386,12 +395,84 @@ public class NetworkViewerScreen extends Screen {
             renderables.addFirst(result);
     }
 
+    private void handleLayer(Button button)
+    {
+        setLayer(layer + 1);
+        if (layer == -1)
+            button.setMessage(Component.literal("All"));
+        else
+            button.setMessage(Component.literal(String.valueOf(layer)));
+
+        renderScheduler.clear();
+    }
+
+    private void handleModuleSide(Button button)
+    {
+        showingServerModules = !showingServerModules;
+        if (showingServerModules)
+        {
+            button.setMessage(Component.literal("serverSide").withColor(DyeColor.LIGHT_BLUE.getTextColor()));
+            networkWidgets.forEach(s -> s.forEach(w -> w.active = w.serverModule));
+        }
+        else
+        {
+            button.setMessage(Component.literal("clientSide").withColor(DyeColor.ORANGE.getTextColor()));
+            networkWidgets.forEach(s -> s.forEach(w -> w.active = w.clientModule));
+        }
+    }
+
     public List<Renderable> temp = renderables;//todo remove it
+
+
+    public void setLayer(int layer)
+    {
+        if (layer > networkWidgets.size()-1)
+            //if only one layer is present,
+            //don't need to go to the "all" layers state
+            this.layer = networkWidgets.size() == 1 ? 0 : -1;
+        else
+            this.layer = layer;
+
+        //disable all
+        networkWidgets.forEach(list -> list.forEach(networkWidget -> networkWidget.visible = (this.layer == -1)));//-1 is used to show all layers
+        //turn only layer on
+        if (this.layer != -1)
+            networkWidgets.get(this.layer).forEach(networkWidget -> networkWidget.visible = true);
+    }
+
+    public List<NetworkWidget> getVisibleWidgets()
+    {
+        ArrayList<NetworkWidget> result = new ArrayList<>();
+
+        for (List<NetworkWidget> layer : networkWidgets)
+            for (NetworkWidget widget : layer)
+                if (widget.visible)
+                    result.add(widget);
+
+        return result;
+    }
+
+    /// Colorize the widgets based on the layer that they are inserted.
+    private void initLayersColors(List<List<NetworkWidget>> layers) {
+        int index = 0;
+        for (int i = 1; i < layers.size(); i++)
+        {
+            if (index >= NetworkWidget.DEFAULT_EXTRA_COLORS.length)
+                index = 0;
+
+            var layer = layers.get(i);
+            int color = NetworkWidget.DEFAULT_EXTRA_COLORS[index];
+            for (NetworkWidget widget : layer)
+                widget.color = color;
+
+            index++;
+        }
+    }
 
     public static @Nullable NetworkWidget GET_WIDGET(List<NetworkWidget> widgets, NetworkModule module)
     {
         for (NetworkWidget widget : widgets)
-            if (widget.module.ID == module.ID)
+            if (widget.serverModule.ID == module.ID)
                 return widget;
 
         return null;

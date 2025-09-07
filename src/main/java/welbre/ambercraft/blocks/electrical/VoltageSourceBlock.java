@@ -1,7 +1,6 @@
 package welbre.ambercraft.blocks.electrical;
 
 
-import kuse.welbre.sim.electrical.elements.VoltageSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -9,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -34,17 +34,17 @@ public class VoltageSourceBlock extends ElectricalBlock {
         var result = super.useWithoutItem(state, level, pos, player, hitResult);
         if (result.consumesAction())
             return result;
-        if (level.getBlockEntity(pos) instanceof VoltageSourceBE source)
+        if (level.getBlockEntity(pos) instanceof VoltageSourceBE source && player.getMainHandItem().is(Items.AIR))
         {
-            if (level.isClientSide)
-                return InteractionResult.SUCCESS;
-            else
+            if (!level.isClientSide)
             {
                 final double voltage = source.getElement().getVoltageDifference() + (player.isShiftKeyDown() ? -10 : 10);
                 source.getElement().setSourceVoltage(voltage);
+                source.setChanged();
+                level.sendBlockUpdated(pos, state, state, 3);
                 ((ServerPlayer) player).sendSystemMessage(Component.literal("Voltage set to: " + voltage).withColor(DyeColor.ORANGE.getTextColor()));
-                return InteractionResult.SUCCESS;
             }
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
     }
