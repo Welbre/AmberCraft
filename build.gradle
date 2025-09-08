@@ -69,10 +69,6 @@ runs {
         // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
         systemProperty 'forge.logging.console.level', 'debug'
 
-        dependencies {
-            runtime 'kuse.welbre:ElectricalSim'
-        }
-
         modSource project.sourceSets.main
     }
 

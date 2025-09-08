@@ -308,10 +308,6 @@ public abstract class NetworkModule implements Module, Serializable {
         isFresh = true;
     }
 
-    @Override
-    public String toString() {
-        return getClass().getSimpleName()+ " ID: " + Integer.toHexString(ID);
-    }
 
     @Override
     public void writeData(CompoundTag tag, HolderLookup.Provider registries) {

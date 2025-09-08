@@ -30,8 +30,7 @@ import welbre.ambercraft.commands.Event;
 import welbre.ambercraft.item.FacedCableBlockItem;
 import welbre.ambercraft.item.NetworkTool;
 import welbre.ambercraft.module.ModuleType;
-import welbre.ambercraft.module.electrical.ElectricalCableModuleType;
-import welbre.ambercraft.module.electrical.ElectricalPinModuleType;
+import welbre.ambercraft.module.electrical.ElectricalModuleType;
 import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.network.PayLoadRegister;
 
@@ -98,7 +97,7 @@ public class AmberCraft {
 
         /// Contains all blocks that can use {@link ElectricalBE}
         public static final List<DeferredHolder<Block,? extends ElectricalBlock>> ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
-                VOLTAGE_SOURCE_BLOCK
+
         ));
     }
 
@@ -166,8 +165,7 @@ public class AmberCraft {
         public static final DeferredRegister<ModuleType<?>> REGISTER = DeferredRegister.create(AmberRegisters.MODULE_TYPE_REGISTRY, "module_type");
 
         public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat", HeatModuleType::new);
-        public static final DeferredHolder<ModuleType<?>, ElectricalPinModuleType> ELECTRICAL_MODULE_TYPE = REGISTER.register("electrical_pin", ElectricalPinModuleType::new);
-        public static final DeferredHolder<ModuleType<?>, ElectricalCableModuleType> ELECTRICAL_CABLE_MODULE_TYPE = REGISTER.register("electrical_heater", ElectricalCableModuleType::new);
+        public static final DeferredHolder<ModuleType<?>, ElectricalModuleType> ELECTRICAL_MODULE_TYPE = REGISTER.register("electrical", ElectricalModuleType::new);
     }
 
     public static final class Components {
