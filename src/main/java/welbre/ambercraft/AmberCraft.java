@@ -97,7 +97,7 @@ public class AmberCraft {
 
         /// Contains all blocks that can use {@link ElectricalBE}
         public static final List<DeferredHolder<Block,? extends ElectricalBlock>> ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
-
+                VOLTAGE_SOURCE_BLOCK
         ));
     }
 

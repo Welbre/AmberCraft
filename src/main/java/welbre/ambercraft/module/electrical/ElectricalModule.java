@@ -8,7 +8,10 @@ import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
 
 public class ElectricalModule extends NetworkModule {
-    public final Element element;
+    public Element element;
+
+    public ElectricalModule() {
+    }
 
     public ElectricalModule(Element element) {
         this.element = element;

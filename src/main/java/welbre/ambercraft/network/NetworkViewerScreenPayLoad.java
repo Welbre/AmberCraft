@@ -13,14 +13,13 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
+import welbre.ambercraft.debug.network.Serialization;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.NetworkModule;
 
-import java.io.*;
 import java.util.Arrays;
-import java.util.Base64;
 
-public record NetworkViewerScreenPayLoad(String data, BlockPos pos) implements CustomPacketPayload {
+public record NetworkViewerScreenPayLoad(byte[] data, BlockPos pos) implements CustomPacketPayload {
 
     public NetworkViewerScreenPayLoad(ModulesHolder holder)
     {
@@ -31,37 +30,28 @@ public record NetworkViewerScreenPayLoad(String data, BlockPos pos) implements C
     public static void handleOnClient(final NetworkViewerScreenPayLoad payLoad, final IPayloadContext context) {
         var buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeBlockPos(payLoad.pos());
-        buf.writeUtf(payLoad.data());
+        buf.writeByteArray(payLoad.data());
         // The array wrote in the convert step, should be unserialized in the Screen constructor using the buffer.
         AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.NETWORK_DEBUG_TOOL, buf, (LocalPlayer) context.player());
     }
 
 
-    public static NetworkModule[] ModulesFromString(String data)
+    public static NetworkModule[] ModulesFromData(byte[] data)
     {
         try
         {
-            ByteArrayInputStream array = new ByteArrayInputStream(Base64.getDecoder().decode(data));
-            ObjectInputStream inputStream = new ObjectInputStream(array);
-
-            return (NetworkModule[]) inputStream.readObject();
-        } catch (IOException | ClassNotFoundException e)
+            return Arrays.stream(Serialization.deserialize(data)).filter(NetworkModule.class::isInstance).toArray(NetworkModule[]::new);
+        } catch (Exception e)
         {
             throw new RuntimeException(e);
         }
     }
 
-    private static String convert(ModulesHolder holder)
+    private static byte[] convert(ModulesHolder holder)
     {
         try
         {
-            ByteArrayOutputStream array = new ByteArrayOutputStream();
-            ObjectOutputStream outputStream = new ObjectOutputStream(array);
-            // write a networkModules array in the stream
-            outputStream.writeObject(Arrays.stream(holder.getModules()).filter(a -> a instanceof NetworkModule).toArray(NetworkModule[]::new));
-
-            outputStream.close();
-            return Base64.getEncoder().encodeToString(array.toByteArray());
+            return Serialization.serialize((Object[]) Arrays.stream(holder.getModules()).filter(NetworkModule.class::isInstance).toArray(NetworkModule[]::new));
         } catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -72,7 +62,7 @@ public record NetworkViewerScreenPayLoad(String data, BlockPos pos) implements C
             new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(AmberCraft.MOD_ID, "network_viewer_payload"));
 
     public static final StreamCodec<ByteBuf, NetworkViewerScreenPayLoad> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, NetworkViewerScreenPayLoad::data,
+            ByteBufCodecs.BYTE_ARRAY, NetworkViewerScreenPayLoad::data,
             BlockPos.STREAM_CODEC, NetworkViewerScreenPayLoad::pos,
             NetworkViewerScreenPayLoad::new
     );

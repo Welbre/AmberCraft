@@ -27,7 +27,10 @@ public class NetworkViewerHelper {
 
         //run after create all widgets!
         for (NetworkWidget widget : widgets)
+        {
             INIT_CHILD_CONNECTION(widget, widgets);
+            SET_FATHER(widget, widgets);
+        }
 
         return widgets;
     }
@@ -94,12 +97,13 @@ public class NetworkViewerHelper {
             ModulesHolder holder,
             boolean isMain)
     {
+        //OBS modulesHolder is got from the client side!
         for (Module module : holder.getModules())
-            if (module instanceof NetworkModule network)
-                for (var m : modules)
-                    if (m.ID == network.ID)
+            if (module instanceof NetworkModule client)
+                for (var server : modules)
+                    if (server.ID == client.ID)
                     {
-                        widgets.add(new NetworkWidget(0, 0, m, holder, isMain));
+                        widgets.add(new NetworkWidget(0, 0, server, client, holder, isMain));
                         break;
                     }
     }
@@ -107,11 +111,11 @@ public class NetworkViewerHelper {
     private static void INIT_CHILD_CONNECTION(NetworkWidget widget, ArrayList<NetworkWidget> widgets) {
         ArrayList<NetworkWidget> children = new ArrayList<>();
 
-        for (NetworkModule module : widget.module.getChildren())
+        for (NetworkModule module : widget.serverModule.getChildren())
         {
             for (NetworkWidget networkWidget : widgets)
             {
-                if (networkWidget.module.ID == module.ID)
+                if (networkWidget.serverModule.ID == module.ID)
                 {
                     children.add(networkWidget);
                     break;
@@ -126,13 +130,27 @@ public class NetworkViewerHelper {
         widget.childConnection = connections;
     }
 
-    public static ArrayList<? extends ArrayList<NetworkWidget>> SORT_LAYERS(NetworkModule[] serverModules, List<NetworkWidget> networkWidgets) {
+    private static void SET_FATHER(NetworkWidget widget, ArrayList<NetworkWidget> widgets)
+    {
+        if (widget.serverModule.getFather() == null)
+            return;
+        NetworkWidget father = null;
+        for (NetworkWidget networkWidget : widgets)
+            if (networkWidget.serverModule.ID == widget.serverModule.getFather().ID)
+            {
+                father = networkWidget;
+                break;
+            }
+        widget.father = father;
+    }
+
+    public static List<List<NetworkWidget>> SORT_LAYERS(NetworkModule[] serverModules, List<NetworkWidget> networkWidgets) {
         Set<NetworkModule> roots = new HashSet<>();
 
         for (NetworkModule module : serverModules)
             roots.add(module.getRoot());
 
-        ArrayList<ArrayList<NetworkWidget>> layers = new ArrayList<>();
+        List<List<NetworkWidget>> layers = new ArrayList<>();
 
         for (NetworkModule root : roots)
         {
@@ -140,7 +158,7 @@ public class NetworkViewerHelper {
             layers.add(layer);
 
             for (NetworkWidget widget : networkWidgets)
-                if (widget.module.getRoot().ID == root.ID)
+                if (widget.serverModule.getRoot().ID == root.ID)
                     layer.add(widget);
         }
 

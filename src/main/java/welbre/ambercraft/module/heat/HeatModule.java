@@ -3,9 +3,12 @@ package welbre.ambercraft.module.heat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.profiling.Profiler;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.LevelAccessor;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.module.DebugToolInfo;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.Master;
@@ -14,8 +17,10 @@ import welbre.ambercraft.sim.Node;
 import welbre.ambercraft.sim.heat.HeatNode;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-public class HeatModule extends NetworkModule implements Serializable {
+public class HeatModule extends NetworkModule implements Serializable, DebugToolInfo {
     HeatNode node;
 
     public HeatModule() {
@@ -103,5 +108,20 @@ public class HeatModule extends NetworkModule implements Serializable {
     @Override
     public ModuleType<?> getType() {
         return AmberCraft.ModuleTypes.HEAT_MODULE_TYPE.get();
+    }
+
+    @Override
+    public List<Component> getInfo() {
+        ArrayList<Component> list = new ArrayList<>();
+        if (node != null)
+        {
+            list.add(Component.literal("Temperature: %.2f ºC".formatted(node.getTemperature())));
+            list.add(Component.literal("Conductivity: %.2f W/ºC".formatted(node.getThermalConductivity())));
+            list.add(Component.literal("Capacidade: %.2f J/ºC".formatted(node.getThermalMass())));
+            list.add(Component.literal("Ambient temperature: %.2f ºC".formatted(node.getEnvTemperature())));
+            list.add(Component.literal("Ambient conductivity: %.2f W/ºC".formatted(node.getEnvConductivity())));
+        } else
+            list.add(Component.literal("Heat not is null!").withColor(DyeColor.RED.getTextColor()));
+        return list;
     }
 }

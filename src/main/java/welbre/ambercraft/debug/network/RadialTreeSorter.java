@@ -23,7 +23,9 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
     @Override
     public AbstractWidget sort(Button button, NetworkViewerScreen screen)
     {
-        List<NetworkWidget> widgets = screen.networkWidgets.get(screen.layer);
+        if (screen.layer == -1)//can sort if all layers is on display.
+            return null;
+        List<NetworkWidget> widgets = screen.getVisibleWidgets();
         if (widgets.isEmpty()) return null;
 
         NetworkWidget main = NetworkViewerScreen.GET_WIDGET(widgets, screen.serverModules[screen.layer]);
@@ -40,7 +42,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
                 if (visited.contains(widget))
                     continue;
                 // computes the distance in nodes between widget and main.
-                final int orbit = COMPUTE_ORBIT(widget.module, main.module);
+                final int orbit = COMPUTE_ORBIT(widget.serverModule, main.serverModule);
 
                 final List<NetworkWidget> orbital = map.computeIfAbsent(orbit, k -> new ArrayList<>());
                 orbital.add(widget);
@@ -48,7 +50,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
             }
         }
 
-        //todo refactor this, at the moment isn't using a "local" space in the orbit, instead, the code is only taking the total space used in the orbit to compute the range.
+        //FIXME refactor this, at the moment isn't using a "local" space in the orbit, instead, the code is only taking the total space used in the orbit to compute the range.
         //start the sort itself
         final Vec2 center = new Vec2(screen.width / 2f, screen.height / 2f);
         double radius = 0;
@@ -60,7 +62,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
 
             List<NetworkWidget> children = map.get(1);
 
-            final double delta = Math.PI * 2 / (main.module.getChildren().length + (main.module.getFather() == null ? 0 : 1));
+            final double delta = Math.PI * 2 / (main.serverModule.getChildren().length + (main.serverModule.getFather() == null ? 0 : 1));
             double teta = - delta / 2.0;
             radius = children.stream().mapToDouble(RadialTreeSorter::computeDiagonal).max().orElse(0) + 30;
             for (NetworkWidget child : children)
@@ -82,7 +84,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
             for (NetworkWidget preview : map.get(orbit-1))
             {
                 List<NetworkWidget> children = GET_CHILDREN(preview, widgets);
-                NetworkWidget father = preview.module.getFather() != null ? NetworkViewerScreen.GET_WIDGET(widgets, preview.module.getFather()) : null;
+                NetworkWidget father = preview.serverModule.getFather() != null ? NetworkViewerScreen.GET_WIDGET(widgets, preview.serverModule.getFather()) : null;
 
                 List<NetworkWidget> subSpace = children.stream().filter(map.get(orbit)::contains).collect(Collectors.toList());
                 if (father != null && map.get(orbit).contains(father))
@@ -188,7 +190,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
     private static List<NetworkWidget> GET_CHILDREN(NetworkWidget target, List<NetworkWidget> widgets)
     {
         List<NetworkWidget> children = new ArrayList<>();
-        for (NetworkModule child : target.module.getChildren())
+        for (NetworkModule child : target.serverModule.getChildren())
         {
             NetworkWidget widget = NetworkViewerScreen.GET_WIDGET(widgets, child);
             if (widget == null)
@@ -227,7 +229,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
                             (int) (getX() + Math.cos(teta) * radius),
                             (int) (getY() + Math.sin(teta) * radius),
                             0x99FFFFFF
-                            );
+                    );
                     preview = teta;
                 }
             }
