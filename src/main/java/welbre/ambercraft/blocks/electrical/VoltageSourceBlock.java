@@ -49,6 +49,7 @@ public class VoltageSourceBlock extends ElectricalBlock {
                 final double voltage = source.getElement().getVoltageDifference() + (player.isShiftKeyDown() ? -10 : 10);
                 ((VoltageSource) source.getElement()).setSourceVoltage(voltage);
                 source.setChanged();
+                source.electricalModule.dirtMaster();
                 level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
                 ((ServerPlayer) player).sendSystemMessage(Component.literal("Voltage set to: " + voltage).withColor(DyeColor.ORANGE.getTextColor()));
             }

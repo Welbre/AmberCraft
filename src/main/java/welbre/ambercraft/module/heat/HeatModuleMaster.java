@@ -18,7 +18,7 @@ public class HeatModuleMaster extends Master {
     }
 
     @Override
-    public boolean compile(NetworkModule master) {
+    public boolean compile(NetworkModule master, boolean isClientSide) {
         int count = 0;
         ArrayList<HeatModule> visited = new ArrayList<>();
         Stack<HeatModule> stack = new Stack<>();

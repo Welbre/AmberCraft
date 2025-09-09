@@ -37,20 +37,24 @@ public class ElectricalPinModule extends NetworkModule {
     }
 
     @Override
-    public void connect(NetworkModule target) {
+    public boolean connect(NetworkModule target) {
         //pin -> pin
         //Basically set the pin in the other element to the pin in this element, so the 2 elements will be connected in the same pin
         if (target instanceof ElectricalPinModule other)
         {
-            other.setter.accept(this.getter.get());
-            element.connect(target);
+            if (element.connect(target))
+            {
+                other.setter.accept(this.getter.get());
+                return true;
+            }
+            return false;
         }
         // pin -> cable
         // delegates the task to the ElectricalCableModule, duo the need for create a resistor.
         else if (target instanceof ElectricalCableModule ecm)
-            ecm.connect(this);
+            return ecm.connect(this);
         else
-            super.connect(target);
+            return super.connect(target);
     }
 
     public Circuit.Pin getPin() {

@@ -45,25 +45,76 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
     }
 
     @Override
-    public void connect(NetworkModule target) {
+    public boolean connect(NetworkModule target) {
         //cable -> pin connection
         //creates a resistor with half-cable resistence
         if (target instanceof ElectricalPinModule epm)
         {
-            addResistor(new Resistor(pin, epm.getPin(), resistence / 2));
-            super.connect(epm.getElectricalModule());//connect to the elementModule instead of the pin!
+            if (super.connect(epm.getElectricalModule()))//connect to the elementModule instead of the pin!
+            {
+                addResistor(new Resistor(pin, epm.getPin(), resistence / 2));//only create a new resistor if a new connection has been created.
+                return true;
+            }
+            return false;
         }
         // cable -> cable connection
         // computes the average between the pins resistence and creates a resistor to connect the pins.
         else if (target instanceof ElectricalCableModule ecm)
         {
-            addResistor(new Resistor(pin, ecm.pin, (resistence + ecm.resistence) / 2));
-            super.connect(target);
+            if (super.connect(target))
+            {
+                addResistor(new Resistor(pin, ecm.pin, (resistence + ecm.resistence) / 2));
+                return true;
+            }
+            return false;
         } else {
-            super.connect(target);
+            return super.connect(target);
         }
     }
 
+    @Override
+    public void disconnectAll() {
+        if (father != null)
+        {
+            if (father instanceof ElectricalCableModule ecm)
+                ecm.removeResistorsWithPin(this.pin);
+            else if (father instanceof ElectricalModule em)
+            {
+                int l = resistors.length;
+                removeResistorsWithPin(em.getPinA().getPin());
+                int l0 = resistors.length;
+                removeResistorsWithPin(em.getPinB().getPin());
+                if (l != l0 && l0 != resistors.length)
+                    AmberCraft.LOGGER.warn("Disconnected from both pins at same time, possible fault.", new IllegalStateException("") );
+            }
+        }
+
+        for (NetworkModule child : children)
+        {
+            //cable -> cable disconnection
+            if (child instanceof ElectricalCableModule ecm)
+            {
+                ecm.removeResistorsWithPin(this.pin);
+            }
+            //element -> cable disconnection
+            //notice that in the connection fase, an ElectricalPinModule is connected, but they are a wrapper
+            //in the end a correspondent ElectricalModule is connected, and we don't know at each pin they have connected before.
+            //so we try to disconnect both pins, but it isn't a good idea because the null represents the ground and can be connected in
+            //any other resistor, causing a remotion of random resistors. at this point we can't prevent this from happening,
+            //but throw an exception to notify the devs and help with the debug.
+            else if (child instanceof ElectricalModule em)
+            {
+                int l = resistors.length;
+                removeResistorsWithPin(em.getPinA().getPin());
+                int l0 = resistors.length;
+                removeResistorsWithPin(em.getPinB().getPin());
+                if (l != l0 && l0 != resistors.length)
+                    AmberCraft.LOGGER.warn("Disconnected from both pins at same time, possible fault.", new IllegalStateException("") );
+            }
+        }
+        resistors = new Resistor[0];
+        super.disconnectAll();
+    }
 
     @Override
     public void writeData(CompoundTag tag, HolderLookup.Provider registries) {
@@ -89,10 +140,70 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
         master.tick(entity);
     }
 
-    public void addResistor(Resistor r)
+    protected void addResistor(Resistor r)
     {
         resistors = Arrays.copyOf(resistors, resistors.length + 1);
         resistors[resistors.length - 1] = r;
+    }
+
+    /// looks in the resistor array and remove all resistors that are connected to <code>ptr</code>.
+    /// @param ptr pin to remove
+    protected void removeResistorsWithPin(Circuit.Pin ptr)
+    {
+        boolean[] toRemove = new boolean[resistors.length];
+        for (int i = 0; i < resistors.length; i++)
+        {
+            final Resistor r = resistors[i];
+            //pin A check
+            if (r.getPinA() == null)//A is ground
+            {
+                if (ptr == null)//and to remove is ground too
+                {
+                    toRemove[i] = true;
+                    continue;
+                }
+            }
+            else//A isn't the ground, so check by address
+            {
+                if (ptr != null)//if the to remove isn't ground too
+                    if (r.getPinA().address == ptr.address)//if is th same address
+                    {
+                        toRemove[i] = true;
+                        continue;
+                    }
+            }
+
+            //pin B check
+            if (r.getPinB() == null)//B is ground
+            {
+                if (ptr == null)//if to remove is ground too
+                    toRemove[i] = true;
+            }
+            else // B isn't ground
+            {
+                if (ptr != null)//ptr isn't ground too
+                    if (r.getPinB().address == ptr.address)
+                        toRemove[i] = true;
+            }
+        }
+        int length = resistors.length;
+        for (boolean b : toRemove)
+            if (b)
+                length--;
+
+        if (length == 0)//optimization only
+        {
+            resistors = new Resistor[0];
+            return;
+        }
+
+        Resistor[] newOne = new Resistor[length];
+        int index = 0;
+        for (int i = 0; i < toRemove.length; i++)
+            if (!toRemove[i])
+                newOne[index++] = resistors[i];
+
+        resistors = newOne;
     }
 
     /// Returns a copy of the resistors
@@ -103,7 +214,10 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
     @Override
     public List<Component> getInfo() {
         List<Component> list = new ArrayList<>();
-        list.add(Component.literal("Pin: " + pin.address));
+        list.add(Component.literal("Pin: %s, Voltage: %s".formatted(
+                pin.address,
+                pin.P_voltage != null ? Tools.proprietyToSi(pin.P_voltage[0], "V") : "NaN"
+        )));
         list.add(Component.literal("Resistence: " + Tools.proprietyToSi(resistence, "Ω")));
 
         for (Resistor r : resistors)

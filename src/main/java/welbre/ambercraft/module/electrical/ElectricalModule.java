@@ -1,5 +1,6 @@
 package welbre.ambercraft.module.electrical;
 
+import kuse.welbre.sim.electrical.Circuit;
 import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.tools.Tools;
 import net.minecraft.core.Direction;
@@ -144,8 +145,17 @@ public class ElectricalModule extends NetworkModule implements DebugToolInfo {
             return List.of(Component.literal("Element is null!"));
         List<Component> list = new ArrayList<>();
 
-        list.add(Component.literal("pinA: " + element.getPinA()));
-        list.add(Component.literal("pinB: " + element.getPinB()));
+        final Circuit.Pin pinA = element.getPinA();
+        final Circuit.Pin pinB = element.getPinB();
+        list.add(Component.literal("PinA: %s, Voltage: %s".formatted(
+                pinA.address,
+                pinA.P_voltage != null ? Tools.proprietyToSi(pinA.P_voltage[0], "V") : "NaN"
+        )));
+        list.add(Component.literal("pinB: %s, Voltage: %s".formatted(
+                pinB.address,
+                pinB.P_voltage != null ? Tools.proprietyToSi(pinB.P_voltage[0], "V") : "NaN"
+        )));
+
         list.add(GET_ELEMENT_INFO(element));
 
         return list;

@@ -101,20 +101,21 @@ public abstract class NetworkModule implements Module, Serializable {
      * In the case that 2 different connections are happening, a similar code runs, looking for the master and performing an easier connection.
      * Only if no master is founded, {@link NetworkModule#setRoot()} is invoked in the shortest network, making it the master and reducing to the last case.<br>
      * @param target the module that this will connect to.
+     * @return if a new connection has been created.
      */
-    public void connect(NetworkModule target)
+    public boolean connect(NetworkModule target)
     {
         List<NetworkModule> this_path = this.getRootPath();
         List<NetworkModule> target_path = target.getRootPath();
 
         if (this.father == target || target.father == this)//trying to connect 2 nodes already connected.
-            return;
+            return false;
         for (var child : this.children)
             if (child == target)
-                return;
+                return false;
         for (var child : target.children)
             if (child == this)
-                return;
+                return false;
 
         if (this_path.getLast() == target_path.getLast())//trying to connect 2 nodes in the same network
         {
@@ -170,6 +171,7 @@ public abstract class NetworkModule implements Module, Serializable {
             }
         }
         dirtMaster();
+        return true;
     }
 
     public boolean isMaster(){

@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.network.NetworkViewerScreenPayLoad;
 
@@ -390,9 +391,16 @@ public class NetworkViewerScreen extends Screen {
                 .toList();
         toRemove.forEach(renderables::remove);
 
-        AbstractWidget result = new RadialTreeSorter().sort(button, this);
-        if (result != null)
-            renderables.addFirst(result);
+        try
+        {
+            AbstractWidget result = new RadialTreeSorter().sort(button, this);
+            if (result != null)
+                renderables.addFirst(result);
+
+        } catch (Exception e)
+        {
+            AmberCraft.LOGGER.error("Error while sorting the network!",e);
+        }
     }
 
     private void handleLayer(Button button)

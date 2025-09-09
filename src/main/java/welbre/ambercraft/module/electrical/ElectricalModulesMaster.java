@@ -18,7 +18,12 @@ public class ElectricalModulesMaster extends Master {
     }
 
     @Override
-    protected boolean compile(NetworkModule master) {
+    protected boolean compile(NetworkModule master, boolean isClientSide) {
+        if (isClientSide)
+            //skip the client side matrix formation.
+            //only the server will have the circuit if the client wants to do any task in the circuit, this must be done via Packets
+            //this is extremely important, creating a circuit is expensive, redundant tasks should be avoided.
+            return true;
         Profiler.get().push("ElectricalModuleMaster compile");
 
         Set<Element> elements = new HashSet<>();
@@ -50,7 +55,7 @@ public class ElectricalModulesMaster extends Master {
             circuit.preCompile();
         } catch (Exception e)
         {
-            AmberCraft.LOGGER.error("ElectricalModuleMaster failed to preCompile!", e);
+            AmberCraft.LOGGER.warn("ElectricalModuleMaster failed to preCompile!", e);
             Profiler.get().pop();
             return true;
         }

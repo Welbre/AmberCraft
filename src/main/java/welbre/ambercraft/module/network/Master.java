@@ -19,19 +19,15 @@ public abstract class Master implements Serializable {
 
     /// compile the master using the NetworkModule obs the module is the master!.
     /// @return if the compilation was a success.
-    protected abstract boolean compile(NetworkModule master);
+    protected abstract boolean compile(NetworkModule master, boolean isClientSide);
 
     protected abstract void tick(BlockEntity entity, boolean isClientSide);
 
-    private void compile()
-    {
-        if (compile(master))
-            isClean = true;
-    }
-
     public final void tick(BlockEntity entity) {
+        final boolean isClientSide = entity.getLevel() != null && entity.getLevel().isClientSide();
         if (!isClean)
-            compile();
+            isClean = compile(master,isClientSide);
+
         if (isClean)
             tick(entity, entity.getLevel() != null && entity.getLevel().isClientSide());
     }
