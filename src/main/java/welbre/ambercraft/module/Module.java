@@ -34,5 +34,5 @@ public interface Module {
     void tick(ModulesHolder entity);
 
     /// Returns the module type in the register.
-    <T extends ModuleType<Module>> T getType();
+    <T extends Module> ModuleType<T> getType();
 }

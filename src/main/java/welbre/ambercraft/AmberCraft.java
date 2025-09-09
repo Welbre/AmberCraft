@@ -30,6 +30,8 @@ import welbre.ambercraft.commands.Event;
 import welbre.ambercraft.item.FacedCableBlockItem;
 import welbre.ambercraft.item.NetworkTool;
 import welbre.ambercraft.module.ModuleType;
+import welbre.ambercraft.module.electrical.ElectricalCableModule;
+import welbre.ambercraft.module.electrical.ElectricalCableModuleType;
 import welbre.ambercraft.module.electrical.ElectricalModuleType;
 import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.network.PayLoadRegister;
@@ -166,6 +168,7 @@ public class AmberCraft {
 
         public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat", HeatModuleType::new);
         public static final DeferredHolder<ModuleType<?>, ElectricalModuleType> ELECTRICAL_MODULE_TYPE = REGISTER.register("electrical", ElectricalModuleType::new);
+        public static final DeferredHolder<ModuleType<?>, ElectricalCableModuleType> ELECTRICAL_CABLE_MODULE_TYPE = REGISTER.register("electrical_cable", ElectricalCableModuleType::new);
     }
 
     public static final class Components {

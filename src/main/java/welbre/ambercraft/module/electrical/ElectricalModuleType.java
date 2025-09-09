@@ -43,6 +43,6 @@ public class ElectricalModuleType implements ModuleType<ElectricalModule> {
 
     @Override
     public ElectricalModule createModule() {
-        return new ElectricalModule(null);
+        return new ElectricalModule();
     }
 }

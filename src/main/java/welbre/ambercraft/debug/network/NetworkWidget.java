@@ -139,11 +139,11 @@ public class NetworkWidget extends AbstractWidget {
         boolean isMaster = active.getMaster() != null;
 
         ArrayList<Component> list = new ArrayList<>(List.of(
+                Component.literal(active.getClass().getSimpleName()).withColor(DyeColor.WHITE.getTextColor()),
                 Component.literal("ID: " + Integer.toHexString(active.ID)).withColor(10494192),
                 Component.literal("IsMaster: " + (isMaster ? "true " : "false")).withColor(10494192),
                 Component.literal("Father: " + (father == null ? "root" : Integer.toHexString(father.ID))).withColor(10494192),
                 Component.literal("Children: ").withColor(10494192)
-
         ));
         NetworkModule[] children = active.getChildren();
         for (NetworkModule module : children)

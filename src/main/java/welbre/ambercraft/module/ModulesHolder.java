@@ -18,7 +18,9 @@ import welbre.ambercraft.AmberCraft;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.IntFunction;
 
 /**
  * Used to represent an object that can contains modules.<br>
@@ -138,14 +140,17 @@ public abstract class ModulesHolder extends BlockEntity {
         try
         {
             Module[] modules = getModules();
-            for (int i = 0; i < modules.length; i++)
+            for (Module value : modules)
             {
-                module = modules[i];
+                module = value;
                 module.onLoad(this);
             }
         }catch (Exception e)
         {
-            AmberCraft.LOGGER.error("Error loading heat module for block entity at {} with ID {}", getBlockPos(), module.getID(), e);
+            if (module == null)
+                AmberCraft.LOGGER.error("Error loading modules holder block entity at {}!", getBlockPos());
+            else
+                AmberCraft.LOGGER.error("Error loading {} for block entity at {} with ID 0x{}", module.getClass().getSimpleName(), getBlockPos(), Integer.toHexString(module.getID()), e);
             level.removeBlock(getBlockPos(), false);
         }
     }
@@ -167,11 +172,12 @@ public abstract class ModulesHolder extends BlockEntity {
 
     public  <T extends Module> @NotNull T[] getModule(Class<T> aclass, Direction direction){
         Module[] modules = direction == null ? getModules() : getModule(direction);
+
         List<T> moduleList = new ArrayList<>();
-        for (Module module : modules) {
+        for (Module module : modules)
             if (aclass.isInstance(module))
-                moduleList.add((T) module);
-        }
-        return moduleList.toArray((T[]) Array.newInstance(aclass,0));
+                moduleList.add(aclass.cast(module));
+
+        return moduleList.toArray(value -> (T[]) Array.newInstance(aclass,value));
     }
 }

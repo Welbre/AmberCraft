@@ -1,23 +1,29 @@
 package welbre.ambercraft.blockentity.electrical;
 
-import kuse.welbre.sim.electrical.elements.VoltageSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.ElectricalBE;
-import welbre.ambercraft.module.electrical.ElectricalModule;
+import welbre.ambercraft.blocks.FreeRotationBlock;
+import welbre.ambercraft.module.Module;
 
 public class VoltageSourceBE extends ElectricalBE {
     public VoltageSourceBE(BlockPos pos, BlockState state) {
         super(AmberCraft.BlockEntity.VOLTAGE_SOURCE_BE.get(), pos, state);
-        this.module = new ElectricalModule(new VoltageSource());
     }
 
-    public VoltageSource getElement()
-    {
-        if (this.module.element instanceof VoltageSource source)
-            return source;
-        else
-            throw new IllegalStateException("Voltage source with a wrong element in the electrical module!");
+    @Override
+    public @NotNull Module[] getModule(Direction direction) {
+        assert getLevel() != null;
+
+        var facing = this.getLevel().getBlockState(this.getBlockPos()).getValue(FreeRotationBlock.FACING);
+        if (facing == direction)
+            return new Module[]{this.getElectricalModule().getPinA()};
+        else if (facing == direction.getOpposite())
+            return new Module[]{this.getElectricalModule().getPinB()};
+
+        return new Module[0];
     }
 }

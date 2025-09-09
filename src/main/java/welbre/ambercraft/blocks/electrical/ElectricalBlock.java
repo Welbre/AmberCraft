@@ -5,11 +5,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.ElectricalBE;
 import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.electrical.ElectricalModule;
 
 public class ElectricalBlock extends Block implements EntityBlock {
@@ -18,13 +21,18 @@ public class ElectricalBlock extends Block implements EntityBlock {
             AmberCraft.ModuleTypes.ELECTRICAL_MODULE_TYPE,
             ElectricalModule::alloc,
             ElectricalModule::free,
-            ElectricalBE::setModule,
-            ElectricalBE::getModule
+            ElectricalBE::setElectricalModule,
+            ElectricalBE::getElectricalModule
     );
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new ElectricalBE(pos,state);
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+        return ModulesHolder::TICK_HELPER;
     }
 
     public ElectricalBlock(Properties p_49795_) {
