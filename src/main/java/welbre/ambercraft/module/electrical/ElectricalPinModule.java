@@ -1,6 +1,7 @@
 package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.Circuit;
+import net.minecraft.core.Direction;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
@@ -11,7 +12,12 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * This class is a warper to the {@link ElectricalPinModule}, don't register this class!<br>
+ * <h5>This class is a wrapper to the {@link ElectricalModule}, don't register this class!</h5>
+ * Only used to handle a connection in an electrical element.
+ * In your BlockEntity that contains an ElectricalModule,
+ * you should return an instance of this class in {@link ModulesHolder#getModule(Direction)} method.
+ * Don't store or serialize this class,
+ * it is only used in the connection / disconnection process to create the electrical elements.<br>
  */
 public class ElectricalPinModule extends NetworkModule {
     private final ElectricalModule element;
@@ -62,7 +68,7 @@ public class ElectricalPinModule extends NetworkModule {
 
     @Override
     public Master createMaster() {
-        return new ElectricalModulesMaster(this);//used only to avoid crash
+        return new ElectricalModulesMaster(this);//used only to avoid to crash
     }
 
     @Override

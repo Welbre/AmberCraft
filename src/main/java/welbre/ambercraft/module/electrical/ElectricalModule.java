@@ -2,6 +2,7 @@ package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.tools.Tools;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,7 +20,18 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * <h5>This module is used to store/handle a {@link Element electricalElement}.</h5>
+ * Notice that {@link ElectricalModule#pinA} and {@link ElectricalModule#pinB} are modules too,
+ * but you <b>NEVER</b> should serialize it! They are used only as a wrapper.<br>
+ * The {@link  ElectricalModule#element} is the most important field, it stores the electricalElement that will be used in the {@link kuse.welbre.sim.electrical.Circuit}.<br><br>
+ * Basically to use this module, you return it in {@link ModulesHolder#getModules()} and <b>NEVER</b> return this module in another place,
+ * and returns the {@link ElectricalModule#pinA} and {@link ElectricalModule#pinB} in {@link ModulesHolder#getModule(Direction)}.
+ * But why? This module doesn't connect directly to others, instead, the use the {@link ElectricalPinModule} as a wrapper, each <code>EPM</code> is designed to connect/disconnect the {@link #element}.
+ * Therefore, if you return this module in the holder, it will connect the module but won't connect the element, setting this module in an illegal state.
+ *
+ * @see ElectricalPinModule
+ */
 public class ElectricalModule extends NetworkModule implements DebugToolInfo {
     private Element element;
     private ElectricalPinModule pinA;
@@ -123,19 +135,17 @@ public class ElectricalModule extends NetworkModule implements DebugToolInfo {
     public void tick(ModulesHolder entity) {
         if (!this.isMaster())
             return;
-        Profiler.get().push("ElectricalModule tick");
-
         master.tick(entity);
-
-        Profiler.get().pop();
     }
 
     @Override
     public List<Component> getInfo() {
         if (element == null)
             return List.of(Component.literal("Element is null!"));
-
         List<Component> list = new ArrayList<>();
+
+        list.add(Component.literal("pinA: " + element.getPinA()));
+        list.add(Component.literal("pinB: " + element.getPinB()));
         list.add(GET_ELEMENT_INFO(element));
 
         return list;
@@ -149,13 +159,12 @@ public class ElectricalModule extends NetworkModule implements DebugToolInfo {
             return Component.empty()
                     .append(element.getClass().getSimpleName()).withColor(DyeColor.PURPLE.getTextColor())//element name
                     .append(Component.literal("(%s)".formatted(Tools.proprietyToSi(element.getProperties(), element.getPropertiesSymbols(), 2))).withColor(DyeColor.GRAY.getTextColor())) // properties
-                    .append(Component.literal("[%s,%s]: ".formatted(element.getPinA() == null ? "gnd" : element.getPinA().address+1, element.getPinB() == null ? "gnd" : element.getPinB().address+1)).withColor(DyeColor.LIGHT_GRAY.getTextColor())) // mna pins
+                    .append(Component.literal("[%s,%s]: ".formatted(element.getPinA() == null ? "gnd" : element.getPinA().address, element.getPinB() == null ? "gnd" : element.getPinB().address)).withColor(DyeColor.LIGHT_GRAY.getTextColor())) // mna pins
                     .append(Component.literal("%.2fv, %.2fA, %.2fW".formatted(element.getVoltageDifference(),element.getCurrent(),element.getPower())).withColor(DyeColor.LIME.getTextColor()));// electrical quantity
     }
 
     @Override
     public <T extends Module> ModuleType<T> getType() {
-        var type = AmberCraft.ModuleTypes.ELECTRICAL_MODULE_TYPE.get();
-        return (ModuleType<T>) type;
+        return (ModuleType<T>) AmberCraft.ModuleTypes.ELECTRICAL_MODULE_TYPE.get();
     }
 }
