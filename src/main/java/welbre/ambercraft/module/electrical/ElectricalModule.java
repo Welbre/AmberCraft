@@ -65,6 +65,16 @@ public class ElectricalModule extends NetworkModule implements DebugToolInfo {
         return pinB;
     }
 
+    @Override
+    public void disconnectAll() {
+        if (element != null)
+        {
+            element.connect(new Circuit.Pin(), new Circuit.Pin());
+            setElement(element);
+        }
+        super.disconnectAll();
+    }
+
     //-------------------------------------------------------------------------------------------------------------------------------//
     //-------------------------------------------------------------Data--------------------------------------------------------------//
     //-------------------------------------------------------------------------------------------------------------------------------//

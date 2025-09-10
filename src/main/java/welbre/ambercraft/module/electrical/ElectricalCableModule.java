@@ -74,22 +74,11 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
 
     @Override
     public void disconnectAll() {
+        List<NetworkModule> list = new ArrayList<>(List.of(children));
         if (father != null)
-        {
-            if (father instanceof ElectricalCableModule ecm)
-                ecm.removeResistorsWithPin(this.pin);
-            else if (father instanceof ElectricalModule em)
-            {
-                int l = resistors.length;
-                removeResistorsWithPin(em.getPinA().getPin());
-                int l0 = resistors.length;
-                removeResistorsWithPin(em.getPinB().getPin());
-                if (l != l0 && l0 != resistors.length)
-                    AmberCraft.LOGGER.warn("Disconnected from both pins at same time, possible fault.", new IllegalStateException("") );
-            }
-        }
+            list.add(father);
 
-        for (NetworkModule child : children)
+        for (NetworkModule child : list)
         {
             //cable -> cable disconnection
             if (child instanceof ElectricalCableModule ecm)

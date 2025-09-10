@@ -67,6 +67,7 @@ public class ElectricalModulesMaster extends Master {
                 mrhs.setValuePointer(new double[mrhs.getRHSAmount()][]);
         }
 
+        //the voltage sources are using the same pins, causing a infinite loop with no resistence and a matrix singular exception
         circuit = new AutoGroundingCircuit();
         circuit.addElement(elements);
 
