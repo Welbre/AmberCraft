@@ -1,14 +1,27 @@
 package welbre.ambercraft.debug.network;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.DebugToolInfo;
 import welbre.ambercraft.module.ModulesHolder;
@@ -61,27 +74,42 @@ public class NetworkWidget extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick)
+    protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         int x = getX();
         int y = getY();
 
         for (var connection : childConnection)
-            connection.render(guiGraphics, mouseX, mouseY, partialTick);
+            connection.render(graphics, mouseX, mouseY, partialTick);
 
-        guiGraphics.fill(x-1, y-1, x + width + 1, y + height + 1, 0xff000000);
-        guiGraphics.fill(x, y, x+ width, y + height, color);
+        graphics.fill(x-1, y-1, x + width + 1, y + height + 1, 0xff000000);
+        graphics.fill(x, y, x+ width, y + height, color);
         if (serverModule.isMaster())
-            guiGraphics.fill(x + width - 5, y + width - 5, x + width, y + height, MASTER_COLOR);
+            graphics.fill(x + width - 5, y + width - 5, x + width, y + height, MASTER_COLOR);
 
-        guiGraphics.drawString(Minecraft.getInstance().font, "@" + Integer.toHexString(serverModule.ID), x, y, 0xFFFFFFFF);
-        guiGraphics.drawString(Minecraft.getInstance().font, worldPosAsString(), x, y+10, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, "@" + Integer.toHexString(serverModule.ID), x, y, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, worldPosAsString(), x, y+10, 0xFFFFFFFF);
 
         if (shouldRenderToolTip)
         {
-            RENDER_TOOL_TIPS(guiGraphics, mouseX, mouseY, partialTick);
-            RENDER_FATHER_ARROW(guiGraphics, mouseX, mouseY, partialTick);
+            RENDER_TOOL_TIPS(graphics, mouseX, mouseY, partialTick);
+            RENDER_FATHER_ARROW(graphics, mouseX, mouseY, partialTick);
         }
+
+        //fixme, at the moment the render is incorrect, they are rendering faces that is behind other faces, and other culling problems
+        graphics.pose().pushPose();
+        var p = graphics.pose();
+        p.translate(x + width/2f - 10,y + height/2f,10);
+        p.rotateAround(new Quaternionf().rotateY((float) Math.toRadians(45)).rotateLocalX((float) Math.toRadians(30)),10f,10f,10f);
+        p.scale(20,20, 20);
+
+        graphics.drawSpecial(drawer -> {
+            BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(holder.getBlockState());
+            ModelData data = model.getModelData(holder.getLevel(), holder.getBlockPos(), holder.getBlockState(), holder.getModelData());
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(holder.getBlockState(), p, drawer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, data, null);
+        });
+
+        graphics.pose().popPose();
     }
 
     @Override

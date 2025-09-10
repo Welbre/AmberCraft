@@ -2,6 +2,10 @@ package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.Circuit;
 import kuse.welbre.sim.electrical.abstractt.Element;
+import kuse.welbre.sim.electrical.abstractt.Element3Pin;
+import kuse.welbre.sim.electrical.abstractt.MultipleRHSElement;
+import kuse.welbre.sim.electrical.abstractt.RHSElement;
+import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.AmberCraft;
@@ -11,7 +15,7 @@ import welbre.ambercraft.module.network.NetworkModule;
 import java.util.*;
 
 public class ElectricalModulesMaster extends Master {
-    public transient Circuit circuit;
+    public transient AutoGroundingCircuit circuit;
 
     public ElectricalModulesMaster(NetworkModule master) {
         super(master);
@@ -47,7 +51,23 @@ public class ElectricalModulesMaster extends Master {
             queue.addAll(Arrays.asList(next.getChildren()));
         }
 
-        circuit = new Circuit();
+        //clear up all preview information
+        for (Element element : elements)
+        {
+            if (element.getPinA() != null)
+                element.getPinA().P_voltage = null;
+            if (element.getPinB() != null)
+                element.getPinB().P_voltage = null;
+            if (element instanceof Element3Pin e3p)
+                if (e3p.getPinC() != null)
+                    e3p.getPinC().P_voltage = null;
+            if (element instanceof RHSElement rhsElement)
+                rhsElement.setValuePointer(null);
+            else if (element instanceof MultipleRHSElement mrhs)
+                mrhs.setValuePointer(new double[mrhs.getRHSAmount()][]);
+        }
+
+        circuit = new AutoGroundingCircuit();
         circuit.addElement(elements);
 
         try
@@ -62,6 +82,92 @@ public class ElectricalModulesMaster extends Master {
 
         Profiler.get().pop();
         return true;
+    }
+
+    /**
+     * The main go of this class is when the circuit is checking for inconsistency in {@link Circuit#clean()}, instead of throw an exception
+     * in the case that only 1 pin of the element is connected, they now create a new high resistence resistor connected to the pin and the ground,
+     * therefore, the circuit can create the matrix, with minimus impact on the circuit.<br>
+     *
+     * <div color="red">maybe this isn't the best solution, need to check if the MNA can solve the circuit with non-connected pins</div>
+     */
+    //todo check the condiction in the documentation.
+    public static class AutoGroundingCircuit extends Circuit
+    {
+        @Override
+        protected void checkInconsistencies() {
+            //initiation
+            Pin gnd = new Pin();
+            HashMap<Pin, List<Element>> elements_per_pin = new HashMap<>();
+
+            //All pins to map
+            elements_per_pin.put(gnd, new ArrayList<>());
+            for (Pin pin : this.analyseResult.pins)
+                elements_per_pin.put(pin, new ArrayList<>());
+
+            //Add all elements to correspondent pins.
+            for (Element element : getElements())
+                for (Pin pin : element.getPins())
+                    elements_per_pin.get(pin == null ? gnd : pin).add(element);
+
+            //ungrounded check
+            //the ground is extremely important to the solver, if isn't presente set the pin with more elements to be the ground.
+            if (elements_per_pin.get(gnd).isEmpty())//check if the ground is empty
+            {
+                Collection<List<Element>> values = elements_per_pin.values();
+                values = values.stream().sorted((a,b) -> Integer.compare(b.size(), a.size())).toList();
+
+                final Circuit.Pin controlPin = new Pin();
+                List<Element> biggest = values.iterator().next();//<- is the biggest because the values is sorted above.
+                Circuit.Pin biggestPin = controlPin;
+
+                for (Map.Entry<Pin, List<Element>> entry : elements_per_pin.entrySet())
+                {
+                    if (entry.getValue() == biggest)
+                    {
+                        biggestPin = entry.getKey();
+                        break;
+                    }
+                }
+
+                if (biggestPin == controlPin)
+                    throw new IllegalStateException("Biggest pin can't be founded");
+
+                //set the elements pin to the ground
+                biggestPin.address = gnd.address;
+                elements_per_pin.remove(gnd);
+                gnd = biggestPin;
+            }
+
+            for (Map.Entry<Pin, List<Element>> entry : elements_per_pin.entrySet())
+            {
+                //is connected only to one element.
+                if (entry.getValue().size() == 1 && entry.getKey() != gnd)
+                {
+                    Resistor resistor = new Resistor(entry.getKey(), gnd, 10e9);//1 gigaOhm
+                    entry.getValue().add(resistor);
+                    elements_per_pin.get(gnd).add(resistor);
+                    addElement(resistor);
+                }
+            }
+
+            //Error check
+            for (Map.Entry<Pin, List<Element>> entry : elements_per_pin.entrySet()) {
+                Pin key = entry.getKey(); List<Element> list = entry.getValue();
+
+                if (entry.getValue().isEmpty())
+                    throw new IllegalStateException(String.format("%s have no connections! possible fault in circuit formation.", key));
+
+                if (entry.getValue().size() == 1) {
+                    Element element = list.getFirst();
+                    throw new IllegalStateException(String.format("%s[%s,%s] is connected to %s without a path, possible fault in circuit formation!",
+                            element.getClass().getSimpleName(),
+                            element.getPinA() == null ? "gnd" : element.getPinA().address,
+                            element.getPinB() == null ? "gnd" : element.getPinB().address,
+                            key));
+                }
+            }
+        }
     }
 
     @Override

@@ -62,7 +62,8 @@ public class CentredCableBakedModel implements IDynamicBakedModel {
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
         initTextures();
         float radius;
-        if (state == null) radius = 0.4f;
+        if (state == null)
+            radius = 0.4f;
         else
         {
             radius = extraData.get(HeatConductorBlock.RADIUS_PROPERTY);
