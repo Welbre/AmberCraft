@@ -5,7 +5,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.ElectricalBE;
 import welbre.ambercraft.blocks.FreeRotationBlock;
 import welbre.ambercraft.module.Module;
 
@@ -20,9 +19,9 @@ public class VoltageSourceBE extends ElectricalBE {
 
         var facing = this.getLevel().getBlockState(this.getBlockPos()).getValue(FreeRotationBlock.FACING);
         if (facing == direction)
-            return new Module[]{this.getElectricalModule().getPinA()};
+            return new Module[]{this.getElectricalModule().getTerminalA()};
         else if (facing == direction.getOpposite())
-            return new Module[]{this.getElectricalModule().getPinB()};
+            return new Module[]{this.getElectricalModule().getTerminalB()};
 
         return new Module[0];
     }

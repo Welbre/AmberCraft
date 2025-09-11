@@ -43,31 +43,16 @@ public class ElectricalModulesMaster extends Master {
             if (visited.contains(next)) continue;
             visited.add(next);
 
-            if (next instanceof ElectricalModule em)
-                elements.add(em.getElement());
-            else if (next instanceof ElectricalCableModule ecm)
-                elements.addAll(Arrays.asList(ecm.getResistors()));
+            if (next instanceof ElectricalTerminalModule)
+                throw new IllegalStateException("ElectricalTerminalModule is not a valid module for an ElectricalModuleMaster!");
+
+            if (next instanceof ElectricalModule eem)//add all elements
+                elements.addAll(Arrays.asList(eem.compile()));
 
             queue.addAll(Arrays.asList(next.getChildren()));
         }
 
-        //clear up all preview information
-        for (Element element : elements)
-        {
-            if (element.getPinA() != null)
-                element.getPinA().P_voltage = null;
-            if (element.getPinB() != null)
-                element.getPinB().P_voltage = null;
-            if (element instanceof Element3Pin e3p)
-                if (e3p.getPinC() != null)
-                    e3p.getPinC().P_voltage = null;
-            if (element instanceof RHSElement rhsElement)
-                rhsElement.setValuePointer(null);
-            else if (element instanceof MultipleRHSElement mrhs)
-                mrhs.setValuePointer(new double[mrhs.getRHSAmount()][]);
-        }
-
-        //the voltage sources are using the same pins, causing a infinite loop with no resistence and a matrix singular exception
+        //the voltage sources are using the same pins, causing an infinite loop with no resistence and a matrix singular exception
         circuit = new AutoGroundingCircuit();
         circuit.addElement(elements);
 

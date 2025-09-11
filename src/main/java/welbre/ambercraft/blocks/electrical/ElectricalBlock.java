@@ -10,17 +10,17 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.blockentity.ElectricalBE;
+import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.electrical.ElectricalModule;
+import welbre.ambercraft.module.electrical.ElectricalElementModule;
 
 public class ElectricalBlock extends Block implements EntityBlock {
-    public static final ModuleFactory<ElectricalModule, ElectricalBE> factory = new ModuleFactory<>(
+    public static final ModuleFactory<ElectricalElementModule, ElectricalBE> factory = new ModuleFactory<>(
             ElectricalBE.class,
             AmberCraft.ModuleTypes.ELECTRICAL_MODULE_TYPE,
-            ElectricalModule::alloc,
-            ElectricalModule::free,
+            ElectricalElementModule::alloc,
+            ElectricalElementModule::free,
             ElectricalBE::setElectricalModule,
             ElectricalBE::getElectricalModule
     );

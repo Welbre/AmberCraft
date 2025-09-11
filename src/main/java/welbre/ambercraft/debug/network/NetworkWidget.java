@@ -1,23 +1,15 @@
 package welbre.ambercraft.debug.network;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +20,6 @@ import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class NetworkWidget extends AbstractWidget {
     public static final int MASTER_COLOR = 0xFF84b067;
@@ -36,6 +27,7 @@ public class NetworkWidget extends AbstractWidget {
     public static final int[] DEFAULT_EXTRA_COLORS = {0XFF7D0D7D,0XFFF8D57E,0XFF336B29,0XFFFFBFD4,0XFFE1C03C,0XFFE0ACA2,0XFF9EA35A};
     public static final int MAIN_COLOR = 0XFF7F00FF;
     public static final int ERROR_COLOR = 0xFFDD0A0A;
+    public static final int WARN_COLOR = 0xFFFFCC00;
     public static final int CHILDREN_CONNECTION_COLOR = 0XFF7D86D1;
     public static final int FATHER_CONNECTION_COLOR = 0XFFCB200F;
     public static final int DEFAULT_SIZE = 60;
@@ -52,6 +44,10 @@ public class NetworkWidget extends AbstractWidget {
     /// If this module is the block clicked by the network viewer tool.
     public final boolean isMain;
     public boolean shouldRenderToolTip = false;
+    /// A list of warning showed in the tooltip.
+    public final ArrayList<String> warn = new ArrayList<>();
+    /// A list of errors showed in the tooltip.
+    public final ArrayList<String> errors = new ArrayList<>();
 
     //aesthetics
     public Animation animation;
@@ -133,10 +129,26 @@ public class NetworkWidget extends AbstractWidget {
         return "%d,%d,%d".formatted(worldPos.getX(), worldPos.getY(), worldPos.getZ());
     }
 
-    public void warn(Exception exception)
+    public void crash(Exception exception)
     {
         this.color = ERROR_COLOR;
+        AmberCraft.LOGGER.error(exception.getMessage(), exception);
+        errors.add(exception.getMessage());
+    }
+
+    public void warn(Exception exception)
+    {
+        this.color = errors.isEmpty() ? WARN_COLOR : ERROR_COLOR;//priority erros.
         AmberCraft.LOGGER.warn(exception.getMessage(), exception);
+        warn.add(exception.getMessage());
+    }
+
+    public void checkConsistence()
+    {
+        if (serverModule.getChildren().length != childConnection.length)
+            warn(new IllegalStateException("The number of children doesn't match the number of connections."));
+        if (serverModule.getFather() != null && this.father == null)
+            warn(new IllegalStateException("The widget not founded!"));
     }
 
     public void resolveCollision(NetworkWidget widget, Scheduler scheduler) {
@@ -166,13 +178,17 @@ public class NetworkWidget extends AbstractWidget {
         NetworkModule father = active.getFather();
         boolean isMaster = active.getMaster() != null;
 
-        ArrayList<Component> list = new ArrayList<>(List.of(
-                Component.literal(active.getClass().getSimpleName()).withColor(DyeColor.WHITE.getTextColor()),
-                Component.literal("ID: " + Integer.toHexString(active.ID)).withColor(10494192),
-                Component.literal("IsMaster: " + (isMaster ? "true " : "false")).withColor(10494192),
-                Component.literal("Father: " + (father == null ? "root" : Integer.toHexString(father.ID))).withColor(10494192),
-                Component.literal("Children: ").withColor(10494192)
-        ));
+        ArrayList<Component> list = new ArrayList<>();
+        list.add(Component.literal(active.getClass().getSimpleName()).withColor(DyeColor.WHITE.getTextColor()));
+        for (var w : errors)
+            list.add(Component.literal(w).withColor(NetworkWidget.ERROR_COLOR));
+        for (var w : warn)
+            list.add(Component.literal(w).withColor(NetworkWidget.WARN_COLOR));
+        list.add(Component.literal("ID: " + Integer.toHexString(active.ID)).withColor(10494192));
+        list.add(Component.literal("IsMaster: " + (isMaster ? "true " : "false")).withColor(10494192));
+        list.add(Component.literal("Father: " + (father == null ? "root" : Integer.toHexString(father.ID))).withColor(10494192));
+        list.add(Component.literal("Children: ").withColor(10494192));
+
         NetworkModule[] children = active.getChildren();
         for (NetworkModule module : children)
             list.add(Component.literal("-->Child: " + Integer.toHexString(module.ID)).withColor(10494192));

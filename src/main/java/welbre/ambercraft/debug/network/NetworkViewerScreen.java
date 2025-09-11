@@ -30,6 +30,7 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.network.NetworkViewerScreenPayLoad;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 //todo render the block in the screen based on the modulesholder
@@ -137,7 +138,7 @@ public class NetworkViewerScreen extends Screen {
         fixedRenderableWidget.forEach(widget -> widget.mouseClicked(mouseX, mouseY, button));
         var mouse = this.TransformGlobalMouseToLocal(mouseX, mouseY);
 
-        if (button == 0)
+        if (button == 0)//right
         {
             for (NetworkWidget widget : getVisibleWidgets())
             {
@@ -148,8 +149,28 @@ public class NetworkViewerScreen extends Screen {
                     break;
                 }
             }
-        }
-        if (button == 2)
+        } else if (button == 1)//left
+        {
+            for (NetworkWidget widget : getVisibleWidgets())
+            {
+                if (widget.visible && widget.isMouseOver(mouse.x, mouse.y))
+                {
+                    //todo remove this
+                    try
+                    {
+                        Method setRoot = NetworkModule.class.getDeclaredMethod("setRoot");
+                        setRoot.setAccessible(true);
+                        setRoot.invoke(widget.serverModule);
+                        init();
+
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        } else if (button == 2)
             rotationPoint = mouse;
 
         return super.mouseClicked(mouse.x, mouse.y, button);

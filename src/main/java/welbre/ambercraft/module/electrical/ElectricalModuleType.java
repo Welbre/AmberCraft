@@ -15,34 +15,34 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.module.ModuleType;
 
-public class ElectricalModuleType implements ModuleType<ElectricalModule> {
+public class ElectricalModuleType implements ModuleType<ElectricalElementModule> {
     @Override
-    public InteractionResult useWithoutItem(ElectricalModule module, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    public InteractionResult useWithoutItem(ElectricalElementModule module, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         return InteractionResult.PASS;
     }
 
     @Override
-    public InteractionResult useItemOn(ElectricalModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult useItemOn(ElectricalElementModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         return InteractionResult.PASS;
     }
 
     @Override
-    public void stepOn(ElectricalModule module, Level level, BlockPos pos, BlockState state, Entity entity) {
+    public void stepOn(ElectricalElementModule module, Level level, BlockPos pos, BlockState state, Entity entity) {
 
     }
 
     @Override
-    public void neighborChanged(ElectricalModule module, BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
+    public void neighborChanged(ElectricalElementModule module, BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
 
     }
 
     @Override
-    public void onNeighborChange(ElectricalModule module, BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+    public void onNeighborChange(ElectricalElementModule module, BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
 
     }
 
     @Override
-    public ElectricalModule createModule() {
-        return new ElectricalModule();
+    public ElectricalElementModule createModule() {
+        return new ElectricalElementModule();
     }
 }

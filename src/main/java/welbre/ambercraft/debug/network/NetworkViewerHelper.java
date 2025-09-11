@@ -30,6 +30,7 @@ public class NetworkViewerHelper {
         {
             INIT_CHILD_CONNECTION(widget, widgets);
             SET_FATHER(widget, widgets);
+            widget.checkConsistence();
         }
 
         return widgets;
@@ -113,14 +114,19 @@ public class NetworkViewerHelper {
 
         for (NetworkModule module : widget.serverModule.getChildren())
         {
+            boolean error = true;
             for (NetworkWidget networkWidget : widgets)
             {
                 if (networkWidget.serverModule.ID == module.ID)
                 {
                     children.add(networkWidget);
+                    error = false;
                     break;
                 }
             }
+            if (error)
+                widget.crash(new IllegalStateException(("Fail while search is module %X, child %X not fonded in the widget list," +
+                        " possible fault in network formation!").formatted( widget.serverModule.ID, module.ID)));
         }
 
         Connection[] connections = new Connection[children.size()];

@@ -1,13 +1,12 @@
 package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.Circuit;
+import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.sim.electrical.elements.Resistor;
 import kuse.welbre.tools.Tools;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.profiling.Profiler;
-import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.DebugToolInfo;
 import welbre.ambercraft.module.Module;
@@ -24,14 +23,15 @@ import java.util.List;
  * <h5>This module is used to create electrical cables.</h5>
  * <p>The cable uses a simple model, only a resistor connected in series between 2 pins, without capacitance, ground fault, and other real world cables effects.</p>
  * <p>The resistors are created on demand, when some method calls {@link #connect(NetworkModule)} the super method is called connecting both networkModules and creating a new resistor
- * between the {@link #pin} and the other pin.</p>
+ * between the {@link #terminal} and the other pin.</p>
  * <p>The {@link #resistence} is the cable resistence in ohm, the value in used to create the resistor.<br>The resistence in a cable->cable connection is the average resistence
  * of the cables, and a cable->pin connection uses half of the cable resistence. <i>A simple way to visualize this is, "the distance between the cable center and the border is 1/2 block",
  * so a cable-cable is half cable + half cable or (r0 + r1) / 2, and the cable-pin is a cable that goes from the center to the boarder or (r) / 2</i></p>
  */
-public class ElectricalCableModule extends NetworkModule implements DebugToolInfo {
-    public Circuit.Pin pin = new Circuit.Pin();
-    private @NotNull Resistor[] resistors = {};
+public class ElectricalCableModule extends ElectricalModule implements DebugToolInfo {
+    protected Circuit.Pin[] terminal = {new Circuit.Pin()};
+    protected Circuit.Pin[][] terminalEnd = {};
+    protected Resistor[] resistors = {};
     /// Resistence in ohms.
     /// @see ElectricalCableModule
     private double resistence;
@@ -48,11 +48,11 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
     public boolean connect(NetworkModule target) {
         //cable -> pin connection
         //creates a resistor with half-cable resistence
-        if (target instanceof ElectricalPinModule epm)
+        if (target instanceof ElectricalTerminalModule epm)
         {
-            if (super.connect(epm.getElectricalModule()))//connect to the elementModule instead of the pin!
+            if (super.connect(epm.electrical))//connect to the elementModule instead of the pin!
             {
-                addResistor(new Resistor(pin, epm.getPin(), resistence / 2));//only create a new resistor if a new connection has been created.
+                addResistor(epm.terminal, resistence / 2);//only create a new resistor if a new connection has been created.
                 return true;
             }
             return false;
@@ -63,7 +63,7 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
         {
             if (super.connect(target))
             {
-                addResistor(new Resistor(pin, ecm.pin, (resistence + ecm.resistence) / 2));
+                addResistor(ecm.terminal, (resistence + ecm.resistence) / 2);
                 return true;
             }
             return false;
@@ -83,7 +83,7 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
             //cable -> cable disconnection
             if (child instanceof ElectricalCableModule ecm)
             {
-                ecm.removeResistorsWithPin(this.pin);
+                ecm.removeResistorsWithPin(this.terminal);
             }
             //element -> cable disconnection
             //notice that in the connection fase, an ElectricalPinModule is connected, but they are a wrapper
@@ -91,18 +91,37 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
             //so we try to disconnect both pins, but it isn't a good idea because the null represents the ground and can be connected in
             //any other resistor, causing a remotion of random resistors. at this point we can't prevent this from happening,
             //but throw an exception to notify the devs and help with the debug.
-            else if (child instanceof ElectricalModule em)
+            else if (child instanceof ElectricalElementModule em)
             {
                 int l = resistors.length;
-                removeResistorsWithPin(em.getPinA().getPin());
+                removeResistorsWithPin(em.getTerminalA().terminal);
                 int l0 = resistors.length;
-                removeResistorsWithPin(em.getPinB().getPin());
+                removeResistorsWithPin(em.getTerminalB().terminal);
                 if (l != l0 && l0 != resistors.length)
                     AmberCraft.LOGGER.warn("Disconnected from both pins at same time, possible fault.", new IllegalStateException("") );
             }
         }
         resistors = new Resistor[0];
+        terminalEnd = new Circuit.Pin[0][0];
         super.disconnectAll();
+    }
+
+    @Override
+    public void alloc() {
+
+    }
+
+    @Override
+    public Element[] compile() {
+        for (int i = 0; i < terminalEnd.length; i++)
+            resistors[i].connect(terminal[0], terminalEnd[i][0]);
+
+        return resistors;
+    }
+
+    @Override
+    public void free() {
+
     }
 
     @Override
@@ -129,70 +148,46 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
         master.tick(entity);
     }
 
-    protected void addResistor(Resistor r)
+    protected void addResistor(Circuit.Pin[] end, double resistence)
     {
         resistors = Arrays.copyOf(resistors, resistors.length + 1);
-        resistors[resistors.length - 1] = r;
+        resistors[resistors.length - 1] = new Resistor(resistence);
+        terminalEnd = Arrays.copyOf(terminalEnd, terminalEnd.length + 1);
+        terminalEnd[terminalEnd.length - 1] = end;
     }
 
     /// looks in the resistor array and remove all resistors that are connected to <code>ptr</code>.
     /// @param ptr pin to remove
-    protected void removeResistorsWithPin(Circuit.Pin ptr)
+    protected void removeResistorsWithPin(Circuit.Pin[] ptr)
     {
-        boolean[] toRemove = new boolean[resistors.length];
-        for (int i = 0; i < resistors.length; i++)
-        {
-            final Resistor r = resistors[i];
-            //pin A check
-            if (r.getPinA() == null)//A is ground
-            {
-                if (ptr == null)//and to remove is ground too
-                {
-                    toRemove[i] = true;
-                    continue;
-                }
-            }
-            else//A isn't the ground, so check by address
-            {
-                if (ptr != null)//if the to remove isn't ground too
-                    if (r.getPinA().address == ptr.address)//if is th same address
-                    {
-                        toRemove[i] = true;
-                        continue;
-                    }
-            }
+        List<Integer> trm = new ArrayList<>();
+        for (int i = 0; i < terminalEnd.length; i++)//mark all resistors to be removed
+            if (terminalEnd[i] == ptr)
+                trm.add(i);
 
-            //pin B check
-            if (r.getPinB() == null)//B is ground
-            {
-                if (ptr == null)//if to remove is ground too
-                    toRemove[i] = true;
-            }
-            else // B isn't ground
-            {
-                if (ptr != null)//ptr isn't ground too
-                    if (r.getPinB().address == ptr.address)
-                        toRemove[i] = true;
-            }
-        }
-        int length = resistors.length;
-        for (boolean b : toRemove)
-            if (b)
-                length--;
-
-        if (length == 0)//optimization only
+        if (trm.isEmpty())
+            return;
+        final int length = terminalEnd.length - trm.size();
+        if (length == 0)
         {
+            terminalEnd = new Circuit.Pin[0][0];{}
             resistors = new Resistor[0];
             return;
         }
-
-        Resistor[] newOne = new Resistor[length];
-        int index = 0;
-        for (int i = 0; i < toRemove.length; i++)
-            if (!toRemove[i])
-                newOne[index++] = resistors[i];
-
-        resistors = newOne;
+        Circuit.Pin[][] temp0 = new Circuit.Pin[length][1];
+        Resistor[] temp1 = new Resistor[length];
+        int j = 0;
+        for (int i = 0; i < terminalEnd.length; i++)
+        {
+            if (!trm.contains(i))
+            {
+                temp0[j] = terminalEnd[i];
+                temp1[j] = resistors[i];
+                j++;
+            }
+        }
+        terminalEnd = temp0;
+        resistors = temp1;
     }
 
     /// Returns a copy of the resistors
@@ -204,13 +199,13 @@ public class ElectricalCableModule extends NetworkModule implements DebugToolInf
     public List<Component> getInfo() {
         List<Component> list = new ArrayList<>();
         list.add(Component.literal("Pin: %s, Voltage: %s".formatted(
-                pin.address,
-                pin.P_voltage != null ? Tools.proprietyToSi(pin.P_voltage[0], "V") : "NaN"
+                terminal[0].address,
+                terminal[0].P_voltage != null ? Tools.proprietyToSi(terminal[0].P_voltage[0], "V") : "NaN"
         )));
         list.add(Component.literal("Resistence: " + Tools.proprietyToSi(resistence, "Ω")));
 
         for (Resistor r : resistors)
-            list.add(ElectricalModule.GET_ELEMENT_INFO(r));
+            list.add(ElectricalElementModule.GET_ELEMENT_INFO(r));
 
         return list;
     }

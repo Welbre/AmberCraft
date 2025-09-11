@@ -1,7 +1,6 @@
-package welbre.ambercraft.blockentity;
+package welbre.ambercraft.blockentity.electrical;
 
 import kuse.welbre.sim.electrical.abstractt.Element;
-import kuse.welbre.sim.electrical.elements.VoltageSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -10,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.electrical.ElectricalModule;
+import welbre.ambercraft.module.electrical.ElectricalElementModule;
 
 public class ElectricalBE extends ModulesHolder {
-    public ElectricalModule electricalModule = new ElectricalModule();
+    public ElectricalElementModule electricalModule = new ElectricalElementModule();
 
     public ElectricalBE(BlockEntityType<?> type, BlockPos pos, BlockState blockState)
     {
@@ -54,11 +53,11 @@ public class ElectricalBE extends ModulesHolder {
         return new Module[0];
     }
 
-    public ElectricalModule getElectricalModule() {
+    public ElectricalElementModule getElectricalModule() {
         return electricalModule;
     }
 
-    public void setElectricalModule(ElectricalModule electricalModule) {
+    public void setElectricalModule(ElectricalElementModule electricalModule) {
         this.electricalModule = electricalModule;
     }
 }
