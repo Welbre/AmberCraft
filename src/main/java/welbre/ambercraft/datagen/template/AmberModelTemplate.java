@@ -15,11 +15,12 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import net.neoforged.neoforge.client.model.generators.template.FaceRotation;
 import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.blocks.FreeRotationBlock;
 
 import static welbre.ambercraft.AmberCraft.MOD_ID;
 
 public class AmberModelTemplate {
-    public static final EnumProperty<Rotation> ROTATION = EnumProperty.create("rotation", Rotation.class);
+    public static final EnumProperty<Rotation> ROTATION = FreeRotationBlock.ROTATION;
     public static final TextureSlot connection0 = TextureSlot.create("c0");
     public static final TextureSlot connection1 = TextureSlot.create("c1");
     public static final TextureSlot base = TextureSlot.create("base");

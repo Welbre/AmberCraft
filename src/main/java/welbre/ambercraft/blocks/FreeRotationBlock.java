@@ -24,7 +24,7 @@ import welbre.ambercraft.datagen.template.AmberModelTemplate;
  */
 public class FreeRotationBlock extends Block {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
-    public static final EnumProperty<Rotation> ROTATION = AmberModelTemplate.ROTATION;
+    public static final EnumProperty<Rotation> ROTATION = EnumProperty.create("rotation", Rotation.class);
 
     public FreeRotationBlock(Properties p_49795_) {
         super(p_49795_);
