@@ -86,14 +86,10 @@ public class HeatFurnaceBlock extends HeatBlock {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (!state.is(oldState.getBlock()))
-            factory.create(level,pos);
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock()))
-            factory.destroy(level, pos);
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 

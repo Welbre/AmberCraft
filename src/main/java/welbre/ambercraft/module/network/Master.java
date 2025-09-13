@@ -17,7 +17,7 @@ public abstract class Master implements Serializable {
         this.master = master;
     }
 
-    /// compile the master using the NetworkModule obs the module is the master!.
+    /// compile the master using the NetworkModule observation the module is the master!.
     /// @return if the compilation was a success.
     protected abstract boolean compile(NetworkModule master, boolean isClientSide);
 

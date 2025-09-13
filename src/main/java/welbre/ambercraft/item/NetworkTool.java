@@ -11,7 +11,7 @@ import welbre.ambercraft.network.NetworkViewerScreenPayLoad;
 
 public class NetworkTool extends Item {
     public NetworkTool(Properties properties) {
-        super(properties);
+        super(properties.stacksTo(1));
     }
 
     @Override

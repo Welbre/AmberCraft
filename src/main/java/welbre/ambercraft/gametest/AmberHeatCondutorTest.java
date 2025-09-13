@@ -65,7 +65,9 @@ public class AmberHeatCondutorTest {
         final double temperature = heatSinkBE.getHeatModule().getHeatNode().getTemperature();
         helper.setBlock(breakPos, Blocks.AIR);
         helper.succeedWhen(() -> {
-            if (heatSinkBE.getHeatModule().getHeatNode().getTemperature() < temperature * 0.95f)
+            if (Math.abs(heatSinkBE.getHeatModule().getHeatNode().getTemperature()) > 10_000)
+                helper.fail("The temperature is too high!");
+            else if (heatSinkBE.getHeatModule().getHeatNode().getTemperature() < temperature * 0.95f)
                 helper.succeed();
             throw new GameTestAssertException("");
         });
@@ -130,8 +132,11 @@ public class AmberHeatCondutorTest {
 
         //if the temperature gets at 95% of the original and reach the 100% again, success.
         helper.succeedWhen(() -> {
-            if (reachCoolDown.get() && heatSinkBE.getHeatModule().getHeatNode().getTemperature() >= temperature * 0.95)
+            if (Math.abs(heatSinkBE.getHeatModule().getHeatNode().getTemperature()) > 10_000)
+                helper.fail("The temperature is too high!");
+            else if (reachCoolDown.get() && heatSinkBE.getHeatModule().getHeatNode().getTemperature() >= temperature * 0.95)
                 helper.succeed();
+
             throw new GameTestAssertException("");
         });
     }
@@ -148,7 +153,7 @@ public class AmberHeatCondutorTest {
     public static void heat_conductor_short_cyclical_connection(GameTestHelper helper)
     {
         for (int i = 0; i < 30; i++)
-            helper.runAfterDelay(i * 3, () -> testCyclicalConnection(helper, heat_conductor_short_cyclical_connection_list, 4));
+            helper.runAfterDelay(i * 3, () -> testCyclicalConnection(helper, heat_conductor_short_cyclical_connection_list, 8));
 
         helper.runAfterDelay(30*3+1, () -> setCyclicalConnectionBlocks(helper, heat_conductor_short_cyclical_connection_list, AmberCraft.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()) );
         helper.runAfterDelay(30*3+2, helper::succeed);
@@ -159,7 +164,7 @@ public class AmberHeatCondutorTest {
     public static void heat_conductor_long_cyclical_connection(GameTestHelper helper)
     {
         for (int i = 0; i < 30; i++)
-            helper.runAfterDelay(i * 3, () -> testCyclicalConnection(helper, heat_conductor_long_cyclical_connection_list,8));
+            helper.runAfterDelay(i * 3, () -> testCyclicalConnection(helper, heat_conductor_long_cyclical_connection_list,16));
 
         helper.runAfterDelay(30*3+1, () -> setCyclicalConnectionBlocks(helper, heat_conductor_long_cyclical_connection_list, AmberCraft.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()) );
         helper.runAfterDelay(30*3+2, helper::succeed);
@@ -176,7 +181,7 @@ public class AmberHeatCondutorTest {
                     list.add(new BlockPos(x,y,z));
 
         for (int i = 0; i < 30; i++)
-            helper.runAfterDelay(i * 3, () -> testCyclicalConnection(helper,list,235));
+            helper.runAfterDelay(i * 3, () -> testCyclicalConnection(helper,list,470));
 
         helper.runAfterDelay(30*3+1, () -> setCyclicalConnectionBlocks(helper, list, AmberCraft.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get()) );
         helper.runAfterDelay(30*3+2, helper::succeed);
@@ -190,9 +195,10 @@ public class AmberHeatCondutorTest {
             HeatBE conductor = helper.getBlockEntity(pos);
             HeatModule module = conductor.getHeatModule();
 
-            var exception = module.checkInconsistencies();
-            if (exception != null)
-                helper.fail(exception.getMessage());
+            var exceptions = module.checkInconsistencies();
+            if (exceptions != null)
+                for (Exception e : exceptions)
+                    helper.fail(e.getMessage());
 
             if (root != null)
             {
@@ -203,24 +209,12 @@ public class AmberHeatCondutorTest {
                 root = (HeatModule) module.getRoot();
         }
 
+        assert root != null;
         //compute the connection amount.
         int connections = 0;
-        List<NetworkModule> visited = new ArrayList<>();
-        Queue<NetworkModule> queue = new ArrayDeque<>(List.of(root));
+        for (var m : root)
+            connections += m.getNeighbors().length;
 
-        while (!queue.isEmpty())
-        {
-            var next = queue.poll();
-            for (NetworkModule child : next.getChildren())
-            {
-                connections++;
-                if (!visited.contains(child))
-                {
-                    queue.add(child);
-                    visited.add(child);
-                }
-            }
-        }
         if (connections != expected)
             helper.fail("Expecting %d connections, but got %d!".formatted(expected,connections));
 
@@ -230,7 +224,8 @@ public class AmberHeatCondutorTest {
                 HeatBE conductor = helper.getBlockEntity(pos);//check if the block entity still there.
                 var error = conductor.getHeatModule().checkInconsistencies();
                 if (error != null)
-                    helper.fail(error.getMessage(), conductor.getBlockPos());
+                    for (Exception e : error)
+                        helper.fail(e.getMessage(), conductor.getBlockPos());
             }
 
             setCyclicalConnectionBlocks(helper, posList, Blocks.AIR);

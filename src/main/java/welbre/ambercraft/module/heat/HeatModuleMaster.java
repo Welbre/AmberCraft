@@ -1,17 +1,15 @@
 package welbre.ambercraft.module.heat;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.sim.heat.HeatNode;
 
-import java.io.Serializable;
 import java.util.*;
 
 public class HeatModuleMaster extends Master {
-    transient Connections connections;
+    transient Link[] links = new Link[0];
+    transient HeatNode[] nodes = new HeatNode[0];
 
     public HeatModuleMaster(NetworkModule networkModule) {
         super(networkModule);
@@ -19,116 +17,67 @@ public class HeatModuleMaster extends Master {
 
     @Override
     public boolean compile(NetworkModule master, boolean isClientSide) {
-        int count = 0;
-        ArrayList<HeatModule> visited = new ArrayList<>();
-        Stack<HeatModule> stack = new Stack<>();
-        LinkBuilder builder = new LinkBuilder();
+        if (isClientSide)
+            return true;//if is the client just skip.
+        if (! (master instanceof HeatModule) )
+            throw new IllegalStateException("HeatModuleMaster can only be used with HeatModule!");
 
-        stack.push((HeatModule) this.master);
+        Queue<HeatModule> queue = new ArrayDeque<>(List.of((HeatModule) master));
+        List<Link> links = new ArrayList<>();
 
-        while (!stack.isEmpty())
+        while (true)
         {
-            HeatModule next = stack.pop();
-            builder.addNode(next.node);
+            HeatModule next = queue.poll();
+            if (next == null) break;
 
-            for (NetworkModule child : next.getChildren())
+            for (NetworkModule neighbor : next.getNeighbors())
             {
-                if (child instanceof HeatModule heatChild)
+                if (neighbor instanceof HeatModule heatModule)
                 {
-                    builder.addLink(next.node, heatChild.node);
-                    if (visited.contains(child))
+                    Link link = new Link(next.getHeatNode(), heatModule.getHeatNode());
+                    if (links.contains(link))
                         continue;
-                    visited.add(heatChild);
-                    stack.push(heatChild);
+                    links.add(link);
+                    if (heatModule.getNeighborCount() > 1)//if is 0 don't need to add, and if is 1, is only connected to the nxt, therefore, don't need to add either.
+                        if (!queue.contains(heatModule))
+                            queue.add(heatModule);
                 }
-            }
-
-            if (count++ > 1_000_000)
-            {
-                CRASH(next, stack, builder.build());
-                return false;
             }
         }
 
-        connections = builder.build();
+        Set<HeatNode> nodes = new HashSet<>(List.of(((HeatModule) master).getHeatNode()));
+        //get all nodes in the network
+        for (Link l : links)
+        {
+            nodes.add(l.a);
+            nodes.add(l.b);
+        }
+
+        this.nodes = nodes.toArray(new HeatNode[0]);
+        this.links = links.toArray(new Link[0]);
+
         return true;
     }
 
     @Override
     protected void tick(BlockEntity entity, boolean isClientSide) {
         if (!isClientSide)
-            connections.tick();
-    }
-
-    private void CRASH(NetworkModule current, Stack<? extends NetworkModule> stack, Connections connections)
-    {
-        AmberCraft.LOGGER.warn("Master disabled due to circular dependency!", new IllegalStateException("Master %s (@%x) disabled, duo circular dependency with ticking %s (@%x)!".formatted(
-                master.getClass().getSimpleName(), master.ID,
-                current.getClass().getSimpleName(), current.ID
-        )));
-
-        StringBuilder stackBuilder = new StringBuilder();
-        HashSet<NetworkModule> visited = new HashSet<>();
-        visited.add(master);
-
-        for (NetworkModule a : stack)
         {
-            stackBuilder.append(a.toString()).append("\n");
-            if (visited.contains(a))
-                break;
-            visited.add(a);
+            for (var n : nodes)
+                n.computeSoftHeatToEnvironment();
+            for (var l : links)
+                l.a.computeSoftHeatWithChildren(l.b);
+            for (var n : nodes)
+                n.updateSoftHeat();
         }
-        StringBuilder linksBuilder = new StringBuilder();
-        for (Link link : connections.links)
-            linksBuilder.append(link).append("\n");
-
-        AmberCraft.LOGGER.info("Queue Status:\n master -> {}\t current-> {}\nstack:\n{}##redundancy##\nlinks:\n{}", master, current, stackBuilder, linksBuilder);
-
-        AmberCraft.LOGGER.error("Fail while ticking!", new IllegalStateException("Circular dependency detected while ticking!"));
-        this.dirt();
     }
 
-    private record Link(HeatNode father, HeatNode[] child) implements Serializable {
+    record Link(HeatNode a, HeatNode b){
         @Override
-        public @NotNull String toString() {
-            return "Link@%x : father = %s, child = %s".formatted(hashCode(),father, child);
-        }
-    }
-
-    private record Connections(List<Link> links, List<HeatNode> nodes) {
-        public void tick() {
-            for (HeatNode node : nodes)
-                node.computeSoftHeatToEnvironment();
-            for (Link link : links)
-                link.father.computeSoftHeatWithChildren(link.child);
-            for (HeatNode node : nodes)
-                node.updateSoftHeat();
-        }
-    }
-
-    private static final class LinkBuilder extends HashMap<HeatNode, ArrayList<HeatNode>>
-    {
-        private final HashSet<HeatNode> set = new HashSet<>();
-
-        public void addLink(HeatNode father, HeatNode child){
-            this.putIfAbsent(father, new ArrayList<>());
-            this.get(father).add(child);
-        }
-
-        public Connections build(){
-            ArrayList<Link> links = new ArrayList<>();
-            for (Entry<HeatNode, ArrayList<HeatNode>> entry : entrySet())
-            {
-                links.add(new Link(entry.getKey(), entry.getValue().toArray(new HeatNode[0])));
-                set.add(entry.getKey());
-                set.addAll(entry.getValue());
-            }
-
-            return new Connections(links, set.stream().toList());
-        }
-
-        public void addNode(HeatNode node) {
-            set.add(node);
+        public boolean equals(Object obj) {
+            if (obj instanceof Link(HeatNode a1, HeatNode b1))
+                return (a == a1 && b == b1 ) || (a == b1 && b == a1);
+            return false;
         }
     }
 }

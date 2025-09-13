@@ -40,7 +40,7 @@ public class NetworkWidget extends AbstractWidget {
     public final NetworkModule clientModule;
     /// Used to show information.
     public NetworkModule active;
-    public NetworkWidget father;
+    public NetworkWidget root;
     /// If this module is the block clicked by the network viewer tool.
     public final boolean isMain;
     public boolean shouldRenderToolTip = false;
@@ -145,10 +145,14 @@ public class NetworkWidget extends AbstractWidget {
 
     public void checkConsistence()
     {
-        if (serverModule.getChildren().length != childConnection.length)
+        if (serverModule.getNeighbors().length != childConnection.length)
             warn(new IllegalStateException("The number of children doesn't match the number of connections."));
-        if (serverModule.getFather() != null && this.father == null)
+        if (!serverModule.isRoot() && this.root == null)
             warn(new IllegalStateException("The widget not founded!"));
+        RuntimeException[] exception = serverModule.checkInconsistencies();
+        if (exception != null)
+            for (RuntimeException e : exception)
+                crash(e);
     }
 
     public void resolveCollision(NetworkWidget widget, Scheduler scheduler) {
@@ -175,7 +179,7 @@ public class NetworkWidget extends AbstractWidget {
     public void RENDER_TOOL_TIPS(GuiGraphics graphics, int mouseX, int mouseY, float ignoredParcialTick) {
         if (active == null)
             return;
-        NetworkModule father = active.getFather();
+        NetworkModule father = active.getRoot();
         boolean isMaster = active.getMaster() != null;
 
         ArrayList<Component> list = new ArrayList<>();
@@ -186,10 +190,10 @@ public class NetworkWidget extends AbstractWidget {
             list.add(Component.literal(w).withColor(NetworkWidget.WARN_COLOR));
         list.add(Component.literal("ID: " + Integer.toHexString(active.ID)).withColor(10494192));
         list.add(Component.literal("IsMaster: " + (isMaster ? "true " : "false")).withColor(10494192));
-        list.add(Component.literal("Father: " + (father == null ? "root" : Integer.toHexString(father.ID))).withColor(10494192));
+        list.add(Component.literal("Father: " + (father.isRoot() ? "root" : Integer.toHexString(father.ID))).withColor(10494192));
         list.add(Component.literal("Children: ").withColor(10494192));
 
-        NetworkModule[] children = active.getChildren();
+        NetworkModule[] children = active.getNeighbors();
         for (NetworkModule module : children)
             list.add(Component.literal("-->Child: " + Integer.toHexString(module.ID)).withColor(10494192));
 
@@ -215,9 +219,9 @@ public class NetworkWidget extends AbstractWidget {
 
     public void RENDER_FATHER_ARROW(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick)
     {
-        if (father == null)
+        if (root == null)
             return;
-        new Connection(this, father, FATHER_CONNECTION_COLOR).render(guiGraphics, mouseX, mouseY, partialTick);
+        new Connection(this, root, FATHER_CONNECTION_COLOR).render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     public void setAnimation(Scheduler scheduler, Animation animation) {

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 /***
  * Sort the network in a radial tree;
  */
+//fixme after the network module rework, this is completely fucked, re-code all
 public class RadialTreeSorter implements NetworkWidgetSorter {
     private static boolean PRINT_DEBUG_TRACE = false;
 
@@ -62,7 +63,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
 
             List<NetworkWidget> children = map.get(1);
 
-            final double delta = Math.PI * 2 / (main.serverModule.getChildren().length + (main.serverModule.getFather() == null ? 0 : 1));
+            final double delta = Math.PI * 2 / (main.serverModule.getNeighbors().length + (main.serverModule.getRoot() == null ? 0 : 1));
             double teta = - delta / 2.0;
             radius = children.stream().mapToDouble(RadialTreeSorter::computeDiagonal).max().orElse(0) + 30;
             for (NetworkWidget child : children)
@@ -84,7 +85,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
             for (NetworkWidget preview : map.get(orbit-1))
             {
                 List<NetworkWidget> children = GET_CHILDREN(preview, widgets);
-                NetworkWidget father = preview.serverModule.getFather() != null ? NetworkViewerScreen.GET_WIDGET(widgets, preview.serverModule.getFather()) : null;
+                NetworkWidget father = preview.serverModule.getRoot() != null ? NetworkViewerScreen.GET_WIDGET(widgets, preview.serverModule.getRoot()) : null;
 
                 List<NetworkWidget> subSpace = children.stream().filter(map.get(orbit)::contains).collect(Collectors.toList());
                 if (father != null && map.get(orbit).contains(father))
@@ -121,9 +122,9 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
                 if (PRINT_DEBUG_TRACE)
                 {
                     int color = new Random().nextInt(0XFFFFFF) | (0xff << 24);
-                    screen.temp.add(RadialTreeSorter.DRAW_LINE(center,hAngle, radius, 0xFF0000FF));
-                    screen.temp.add(RadialTreeSorter.DRAW_LINE(center,hAngle-totalArc/2, radius, color));
-                    screen.temp.add(RadialTreeSorter.DRAW_LINE(center,hAngle+totalArc/2, radius, color));
+                    screen.addRenderable(RadialTreeSorter.DRAW_LINE(center,hAngle, radius, 0xFF0000FF));
+                    screen.addRenderable(RadialTreeSorter.DRAW_LINE(center,hAngle-totalArc/2, radius, color));
+                    screen.addRenderable(RadialTreeSorter.DRAW_LINE(center,hAngle+totalArc/2, radius, color));
                 }
 
                 for (var child : entry.getValue())
@@ -134,7 +135,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
                     final int y = (int) (center.y + Math.sin(teta)*radius);
                     if (PRINT_DEBUG_TRACE)
                     {
-                        screen.temp.add((guiGraphics, mouseX, mouseY, partialTick) -> {
+                        screen.addRenderable((guiGraphics, mouseX, mouseY, partialTick) -> {
                             guiGraphics.drawCenteredString(Minecraft.getInstance().font, "0", x, y, 0xFFFF0000);
                         });
                     }
@@ -169,18 +170,18 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
         if (visited.contains(module))
             return -1;
         visited.add(module);
-        for (NetworkModule child : module.getChildren())
+        for (NetworkModule child : module.getNeighbors())
         {
             int childOrbit = COMPUTE_ORBIT_HELPER(child, center, orbit+1, visited);
             if (childOrbit != -1)
                 return childOrbit;
         }
-        if (module.getFather() != null)
+        if (module.getRoot() != null)
         {
-            if (module.getFather().ID == center.ID)
+            if (module.getRoot().ID == center.ID)
                 return orbit+1;
 
-            int fatherOrbit = COMPUTE_ORBIT_HELPER(module.getFather(), center, orbit+1, visited);
+            int fatherOrbit = COMPUTE_ORBIT_HELPER(module.getRoot(), center, orbit+1, visited);
             if (fatherOrbit != -1)
                 return fatherOrbit;
         }
@@ -190,7 +191,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
     private static List<NetworkWidget> GET_CHILDREN(NetworkWidget target, List<NetworkWidget> widgets)
     {
         List<NetworkWidget> children = new ArrayList<>();
-        for (NetworkModule child : target.serverModule.getChildren())
+        for (NetworkModule child : target.serverModule.getNeighbors())
         {
             NetworkWidget widget = NetworkViewerScreen.GET_WIDGET(widgets, child);
             if (widget == null)

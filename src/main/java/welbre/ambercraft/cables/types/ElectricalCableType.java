@@ -37,6 +37,6 @@ public class ElectricalCableType extends CableType {
 
     @Override
     public Module[] createModules(FacedCableBE entity) {
-        return new Module[]{new ElectricalCableModule(0.5)};//todo create a module to cables, that computes the current resistence.
+        return new Module[]{new ElectricalCableModule(0.5)};
     }
 }

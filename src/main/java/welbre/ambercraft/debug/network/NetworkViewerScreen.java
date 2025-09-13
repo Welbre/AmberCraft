@@ -2,7 +2,6 @@ package welbre.ambercraft.debug.network;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Transformation;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -10,21 +9,14 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec2;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.network.NetworkModule;
@@ -33,6 +25,8 @@ import welbre.ambercraft.network.NetworkViewerScreenPayLoad;
 import java.lang.reflect.Method;
 import java.util.*;
 
+//todo check for problems because we change how network modules works!
+//todo create a context menu in the left click in a widget
 //todo render the block in the screen based on the modulesholder
 //todo create a button to toggle the ModulesHolder packer, a function to create one widget to holders that contains more that 1 module.
 public class NetworkViewerScreen extends Screen {
@@ -53,7 +47,8 @@ public class NetworkViewerScreen extends Screen {
     public int layer = 0;
     public boolean showingServerModules = true;
     //interation->GUI
-    /// Ignore the navigation and is rendered in the last step to be above other elements.
+    /// Ignore the navigation and is rendered in the last step to be above other elements.<br>
+    /// Used to render the GUI
     public final List<AbstractWidget> fixedRenderableWidget = new ArrayList<>();
 
     //logical
@@ -459,8 +454,10 @@ public class NetworkViewerScreen extends Screen {
         }
     }
 
-    public List<Renderable> temp = renderables;//todo remove it
-
+    public void addRenderable(Renderable v)
+    {
+        renderables.add(v);
+    }
 
     public void setLayer(int layer)
     {

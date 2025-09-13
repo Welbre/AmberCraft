@@ -27,7 +27,7 @@ public class HeatNode extends Node implements Serializable {
         this.temperature = temperature;
     }
 
-    public void computeSoftHeatWithChildren(Node[] nodes)
+    public void computeSoftHeatWithChildren(Node... nodes)
     {
         for (Node node : nodes)
             if (node instanceof HeatNode heatNode)

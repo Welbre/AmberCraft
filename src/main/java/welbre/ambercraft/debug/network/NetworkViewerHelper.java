@@ -53,7 +53,7 @@ public class NetworkViewerHelper {
                 if (modules.contains(next))
                     continue;
 
-                queue.addAll(List.of(next.getChildren()));
+                queue.addAll(List.of(next.getNeighbors()));
 
                 modules.add(next);
             }
@@ -112,7 +112,7 @@ public class NetworkViewerHelper {
     private static void INIT_CHILD_CONNECTION(NetworkWidget widget, ArrayList<NetworkWidget> widgets) {
         ArrayList<NetworkWidget> children = new ArrayList<>();
 
-        for (NetworkModule module : widget.serverModule.getChildren())
+        for (NetworkModule module : widget.serverModule.getNeighbors())
         {
             boolean error = true;
             for (NetworkWidget networkWidget : widgets)
@@ -138,16 +138,16 @@ public class NetworkViewerHelper {
 
     private static void SET_FATHER(NetworkWidget widget, ArrayList<NetworkWidget> widgets)
     {
-        if (widget.serverModule.getFather() == null)
+        if (widget.serverModule.isRoot())//the root points to it-self, don't need to show an arrow.
             return;
-        NetworkWidget father = null;
+        NetworkWidget root = null;
         for (NetworkWidget networkWidget : widgets)
-            if (networkWidget.serverModule.ID == widget.serverModule.getFather().ID)
+            if (networkWidget.serverModule.ID == widget.serverModule.getRoot().ID)
             {
-                father = networkWidget;
+                root = networkWidget;
                 break;
             }
-        widget.father = father;
+        widget.root = root;
     }
 
     public static List<List<NetworkWidget>> SORT_LAYERS(NetworkModule[] serverModules, List<NetworkWidget> networkWidgets) {

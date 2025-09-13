@@ -24,7 +24,7 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
     HeatNode node;
 
     public HeatModule() {
-        children = new HeatModule[0];
+
     }
 
     public HeatNode getHeatNode(){
@@ -87,7 +87,7 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
         refresh(entity);
         this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
 
-        if (shouldBeMaster())
+        if (isRoot())
             master = createMaster();
     }
 

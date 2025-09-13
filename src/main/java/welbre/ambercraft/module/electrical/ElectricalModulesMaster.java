@@ -2,9 +2,6 @@ package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.Circuit;
 import kuse.welbre.sim.electrical.abstractt.Element;
-import kuse.welbre.sim.electrical.abstractt.Element3Pin;
-import kuse.welbre.sim.electrical.abstractt.MultipleRHSElement;
-import kuse.welbre.sim.electrical.abstractt.RHSElement;
 import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -49,7 +46,7 @@ public class ElectricalModulesMaster extends Master {
             if (next instanceof ElectricalModule eem)//add all elements
                 elements.addAll(Arrays.asList(eem.compile()));
 
-            queue.addAll(Arrays.asList(next.getChildren()));
+            queue.addAll(Arrays.asList(next.getNeighbors()));
         }
 
         //the voltage sources are using the same pins, causing an infinite loop with no resistence and a matrix singular exception
@@ -74,10 +71,7 @@ public class ElectricalModulesMaster extends Master {
      * The main go of this class is when the circuit is checking for inconsistency in {@link Circuit#clean()}, instead of throw an exception
      * in the case that only 1 pin of the element is connected, they now create a new high resistence resistor connected to the pin and the ground,
      * therefore, the circuit can create the matrix, with minimus impact on the circuit.<br>
-     *
-     * <div color="red">maybe this isn't the best solution, need to check if the MNA can solve the circuit with non-connected pins</div>
      */
-    //todo check the condiction in the documentation.
     public static class AutoGroundingCircuit extends Circuit
     {
         @Override

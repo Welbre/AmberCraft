@@ -74,9 +74,9 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
 
     @Override
     public void disconnectAll() {
-        List<NetworkModule> list = new ArrayList<>(List.of(children));
-        if (father != null)
-            list.add(father);
+        List<NetworkModule> list = new ArrayList<>(List.of(neighbors));
+        if (root != null)
+            list.add(root);
 
         for (NetworkModule child : list)
         {
