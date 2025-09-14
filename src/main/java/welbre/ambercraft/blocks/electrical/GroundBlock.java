@@ -43,7 +43,10 @@ public class GroundBlock extends Block implements EntityBlock {
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getClickedFace());
+        if (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())
+            return this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+        else
+            return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
     }
 
     @Override

@@ -73,8 +73,14 @@ public class FacedCableBlock extends Block implements EntityBlock {
                 if (!level.getBlockState(pos.relative(face)).isFaceSturdy(level, pos, face.getOpposite()))//remove if the anchor is ar
                 {
                     changed = true;
+                    //remove center
                     cable.dropCenter(face);
                     cable.removeCenter(face);
+
+                    //send block update the neighbors
+                    level.updateNeighborsAt(pos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get());
+                    for (Direction dir : CableState.GET_FACE_DIRECTIONS(face))
+                        level.neighborChanged(cable.getBlockPos().relative(dir).relative(face), AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
                 }
             }
             if (cable.getState().isEmpty())//remove if is empty
@@ -83,6 +89,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
                 return;
             }
 
+            //only send a change payload if the cable is empty.
             final FacedCableBE.UpdateShapeResult result = cable.updateState();
             if (result.changed())
                 cable.updateBrain();

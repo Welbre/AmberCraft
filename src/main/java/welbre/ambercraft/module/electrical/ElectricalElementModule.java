@@ -23,11 +23,11 @@ import java.util.List;
 //todo re write this documentation
 /**
  * <h5>This module is used to store/handle a {@link Element electricalElement}.</h5>
- * Notice that {@link ElectricalElementModule#pinA} and {@link ElectricalElementModule#pinB} are modules too,
+ * Notice that {@link ElectricalElementModule#terminalA} and {@link ElectricalElementModule#terminalB} are modules too,
  * but you <b>NEVER</b> should serialize it! They are used only as a wrapper.<br>
- * The {@link  ElectricalElementModule#element} is the most important field, it stores the electricalElement that will be used in the {@link kuse.welbre.sim.electrical.Circuit}.<br><br>
+ * The {@link  ElectricalElementModule#element} is the most important field, it stores the electrical element that will be used in the {@link kuse.welbre.sim.electrical.Circuit}.<br><br>
  * Basically to use this module, you return it in {@link ModulesHolder#getModules()} and <b>NEVER</b> return this module in another place,
- * and returns the {@link ElectricalElementModule#pinA} and {@link ElectricalElementModule#pinB} in {@link ModulesHolder#getModule(Direction)}.
+ * and returns the {@link ElectricalElementModule#terminalA} and {@link ElectricalElementModule#terminalB} in {@link ModulesHolder#getModule(Direction)}.
  * But why? This module doesn't connect directly to others, instead, the use the {@link ElectricalTerminalModule} as a wrapper, each <code>EPM</code> is designed to connect/disconnect the {@link #element}.
  * Therefore, if you return this module in the holder, it will connect the module but won't connect the element, setting this module in an illegal state.
  *
@@ -147,12 +147,31 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
     @Override
     public void free()
     {
-        terminalA.disconnectAll();
-        terminalB.disconnectAll();
+        if (terminalA != null)
+            terminalA.disconnectAll();
+        if (terminalB != null)
+            terminalB.disconnectAll();
         element = null;
         terminalA = null;
         terminalB = null;
         disconnectAll();
+    }
+
+    @Override
+    public void onLoad(ModulesHolder entity) {
+        if (isFresh)
+            return;
+
+        var level = entity.getLevel();
+        if (level == null)
+            throw new IllegalStateException("Trying to refresh module while the game isn't loaded!");
+        if (level.isClientSide())
+            return;
+
+        terminalA.onLoad(entity);
+        terminalB.onLoad(entity);
+
+        isFresh = true;
     }
 
     @Override

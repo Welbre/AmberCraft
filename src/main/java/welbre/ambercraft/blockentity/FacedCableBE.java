@@ -215,7 +215,6 @@ public class FacedCableBE extends ModulesHolder {
                     }
                     else
                         modules = holder.getModule(NetworkModule.class, dir.getOpposite());
-
                     if (modules != null && modules.length > 0)
                         faceBrain.connectModules(modules);
                 }

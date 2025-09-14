@@ -1,12 +1,10 @@
 package welbre.ambercraft;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
@@ -20,11 +18,11 @@ import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.blockentity.electrical.GroundBE;
-import welbre.ambercraft.blockentity.electrical.VoltageSourceBE;
 import welbre.ambercraft.blockentity.heat.*;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.electrical.ElectricalBlock;
 import welbre.ambercraft.blocks.electrical.GroundBlock;
+import welbre.ambercraft.blocks.electrical.VoltageSourceBE;
 import welbre.ambercraft.blocks.electrical.VoltageSourceBlock;
 import welbre.ambercraft.blocks.heat.*;
 import welbre.ambercraft.item.components.FacedCableComponent;
@@ -50,7 +48,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 @Mod(AmberCraft.MOD_ID)

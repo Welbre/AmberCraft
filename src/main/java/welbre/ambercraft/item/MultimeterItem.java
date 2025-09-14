@@ -146,7 +146,7 @@ public class MultimeterItem extends Item {
     {
         if (a == b)
         {
-            player.sendSystemMessage(Component.literal("You are messing the voltage difference in the same point, it will always be zero!")
+            player.sendSystemMessage(Component.literal("You are measuring the voltage difference in the same point, it will always be zero!")
                     .withColor(DyeColor.RED.getTextColor()));
             return;
         }

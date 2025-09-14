@@ -12,7 +12,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,8 +19,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.electrical.VoltageSourceBE;
+import welbre.ambercraft.blockentity.electrical.ElectricalBE;
+import welbre.ambercraft.blocks.FreeRotationBlock;
+import welbre.ambercraft.module.Module;
 
 public class VoltageSourceBlock extends ElectricalBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
@@ -44,7 +46,7 @@ public class VoltageSourceBlock extends ElectricalBlock {
         var result = super.useWithoutItem(state, level, pos, player, hitResult);
         if (result.consumesAction())
             return result;
-        if (level.getBlockEntity(pos) instanceof VoltageSourceBE source && player.getMainHandItem().is(Items.AIR))
+        if (level.getBlockEntity(pos) instanceof ElectricalBE source && player.getMainHandItem().is(Items.AIR))
         {
             if (!level.isClientSide)
             {
@@ -62,7 +64,7 @@ public class VoltageSourceBlock extends ElectricalBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new VoltageSourceBE(pos, state);
+        return new VoltageSourceBE(pos,state);
     }
 
     @Override
@@ -73,6 +75,9 @@ public class VoltageSourceBlock extends ElectricalBlock {
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
+        if (context.getPlayer() != null && context.getPlayer().isShiftKeyDown())
+            return this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+        else
+            return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
     }
 }
