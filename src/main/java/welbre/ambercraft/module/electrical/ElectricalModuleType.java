@@ -1,6 +1,7 @@
 package welbre.ambercraft.module.electrical;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.ModuleType;
 
 public class ElectricalModuleType implements ModuleType<ElectricalElementModule> {
@@ -23,6 +25,13 @@ public class ElectricalModuleType implements ModuleType<ElectricalElementModule>
 
     @Override
     public InteractionResult useItemOn(ElectricalElementModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.getItem() == AmberCraft.Items.MULTIMETER.get())
+        {
+            if (!level.isClientSide())
+                return AmberCraft.Items.MULTIMETER.get().handle(stack, (ServerPlayer) player, module);
+
+            return InteractionResult.SUCCESS;
+        }
         return InteractionResult.PASS;
     }
 

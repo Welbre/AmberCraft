@@ -190,6 +190,10 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
         resistors = temp1;
     }
 
+    public Circuit.Pin[] getTerminal() {
+        return terminal;
+    }
+
     /// Returns a copy of the resistors
     public Resistor[] getResistors() {
         return Arrays.copyOf(resistors, resistors.length);

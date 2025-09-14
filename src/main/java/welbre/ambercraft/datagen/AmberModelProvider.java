@@ -72,6 +72,8 @@ public class AmberModelProvider extends ModelProvider {
 
     private static void registerItems(@NotNull ItemModelGenerators itemModels) {
         itemModels.generateFlatItem(AmberCraft.Items.NETWORK_TOOL.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(AmberCraft.Items.THERMOMETER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(AmberCraft.Items.MULTIMETER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.itemModelOutput.accept(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM.get(),new SpecialModelWrapper.Unbaked(ResourceLocation.parse("minecraft:block/white_wool"),new CableSpecialRender.UnBacked(
                 ResourceLocation.withDefaultNamespace("block/blue_wool"))
         ));

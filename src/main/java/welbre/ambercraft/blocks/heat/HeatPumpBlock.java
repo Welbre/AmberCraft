@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.heat.HeatPumpBE;
@@ -75,19 +76,17 @@ public class HeatPumpBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         //in the case that a lever is used to check the temperature, concat the string as one.
-        if (stack.getItem() == Items.LEVER)
+        if (stack.getItem() == AmberCraft.Items.THERMOMETER.get())
         {
-            if (level.isClientSide)
-                return InteractionResult.SUCCESS;
-            else
+            if (!level.isClientSide)
             {
                 var cold = COLD_FACTORY.getModuleOn(level, pos).orElseThrow();
                 var hot = HOT_FACTORY.getModuleOn(level, pos).orElseThrow();
                 player.displayClientMessage(Component.literal(hot.getMultimeterString()).withColor(DyeColor.ORANGE.getTextColor()).append(" ").append(Component.literal(cold.getMultimeterString()).withColor(DyeColor.LIGHT_BLUE.getTextColor())), false);
-                return InteractionResult.SUCCESS;
             }
+            return InteractionResult.SUCCESS;
         }
         var result = COLD_FACTORY.getType().useItemOn(COLD_FACTORY.getModuleOn(level,pos).orElse(null),stack,state,level,pos,player,hand,hitResult);
         if (result.consumesAction())

@@ -28,6 +28,8 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addBlock(AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK, "Abstract cable");
 
         addItem(AmberCraft.Items.NETWORK_TOOL, "Network Tool");
+        addItem(AmberCraft.Items.THERMOMETER, "Thermometer");
+        addItem(AmberCraft.Items.MULTIMETER, "Multimeter");
         addItem(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM, "Faced cable");
     }
 }

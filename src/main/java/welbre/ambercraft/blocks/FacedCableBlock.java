@@ -38,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.*;
+import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.network.facedcable.FacedCableRemoveFacePayload;

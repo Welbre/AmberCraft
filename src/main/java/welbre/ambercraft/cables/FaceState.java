@@ -1,6 +1,7 @@
 package welbre.ambercraft.cables;
 
 import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.item.components.FacedCableComponent;
 
 import java.util.Arrays;
 

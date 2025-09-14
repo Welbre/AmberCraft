@@ -17,14 +17,14 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.ModuleType;
 
-public class ElectricalCableModuleType implements ModuleType<ElectricalCableModule> {
+public class ElectricalTerminalModuleType implements ModuleType<ElectricalTerminalModule> {
     @Override
-    public InteractionResult useWithoutItem(ElectricalCableModule module, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    public InteractionResult useWithoutItem(ElectricalTerminalModule module, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         return InteractionResult.PASS;
     }
 
     @Override
-    public InteractionResult useItemOn(ElectricalCableModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult useItemOn(ElectricalTerminalModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (stack.getItem() == AmberCraft.Items.MULTIMETER.get())
         {
             if (!level.isClientSide())
@@ -35,22 +35,22 @@ public class ElectricalCableModuleType implements ModuleType<ElectricalCableModu
     }
 
     @Override
-    public void stepOn(ElectricalCableModule module, Level level, BlockPos pos, BlockState state, Entity entity) {
+    public void stepOn(ElectricalTerminalModule module, Level level, BlockPos pos, BlockState state, Entity entity) {
 
     }
 
     @Override
-    public void neighborChanged(ElectricalCableModule module, BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
+    public void neighborChanged(ElectricalTerminalModule module, BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
 
     }
 
     @Override
-    public void onNeighborChange(ElectricalCableModule module, BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+    public void onNeighborChange(ElectricalTerminalModule module, BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
 
     }
 
     @Override
-    public ElectricalCableModule createModule() {
-        return new ElectricalCableModule();
+    public ElectricalTerminalModule createModule() {
+        return new ElectricalTerminalModule(null);
     }
 }

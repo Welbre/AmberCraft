@@ -1,4 +1,4 @@
-package welbre.ambercraft.cables;
+package welbre.ambercraft.item.components;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -9,6 +9,8 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.cables.CableData;
+import welbre.ambercraft.cables.CableType;
 
 import java.util.function.Supplier;
 

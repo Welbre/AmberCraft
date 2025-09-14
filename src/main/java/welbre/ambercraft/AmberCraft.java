@@ -1,10 +1,12 @@
 package welbre.ambercraft;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
@@ -23,16 +25,20 @@ import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.electrical.ElectricalBlock;
 import welbre.ambercraft.blocks.electrical.VoltageSourceBlock;
 import welbre.ambercraft.blocks.heat.*;
-import welbre.ambercraft.cables.FacedCableComponent;
+import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.types.HeatCableType;
 import welbre.ambercraft.cables.types.ElectricalCableType;
 import welbre.ambercraft.commands.Event;
 import welbre.ambercraft.item.FacedCableBlockItem;
+import welbre.ambercraft.item.MultimeterItem;
 import welbre.ambercraft.item.NetworkTool;
+import welbre.ambercraft.item.ThermometerItem;
+import welbre.ambercraft.item.components.MultimeterComponent;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.electrical.ElectricalCableModuleType;
 import welbre.ambercraft.module.electrical.ElectricalModuleType;
+import welbre.ambercraft.module.electrical.ElectricalTerminalModuleType;
 import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.network.PayLoadRegister;
 
@@ -42,6 +48,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 @Mod(AmberCraft.MOD_ID)
@@ -105,13 +112,13 @@ public class AmberCraft {
 
     public static final class Items{
         public static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(MOD_ID);
+        //block itens
         public static final DeferredItem<BlockItem> IRON_MACHINE_CASE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_MACHINE_CASE_BLOCK);
         public static final DeferredItem<BlockItem> VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.VOLTAGE_SOURCE_BLOCK);
         public static final DeferredItem<BlockItem> RESISTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.RESISTOR_BLOCK);
         public static final DeferredItem<BlockItem> GROUND_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GROUND_BLOCK);
         public static final DeferredItem<BlockItem> HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_FURNACE_BLOCK);
         public static final DeferredItem<BlockItem> CREATIVE_HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CREATIVE_HEAT_FURNACE_BLOCK);
-        public static final DeferredItem<NetworkTool> NETWORK_TOOL = REGISTER.registerItem("network_tool", NetworkTool::new, new Item.Properties());
 
         public static final DeferredItem<BlockItem> COPPER_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.COPPER_HEAT_CONDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> IRON_HEAT_CONDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_HEAT_CONDUCTOR_BLOCK);
@@ -122,6 +129,10 @@ public class AmberCraft {
 
         public static final DeferredItem<BlockItem> HEAT_SINK_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_SINK_BLOCK);
 
+        //tools
+        public static final DeferredItem<NetworkTool> NETWORK_TOOL = REGISTER.registerItem("network_tool", NetworkTool::new, new Item.Properties());
+        public static final DeferredItem<ThermometerItem> THERMOMETER = REGISTER.registerItem("thermometer", ThermometerItem::new, new Item.Properties());
+        public static final DeferredItem<MultimeterItem> MULTIMETER = REGISTER.registerItem("multimeter", MultimeterItem::new, new Item.Properties());
         @TABS.SKIP
         public static final DeferredItem<FacedCableBlockItem> FACED_CABLE_BLOCK_ITEM = REGISTER.registerItem("faced_cable", FacedCableBlockItem::new);
     }
@@ -168,6 +179,7 @@ public class AmberCraft {
 
         public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat", HeatModuleType::new);
         public static final DeferredHolder<ModuleType<?>, ElectricalModuleType> ELECTRICAL_MODULE_TYPE = REGISTER.register("electrical", ElectricalModuleType::new);
+        public static final DeferredHolder<ModuleType<?>, ElectricalTerminalModuleType> ELECTRICAL_TERMINAL_MODULE_TYPE = REGISTER.register("electrical_terminal", ElectricalTerminalModuleType::new);
         public static final DeferredHolder<ModuleType<?>, ElectricalCableModuleType> ELECTRICAL_CABLE_MODULE_TYPE = REGISTER.register("electrical_cable", ElectricalCableModuleType::new);
     }
 
@@ -178,6 +190,9 @@ public class AmberCraft {
                 "cable_data",
                 builder -> builder.persistent(FacedCableComponent.CODEC).networkSynchronized(FacedCableComponent.STREAM_CODEC)
         );
+        public static final Supplier<DataComponentType<MultimeterComponent>> MULTIMETER_CACHE_DATA_COMPONENT = REGISTER.registerComponentType(
+                "multimeter_cache",
+                b -> b.persistent(MultimeterComponent.CODEC).networkSynchronized(MultimeterComponent.STREAM_CODEC));
     }
 
     public static final class TABS {
@@ -192,7 +207,7 @@ public class AmberCraft {
 
         public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = REGISTER.register("ambercraft_tab", () -> CreativeModeTab.builder()
                 .title(Component.literal("AmberCraft"))
-                .icon(Items.NETWORK_TOOL::toStack)
+                .icon(Items.MULTIMETER::toStack)
                 .displayItems((parameters, output) -> {
                     List<Item> itemList = new ArrayList<>();
                     try {

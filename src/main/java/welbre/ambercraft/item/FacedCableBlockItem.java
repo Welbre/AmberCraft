@@ -3,7 +3,6 @@ package welbre.ambercraft.item;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -25,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.blocks.FacedCableBlock;
-import welbre.ambercraft.cables.FacedCableComponent;
+import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.network.facedcable.FacedCableStateChangePayload;
 
 public class FacedCableBlockItem extends BlockItem {

@@ -1,7 +1,21 @@
 package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.Circuit;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
@@ -9,7 +23,7 @@ import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
 
 /**
- * <h5>This class is a wrapper to the {@link ElectricalElementModule}, don't register this class!</h5>
+ * <h5>This class is a wrapper to the {@link ElectricalElementModule}!</h5>
  * Only used to handle a connection in an electrical element.
  * In your BlockEntity that contains an ElectricalModule,
  * you should return an instance of this class in {@link ModulesHolder#getModule(Direction)} method.
@@ -39,6 +53,10 @@ public class ElectricalTerminalModule extends NetworkModule {
             return super.connect(target);
     }
 
+    public Circuit.Pin[] getTerminal() {
+        return terminal;
+    }
+
     @Override
     public void onLoad(ModulesHolder entity) {
 
@@ -55,7 +73,7 @@ public class ElectricalTerminalModule extends NetworkModule {
     }
 
     @Override
-    public <T extends Module> ModuleType<T> getType() {
-        throw new UnsupportedOperationException("ElectricalPinModule don't have a registered type!");
+    public ModuleType<?> getType() {
+        return AmberCraft.ModuleTypes.ELECTRICAL_TERMINAL_MODULE_TYPE.get();
     }
 }

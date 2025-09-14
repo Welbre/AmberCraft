@@ -4,12 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import welbre.ambercraft.blockentity.FacedCableBE;
+import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.network.NetworkModule;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Function;
 
 public class CableBrain {
     /// array with length 6 contains the brains in Down, Up, North, South, West, East order.
