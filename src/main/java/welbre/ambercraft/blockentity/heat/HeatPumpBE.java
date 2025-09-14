@@ -69,13 +69,6 @@ public class HeatPumpBE extends ModulesHolder {
         return new Module[0];
     }
 
-    @Override
-    public @NotNull Module[] getModule(Object object) {
-        if (object instanceof Direction dir)
-            return getModule(dir);
-        return new Module[0];
-    }
-
     public void setColdModule(HeatModule module) {
         coldModule = module;
     }

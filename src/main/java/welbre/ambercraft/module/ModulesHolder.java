@@ -18,9 +18,7 @@ import welbre.ambercraft.AmberCraft;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.IntFunction;
 
 /**
  * Used to represent an object that can contains modules.<br>
@@ -30,7 +28,6 @@ import java.util.function.IntFunction;
  *     This interface contains only 3 methods that are very similar to each other.<br>
  *     {@link ModulesHolder#getModules()} is used to read/write data in the holder, and other internal operations like diagnostic tools and debugging.<br>
  *     {@link ModulesHolder#getModule(Direction direction)} is used to handle the connections, this method should return all modules that can be connected at <code>direction</code>.<br>
- *     {@link ModulesHolder#getModule(Object obj)} should be used in yours ModulesHolder implementation instead of {@link ModulesHolder#getModule(Direction)},
  *     the <code>obj</code> can be cast to a direction or any type you want.<br>Exemple: <pre>
 Module[] getModule(Object object){
     if (object instanceof Direction dir){
@@ -60,8 +57,6 @@ public abstract class ModulesHolder extends BlockEntity {
 
     /// Returns all modules in <code>direction</code> face.
     public abstract @NotNull Module[] getModule(Direction direction);
-    /// Similar to {@link ModulesHolder#getModule(Direction) but used a generic object as extra data.}
-    public abstract @NotNull Module[] getModule(Object object);
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {

@@ -287,13 +287,6 @@ public class FacedCableBE extends ModulesHolder {
         return list.toArray(Module[]::new);
     }
 
-    @Override
-    public @NotNull Module[] getModule(Object object) {
-        if (object instanceof Direction dir)
-            return getModule(dir);
-        return new Module[0];
-    }
-
     public void setState(CableState state) {
         this.state = state;
     }

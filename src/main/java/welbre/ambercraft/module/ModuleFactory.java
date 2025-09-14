@@ -56,6 +56,8 @@ import java.util.function.*;
  *          </ul>
  *     </dd>
  * </dl>
+ * @param <T> the module that this factory will create.
+ * @param <V> A {@link ModulesHolder} extension that will hold the module.
  * @see ModuleType
  */
 public class ModuleFactory<T extends Module, V extends ModulesHolder> implements Supplier<T> {

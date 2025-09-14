@@ -35,13 +35,6 @@ public class HeatBE extends ModulesHolder {
         return new Module[]{heatModule};
     }
 
-    @Override
-    public @NotNull Module[] getModule(Object object) {
-        if (object instanceof Direction dir)
-            return getModule(dir);
-        return new Module[0];
-    }
-
     public void setHeatModule(HeatModule module) {
         this.heatModule = module;
     }

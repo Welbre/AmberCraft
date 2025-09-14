@@ -32,11 +32,6 @@ public class ElectricalBE extends ModulesHolder {
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-    }
-
-    @Override
     public @NotNull Module[] getModules() {
         return new Module[]{electricalModule};
     }
@@ -44,13 +39,6 @@ public class ElectricalBE extends ModulesHolder {
     @Override
     public @NotNull Module[] getModule(Direction direction) {
         return getModules();
-    }
-
-    @Override
-    public @NotNull Module[] getModule(Object object) {
-        if (object instanceof Direction dir)
-            return getModule(dir);
-        return new Module[0];
     }
 
     public ElectricalElementModule getElectricalModule() {

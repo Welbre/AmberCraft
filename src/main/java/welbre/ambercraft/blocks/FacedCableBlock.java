@@ -84,6 +84,8 @@ public class FacedCableBlock extends Block implements EntityBlock {
             }
 
             final FacedCableBE.UpdateShapeResult result = cable.updateState();
+            if (result.changed())
+                cable.updateBrain();
             if (result.changed() || changed)
                 PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
         }

@@ -90,6 +90,8 @@ public class ElectricalModulesMaster extends Master {
                 for (Pin pin : element.getPins())
                     elements_per_pin.get(pin == null ? gnd : pin).add(element);
 
+            boolean changePins = false;
+
             //ungrounded check
             //the ground is extremely important to the solver, if isn't presente set the pin with more elements to be the ground.
             if (elements_per_pin.get(gnd).isEmpty())//check if the ground is empty
@@ -117,6 +119,7 @@ public class ElectricalModulesMaster extends Master {
                 biggestPin.address = gnd.address;
                 elements_per_pin.remove(gnd);
                 gnd = biggestPin;
+                changePins = true;
             }
 
             for (Map.Entry<Pin, List<Element>> entry : elements_per_pin.entrySet())
@@ -124,10 +127,11 @@ public class ElectricalModulesMaster extends Master {
                 //is connected only to one element.
                 if (entry.getValue().size() == 1 && entry.getKey() != gnd)
                 {
-                    Resistor resistor = new Resistor(entry.getKey(), gnd, 10e9);//1 gigaOhm
+                    Resistor resistor = new Resistor(entry.getKey(), null, 10e9);//1 gigaOhm
                     entry.getValue().add(resistor);
                     elements_per_pin.get(gnd).add(resistor);
                     addElement(resistor);
+                    changePins = true;
                 }
             }
 

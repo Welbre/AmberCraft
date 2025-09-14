@@ -12,6 +12,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,16 +26,17 @@ import welbre.ambercraft.blockentity.electrical.VoltageSourceBE;
 public class VoltageSourceBlock extends ElectricalBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
+    static {
+        factory.setConstructor(
+                (module, entity, factory, level, pos) -> {
+                    module.setElement(new VoltageSource(0));
+                }
+        );
+    }
+
     public VoltageSourceBlock(Properties p) {
         super(p);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (level.getBlockEntity(pos) instanceof VoltageSourceBE vs)
-            vs.electricalModule.setElement(new VoltageSource(0));
     }
 
     @Override

@@ -245,8 +245,9 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
         for (Direction dir : Direction.values())//check all faces in the BlockEntity
             if (List.of(entity.getModule(dir)).contains(this))//if dir face contains "this" module
                 if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)//check if the block in the face direction is a ModulesHolder
-                    for (NetworkModule module : modular.getModule(getClass(), dir.getOpposite()))//get all modules in the opposite face of dir.
-                        this.connect(module);
+                    for (Module module : modular.getModule(dir.getOpposite()))//get all modules in the opposite face of dir.
+                        if (module instanceof NetworkModule networkModule)
+                            this.connect(networkModule);
 
         isFresh = true;
     }

@@ -75,8 +75,6 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
     @Override
     public void disconnectAll() {
         List<NetworkModule> list = new ArrayList<>(List.of(neighbors));
-        if (root != null)
-            list.add(root);
 
         for (NetworkModule child : list)
         {
@@ -202,10 +200,7 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
     @Override
     public List<Component> getInfo() {
         List<Component> list = new ArrayList<>();
-        list.add(Component.literal("Pin: %s, Voltage: %s".formatted(
-                terminal[0].address,
-                terminal[0].P_voltage != null ? Tools.proprietyToSi(terminal[0].P_voltage[0], "V") : "NaN"
-        )));
+        list.add(ElectricalElementModule.GET_PIN_INFO("Pin: %s, Voltage: %s", terminal[0]));
         list.add(Component.literal("Resistence: " + Tools.proprietyToSi(resistence, "Ω")));
 
         for (Resistor r : resistors)

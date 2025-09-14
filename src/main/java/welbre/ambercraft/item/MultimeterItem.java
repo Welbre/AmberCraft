@@ -144,11 +144,21 @@ public class MultimeterItem extends Item {
 
     private void sendVdiff(ServerPlayer player, Circuit.Pin a, Circuit.Pin b)
     {
-        if (a == null || b == null || a.P_voltage == null || b.P_voltage == null)
+        if (a == b)
+        {
+            player.sendSystemMessage(Component.literal("You are messing the voltage difference in the same point, it will always be zero!")
+                    .withColor(DyeColor.RED.getTextColor()));
             return;
+        }
+        double va = 0, vb = 0;
+        if (a != null && a.P_voltage != null)
+            va = a.P_voltage[0];
+        if (b != null && b.P_voltage != null)
+            vb = b.P_voltage[0];
+
         player.sendSystemMessage(
                 Component.literal("Voltage: %s".formatted(
-                        Tools.proprietyToSi(a.P_voltage[0] - b.P_voltage[0], "V")
+                        Tools.proprietyToSi(va - vb, "V")
                 ))
         );
     }
