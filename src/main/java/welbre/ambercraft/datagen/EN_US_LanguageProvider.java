@@ -29,7 +29,23 @@ public class EN_US_LanguageProvider extends LanguageProvider {
 
         addItem(AmberCraft.Items.NETWORK_TOOL, "Network Tool");
         addItem(AmberCraft.Items.THERMOMETER, "Thermometer");
-        addItem(AmberCraft.Items.MULTIMETER, "Multimeter");
+        addMultimeter();
         addItem(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM, "Faced cable");
+    }
+
+
+    private void addMultimeter()
+    {
+        add("item.ambercraft.multimeter.mode_changed", "Multimeter mode changed to: %s");
+        add("item.ambercraft.multimeter.too_far", "You are too far away from the module!");
+        add("item.ambercraft.multimeter.voltage", "Voltage: %s");
+        add("item.ambercraft.multimeter.current", "Current: %s");
+        add("item.ambercraft.multimeter.power", "Power: %s");
+        add("item.ambercraft.multimeter.resistence", "Resistence: %s");
+        add("item.ambercraft.multimeter.first_click", "First point selected");
+        add("item.ambercraft.multimeter.voltage_same_spot", "You are measuring the voltage difference in the same point, it will always be zero!");
+        add("item.ambercraft.multimeter.current_same_terminal", "You can't measure the current in the same terminal!");
+        add("item.ambercraft.multimeter.current_dif_element", "You can't measure the current in different element!");
+        add("item.ambercraft.multimeter.current_dif_circuit", "You can't measure the current in different circuits!");
     }
 }

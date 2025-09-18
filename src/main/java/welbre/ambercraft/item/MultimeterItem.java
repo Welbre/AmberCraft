@@ -1,18 +1,20 @@
 package welbre.ambercraft.item;
 
 import kuse.welbre.sim.electrical.Circuit;
+import kuse.welbre.sim.electrical.abstractt.Element;
+import kuse.welbre.sim.electrical.elements.Resistor;
 import kuse.welbre.tools.Tools;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.item.components.MultimeterComponent;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
@@ -22,18 +24,60 @@ import welbre.ambercraft.module.electrical.ElectricalModule;
 import welbre.ambercraft.module.electrical.ElectricalTerminalModule;
 import welbre.ambercraft.module.network.NetworkModule;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 import static welbre.ambercraft.AmberCraft.Components.MULTIMETER_CACHE_DATA_COMPONENT;
-
+//todo, get all text message and put as static member
 public class MultimeterItem extends Item {
+    private static final String MSG_TOO_FAR = "item.ambercraft.multimeter.too_far";
+    private static final String MSG_MODE_CHANGED = "item.ambercraft.multimeter.mode_changed";
+    private static final String MSG_VOLTAGE = "item.ambercraft.multimeter.voltage";
+    private static final String MSG_CURRENT= "item.ambercraft.multimeter.current";
+    private static final String MSG_POWER = "item.ambercraft.multimeter.power";
+    private static final String MSG_RESISTENCE = "item.ambercraft.multimeter.resistence";
+    private static final String MSG_FIRST_CLICK = "item.ambercraft.multimeter.first_click";
+    private static final String MSG_VOLTAGE_SAME_SPLOT = "item.ambercraft.multimeter.voltage_same_spot";
+    private static final String MSG_CURRENT_SAME_TERMINAL = "item.ambercraft.multimeter.current_same_terminal";
+    private static final String MSG_CURRENT_DIF_ELEMENT = "item.ambercraft.multimeter.current_dif_element";
+    private static final String MSG_CURRENT_DIF_CIRCUIT = "item.ambercraft.multimeter.current_dif_circuit";
+
+    private static final BiConsumer<ServerPlayer, Double> SEND_VOLTAGE_IN_CHAT = (player, voltage) -> player.sendSystemMessage(Component.translatable(MSG_VOLTAGE, Tools.proprietyToSi(voltage, "V")) );
+    private static final BiConsumer<ServerPlayer, Double> SEND_CURRENT_IN_CHAT = (player, current) -> player.sendSystemMessage(Component.translatable(MSG_CURRENT, Tools.proprietyToSi(current, "A")));
+    private static final BiConsumer<ServerPlayer, Double> SEND_POWER_IN_CHAT = (player, power) -> player.sendSystemMessage(Component.translatable(MSG_POWER, Tools.proprietyToSi(power, "W")));
+    private static final BiConsumer<ServerPlayer, Double> SEND_RESISTENCE_IN_CHAT = (player, power) -> player.sendSystemMessage(Component.translatable(MSG_RESISTENCE, Tools.proprietyToSi(power, "Ω")));
+    private static BiConsumer<ServerPlayer, Double> SEND_VOLTAGE_ACTION = SEND_VOLTAGE_IN_CHAT;
+    private static BiConsumer<ServerPlayer, Double> SEND_CURRENT_ACTION = SEND_CURRENT_IN_CHAT;
+    private static Double VOLTAGE_VALUE = null;
+    private static Double CURRENT_VALUE = null;
+    private static final BiConsumer<ServerPlayer, Double> VOLTAGE_GETTER = ((player, v) -> VOLTAGE_VALUE = v);
+    private static final BiConsumer<ServerPlayer, Double> CURRENT_GETTER = ((player, v) -> CURRENT_VALUE = v);
+    private static boolean ignoreFirstClickMessage = false;
+
     public static final HashMap<UUID, Circuit.Pin> pinMap = new HashMap<>();
+    public static final HashMap<UUID, NetworkModule> moduleMap = new HashMap<>();
 
     public MultimeterItem(Properties properties) {
         super(properties.stacksTo(1));
+    }
+
+    @Override
+    public @NotNull InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
+        //click in the ar, change the multimeter mode
+        if (player instanceof ServerPlayer sPlayer)
+        {
+            ItemStack stack = player.getItemInHand(hand);
+            MultimeterComponent component = PUT_MODULE_IF_ABSTENDE(stack);
+
+            component = new MultimeterComponent(component.id(), component.mode().next());
+
+            stack.set(MULTIMETER_CACHE_DATA_COMPONENT.get(), component);
+            sPlayer.sendSystemMessage(Component.translatable(MSG_MODE_CHANGED, component.mode().name()));
+
+            return InteractionResult.SUCCESS;
+        }
+
+        return super.use(level, player, hand);
     }
 
     @Override
@@ -48,15 +92,13 @@ public class MultimeterItem extends Item {
             if (!modules.isEmpty())
             {
                 if (!client)
-                {
                     for (NetworkModule module : modules)
                     {
                         handle(context.getItemInHand(), (ServerPlayer) context.getPlayer(), module);
                     }
-                }
                 return InteractionResult.SUCCESS;
             }
-            return InteractionResult.PASS;
+            return InteractionResult.FAIL;//avoids the mode change in the case that the player has clicked in a face that doesn't have a module
         }
         return super.useOn(context);
     }
@@ -64,90 +106,127 @@ public class MultimeterItem extends Item {
     /// Server side only!
     public @NotNull InteractionResult handle(ItemStack stack, ServerPlayer player, NetworkModule module)
     {
-        MultimeterComponent component = stack.getComponents().get(MULTIMETER_CACHE_DATA_COMPONENT.get());
-        boolean hasFirst = false;
-        if (component != null)
-            if (pinMap.containsKey(component.id()))
-                hasFirst = true;
+        MultimeterComponent component = PUT_MODULE_IF_ABSTENDE(stack);
 
-        if (hasFirst)
+        return switch (component.mode())
         {
-            switch (module)
+            case Voltage -> handleVoltage(pinMap.containsKey(component.id()), component, player, module);
+            case Current -> handleCurrent(moduleMap.containsKey(component.id()), component, player, module);
+            case Power -> handlePower(moduleMap.containsKey(component.id()), component, player, module);
+            case Resistence -> handleResistence(moduleMap.containsKey(component.id()), component, player, module);
+            case null -> InteractionResult.FAIL;
+        };
+    }
+
+    private @NotNull InteractionResult handleVoltage(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    {
+        final Circuit.Pin preview = contains ? pinMap.remove(component.id()) : null;//if contains remove, else just assign with anything
+        switch (module)
+        {
+            case ElectricalCableModule ecm ->
             {
-                case ElectricalCableModule ecm ->
-                {
-                    final var term = ecm.getTerminal()[0];
-                    Circuit.Pin first = pinMap.remove(component.id());
-                    stack.remove(MULTIMETER_CACHE_DATA_COMPONENT.get());
-                    sendVdiff(player, first, term);
-
-                    return InteractionResult.SUCCESS;
-                }
-                case ElectricalTerminalModule etm ->
-                {
-                    final var term = etm.getTerminal()[0];
-                    Circuit.Pin first = pinMap.remove(component.id());
-                    stack.remove(MULTIMETER_CACHE_DATA_COMPONENT.get());
-                    sendVdiff(player, first, term);
-
-                    return InteractionResult.SUCCESS;
-                }
-                case ElectricalElementModule eem ->
-                {
-                    sendVdiff(player, eem.getTerminalA().getTerminal()[0], eem.getTerminalB().getTerminal()[0]);
-                    pinMap.remove(component.id());
-                    stack.remove(MULTIMETER_CACHE_DATA_COMPONENT.get());
-
-                    return InteractionResult.SUCCESS;
-                }
-                case null, default ->
-                {
-                    return InteractionResult.FAIL;
-                }
+                if (contains)
+                    sendVdiff(player, ecm.getTerminal()[0], preview);
+                else
+                    mapPin(component.id(), ecm.getTerminal()[0], player);
+                return InteractionResult.SUCCESS;
             }
-        } else
-        {
-            switch (module)
+            case ElectricalTerminalModule etm ->
             {
-                case ElectricalCableModule ecm ->
-                {
-                    putComponent(stack, ecm.getTerminal()[0]);
-                    player.sendSystemMessage(Component.literal("First connection done").withColor(DyeColor.LIGHT_GRAY.getTextColor()));
-                    return InteractionResult.SUCCESS;
-                }
-                case ElectricalTerminalModule etm ->
-                {
-                    putComponent(stack, etm.getTerminal()[0]);
-                    player.sendSystemMessage(Component.literal("First connection done").withColor(DyeColor.LIGHT_GRAY.getTextColor()));
-                    return InteractionResult.SUCCESS;
-                }
-                case ElectricalElementModule eem ->
-                {
-                    sendVdiff(player, eem.getTerminalA().getTerminal()[0], eem.getTerminalB().getTerminal()[0]);
-                    player.sendSystemMessage(Component.literal("First connection done").withColor(DyeColor.LIGHT_GRAY.getTextColor()));
-                    return InteractionResult.SUCCESS;
-                }
-                case null, default ->
-                {
-                    return InteractionResult.FAIL;
-                }
+                if (contains)
+                    sendVdiff(player, etm.getTerminal()[0], preview);
+                else
+                    mapPin(component.id(), etm.getTerminal()[0], player);
+                return InteractionResult.SUCCESS;
+            }
+            case ElectricalElementModule eem ->
+            {
+                sendVdiff(player, eem.getTerminalA().getTerminal()[0], eem.getTerminalB().getTerminal()[0]);
+                return InteractionResult.SUCCESS;
+            }
+            case null, default ->
+            {
+                return InteractionResult.FAIL;
             }
         }
     }
 
-    private static void putComponent(ItemStack stack, Circuit.Pin pin)
+    private @NotNull InteractionResult handleCurrent(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
     {
-        UUID uuid = UUID.randomUUID();
-        stack.set(MULTIMETER_CACHE_DATA_COMPONENT.get(), new MultimeterComponent(uuid));
-        pinMap.put(uuid, pin);
+        final NetworkModule preview = contains ? moduleMap.remove(component.id()) : null;//if contains remove, else just assign with anything
+        switch (module)
+        {
+            case ElectricalCableModule ecm ->
+            {
+                if (contains)
+                    sendCableCurrent(player, ecm, preview);
+                else
+                    mapModule(component.id(), ecm, player);
+                return InteractionResult.SUCCESS;
+            }
+            case ElectricalTerminalModule etm ->
+            {
+                if (contains)
+                    sendTerminalCurrent(player, etm, preview);
+                else
+                    mapModule(component.id(), etm, player);
+                return InteractionResult.SUCCESS;
+            }
+            case ElectricalElementModule eem ->
+            {
+                sendCurrent(eem.getElement(), eem.getTerminalA().getTerminal()[0], player);
+                return InteractionResult.SUCCESS;
+            }
+            case null, default ->
+            {
+                return InteractionResult.FAIL;
+            }
+        }
+    }
+
+    private @NotNull InteractionResult handlePower(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    {
+        InteractionResult result = GET_VOLTAGE_AND_CURRENT(contains, component, player, module);
+        if (!result.consumesAction()) return InteractionResult.FAIL;
+        if (VOLTAGE_VALUE == null || CURRENT_VALUE == null) return InteractionResult.FAIL;
+
+        SEND_POWER_IN_CHAT.accept(player, VOLTAGE_VALUE * CURRENT_VALUE);
+        VOLTAGE_VALUE = null;
+        CURRENT_VALUE = null;
+        return InteractionResult.SUCCESS;
+    }
+
+    private @NotNull InteractionResult handleResistence(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    {
+        InteractionResult result = GET_VOLTAGE_AND_CURRENT(contains, component, player, module);
+        if (!result.consumesAction()) return InteractionResult.FAIL;
+        if (VOLTAGE_VALUE == null || CURRENT_VALUE == null) return InteractionResult.FAIL;
+
+        SEND_RESISTENCE_IN_CHAT.accept(player, VOLTAGE_VALUE / CURRENT_VALUE);
+        VOLTAGE_VALUE = null;
+        CURRENT_VALUE = null;
+        return InteractionResult.SUCCESS;
+    }
+
+    private void mapPin(UUID id, Circuit.Pin pin, ServerPlayer player)
+    {
+        pinMap.put(id, pin);
+        if (!ignoreFirstClickMessage)
+            player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK));
+    }
+
+    private void mapModule(UUID id, NetworkModule module, ServerPlayer player)
+    {
+        moduleMap.put(id, module);
+        if (!ignoreFirstClickMessage)
+            player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK));
     }
 
     private void sendVdiff(ServerPlayer player, Circuit.Pin a, Circuit.Pin b)
     {
         if (a == b)
         {
-            player.sendSystemMessage(Component.literal("You are measuring the voltage difference in the same point, it will always be zero!")
-                    .withColor(DyeColor.RED.getTextColor()));
+            player.sendSystemMessage(Component.translatable(MSG_VOLTAGE_SAME_SPLOT).withColor(DyeColor.RED.getTextColor()));
             return;
         }
         double va = 0, vb = 0;
@@ -156,11 +235,215 @@ public class MultimeterItem extends Item {
         if (b != null && b.P_voltage != null)
             vb = b.P_voltage[0];
 
-        player.sendSystemMessage(
-                Component.literal("Voltage: %s".formatted(
-                        Tools.proprietyToSi(va - vb, "V")
-                ))
-        );
+        SEND_VOLTAGE_ACTION.accept(player, vb - va);
+    }
+
+    private @NotNull InteractionResult GET_VOLTAGE_AND_CURRENT(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    {
+        ignoreFirstClickMessage = true;
+        //collects the voltage to the VOLTAGE_VALUE
+        SEND_VOLTAGE_ACTION = VOLTAGE_GETTER;
+        InteractionResult result = handleVoltage(contains, component, player, module);
+        SEND_VOLTAGE_ACTION = SEND_VOLTAGE_IN_CHAT;
+
+        if (!result.consumesAction())
+        {
+            ignoreFirstClickMessage = false;
+            return InteractionResult.FAIL;
+        }
+
+        //collects the current to the CURRENT_VALUE
+        SEND_CURRENT_ACTION = CURRENT_GETTER;
+        InteractionResult result0 = handleCurrent(contains, component, player, module);
+        SEND_CURRENT_ACTION = SEND_CURRENT_IN_CHAT;
+
+        ignoreFirstClickMessage = false;
+        if (result0.consumesAction())
+        {
+            if (!contains)
+                player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK));
+            return InteractionResult.SUCCESS;
+        }
+        else
+            return InteractionResult.FAIL;
+    }
+
+    private static void sendTerminalCurrent(ServerPlayer player, ElectricalTerminalModule etm, NetworkModule preview)
+    {
+        if (preview instanceof ElectricalTerminalModule module)
+        {
+            if (etm == module)
+                player.sendSystemMessage(Component.translatable(MSG_CURRENT_SAME_TERMINAL).withColor(DyeColor.RED.getTextColor()));
+            else
+            {
+                if (etm.getElectrical().ID != module.getElectrical().ID)
+                    player.sendSystemMessage(Component.translatable(MSG_CURRENT_DIF_ELEMENT).withColor(DyeColor.RED.getTextColor()));
+                else
+                {
+                    if (etm.getElectrical() instanceof ElectricalElementModule element)
+                    {
+                        sendCurrent(element.getElement(), etm.getTerminal()[0], player);
+                    }
+                    else
+                        player.sendSystemMessage(Component.literal("Corruption in the circuit formation :(, send this message to the devs!").withColor(DyeColor.RED.getTextColor()));
+                }
+            }
+        }
+        else if (preview instanceof ElectricalCableModule ecm)
+            sendCableTerminalCurrent(player, ecm, etm);
+    }
+
+    private static void sendCableCurrent(ServerPlayer player, ElectricalCableModule ecm, NetworkModule preview)
+    {
+        //terminal modules are volatility, the circuit isn't connected to it, it is a warper.
+        if (!(preview instanceof ElectricalTerminalModule) && ecm.getRoot() != preview.getRoot())
+        {
+            player.sendSystemMessage(Component.translatable(MSG_CURRENT_DIF_CIRCUIT).withColor(DyeColor.RED.getTextColor()));
+            return;
+        }
+
+        //measuring the current in one cable
+        if (ecm == preview)
+        {
+            Resistor resistor = FIND_BIGEST_RESISTOR(ecm);
+            if (resistor != null)
+                sendCurrent(Math.abs(resistor.getCurrent()), player);
+        }
+        else //is in the same network but are different modules.
+        {
+            //check if ecm and preview is neighbors.
+            //terminal modules are volatility, the circuit isn't connected to it, it is a warper.
+            if (!(preview instanceof ElectricalTerminalModule) && Arrays.stream(ecm.getNeighbors()).noneMatch(a -> a == preview))
+            {
+                player.sendSystemMessage(Component.translatable(MSG_TOO_FAR));
+                return;
+            }
+
+            if (preview instanceof ElectricalCableModule module)
+                sendCableCableCurrent(player, ecm, module);
+            else if (preview instanceof ElectricalTerminalModule module)
+                sendTerminalCableCurrent(player, module, ecm);
+        }
+    }
+
+    private static Resistor getResistorInCableTerminal(ElectricalCableModule ecm, ElectricalTerminalModule etm)
+    {
+        final List<Resistor> resistors = FIND_RESISTOR(ecm);
+        final Circuit.Pin pin = etm.getTerminal()[0];
+
+        final List<Resistor> filtered = resistors.stream().filter(r -> r.getPinA() == pin || r.getPinB() == pin).toList();
+
+        if (filtered.isEmpty())
+            return null;
+
+        return filtered.getFirst();
+    }
+
+    /// from a cable to a terminal, the cable is the preview "first clicked"!
+    private static void sendCableTerminalCurrent(ServerPlayer player, ElectricalCableModule ecm, ElectricalTerminalModule etm)
+    {
+        final Resistor resistor = getResistorInCableTerminal(ecm, etm);
+        if (resistor == null)
+        {
+            player.sendSystemMessage(Component.translatable(MSG_TOO_FAR));
+            return;
+        }
+        sendCurrent(resistor, etm.getTerminal()[0], player);
+    }
+
+    private static void sendTerminalCableCurrent(ServerPlayer player, ElectricalTerminalModule etm, ElectricalCableModule ecm)
+    {
+        final Resistor resistor = getResistorInCableTerminal(ecm, etm);
+        if (resistor == null)
+        {
+            player.sendSystemMessage(Component.translatable(MSG_TOO_FAR));
+            return;
+        }
+        sendCurrent(resistor, ecm.getTerminal()[0], player);
+    }
+
+    private static void sendCableCableCurrent(ServerPlayer player, ElectricalCableModule ecm, ElectricalCableModule preview)
+    {
+        List<Resistor> resistors = new ArrayList<>();
+        resistors.addAll(FIND_RESISTOR(preview));
+        resistors.addAll(FIND_RESISTOR(ecm));
+
+        //find the resistor connected between ecm and ecm0
+        List<Resistor> common = resistors.stream().filter(r ->
+                (r.getPinA() == preview.getTerminal()[0] || r.getPinB() == preview.getTerminal()[0]) && (r.getPinA() == ecm.getTerminal()[0] || r.getPinB() == ecm.getTerminal()[0])
+        ).toList();
+
+        //check to avoid crashs
+        if (common.isEmpty())
+            return;
+
+        Resistor resistor = common.getFirst();
+        sendCurrent(resistor, ecm.getTerminal()[0], player);
+    }
+
+    private static void sendCurrent(Element element, Circuit.Pin positivePin, ServerPlayer player)
+    {
+        final double current;
+        if (element.getPinA() == positivePin)
+            current = -element.getCurrent();
+        else
+            current = element.getCurrent();
+
+        sendCurrent(current, player);
+    }
+
+    private static void sendCurrent(double current, ServerPlayer player)
+    {
+        SEND_CURRENT_ACTION.accept(player, current);
+    }
+
+    /// Find all resistors that are connected to the ElectricalCableModule
+    private static List<Resistor> FIND_RESISTOR(ElectricalCableModule ecm)
+    {
+        //we need to iterate in all neighbors because the resistor only is one of the cables in the connection
+        HashSet<Resistor> resistors = new HashSet<>(Arrays.asList(ecm.getResistors()));
+        for (NetworkModule n : ecm.getNeighbors())
+            if (n instanceof ElectricalCableModule neighbor)
+                resistors.addAll(Arrays.asList(neighbor.getResistors()));
+
+        //the pin of this cable
+        final Circuit.Pin pin = ecm.getTerminal()[0];
+        //all resistors that are connected to the pin.
+        return resistors.stream().filter(r -> r.getPinA() == pin || r.getPinB() == pin).toList();
+    }
+
+    /// Return the resistor that has more absolute current flowing in it.
+    private static Resistor FIND_BIGEST_RESISTOR(ElectricalCableModule ecm)
+    {
+        //all resistors that are connected to the pin sorted by the current value.
+        List<Resistor> connectedTo = FIND_RESISTOR(ecm).stream().sorted(Comparator.comparing(Resistor::getCurrent)).toList();
+
+        //check of cable that is unconnected.
+        if (connectedTo.size() >= 2)
+        {
+            Resistor high = connectedTo.getFirst();
+            Resistor low = connectedTo.getLast();
+
+            //send the biggest current by module.
+            if (Math.abs(high.getCurrent()) > Math.abs(low.getCurrent()))
+                return high;
+            else
+                return low;
+        }
+        return null;
+    }
+
+    private static MultimeterComponent PUT_MODULE_IF_ABSTENDE(ItemStack stack)
+    {
+        MultimeterComponent component = stack.getComponents().get(MULTIMETER_CACHE_DATA_COMPONENT.get());
+
+        if (component == null)
+        {
+            component = new MultimeterComponent();
+            stack.set(MULTIMETER_CACHE_DATA_COMPONENT.get(), component);
+        }
+
+        return component;
     }
 
     private List<NetworkModule> filterModules(Module[] modules)

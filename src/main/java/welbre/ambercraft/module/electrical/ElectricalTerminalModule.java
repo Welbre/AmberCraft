@@ -53,6 +53,10 @@ public class ElectricalTerminalModule extends NetworkModule {
             return super.connect(target);
     }
 
+    public ElectricalModule getElectrical() {
+        return electrical;
+    }
+
     public Circuit.Pin[] getTerminal() {
         return terminal;
     }
