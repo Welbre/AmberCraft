@@ -16,7 +16,7 @@ import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.electrical.ElectricalElementModule;
 
 public class ElectricalBlock extends Block implements EntityBlock {
-    public static final ModuleFactory<ElectricalElementModule, ElectricalBE> factory = new ModuleFactory<>(
+    public ModuleFactory<ElectricalElementModule, ElectricalBE> factory = new ModuleFactory<>(
             ElectricalBE.class,
             AmberCraft.ModuleTypes.ELECTRICAL_MODULE_TYPE,
             ElectricalElementModule::alloc,

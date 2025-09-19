@@ -36,6 +36,7 @@ public class EN_US_LanguageProvider extends LanguageProvider {
 
     private void addMultimeter()
     {
+        add("item.ambercraft.multimeter", "Multimeter");
         add("item.ambercraft.multimeter.mode_changed", "Multimeter mode changed to: %s");
         add("item.ambercraft.multimeter.too_far", "You are too far away from the module!");
         add("item.ambercraft.multimeter.voltage", "Voltage: %s");

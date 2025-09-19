@@ -39,14 +39,14 @@ import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 import java.util.UUID;
 
 public class HeatPumpBlock extends Block implements EntityBlock {
-    public static final ModuleFactory<HeatModule, HeatPumpBE> COLD_FACTORY = new ModuleFactory<>(HeatPumpBE.class,
+    public final ModuleFactory<HeatModule, HeatPumpBE> COLD_FACTORY = new ModuleFactory<>(HeatPumpBE.class,
             AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
             module -> {module.alloc(); module.getHeatNode().setThermalConductivity(100.0); module.getHeatNode().setThermalMass(30.0);},
             HeatModule::free,
             HeatPumpBE::setColdModule,
             HeatPumpBE::getColdModule
             ).setConstructor((module, entity, factory, level, pos) -> module.init(entity, level, pos));
-    public static final ModuleFactory<HeatModule, HeatPumpBE> HOT_FACTORY = COLD_FACTORY.copy().setGetter(HeatPumpBE::getHotModule).setSetter(HeatPumpBE::setHotModule);
+    public final ModuleFactory<HeatModule, HeatPumpBE> HOT_FACTORY = COLD_FACTORY.copy().setGetter(HeatPumpBE::getHotModule).setSetter(HeatPumpBE::setHotModule);
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 

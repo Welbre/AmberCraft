@@ -20,7 +20,7 @@ import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.heat.HeatModule;
 
 public class CreativeHeatFurnaceBlock extends FreeRotationBlock implements EntityBlock {
-    public static final ModuleFactory<HeatModule, CreativeHeatFurnaceBE> factory = new ModuleFactory<>(
+    public ModuleFactory<HeatModule, CreativeHeatFurnaceBE> factory = new ModuleFactory<>(
             CreativeHeatFurnaceBE.class,
             AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
             HeatModule::alloc,

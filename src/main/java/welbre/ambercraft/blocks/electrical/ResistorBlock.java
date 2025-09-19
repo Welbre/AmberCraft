@@ -1,7 +1,7 @@
 package welbre.ambercraft.blocks.electrical;
 
 
-import kuse.welbre.sim.electrical.elements.VoltageSource;
+import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -23,15 +23,17 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 
-public class VoltageSourceBlock extends ElectricalBlock {
+public class ResistorBlock extends ElectricalBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
-    public VoltageSourceBlock(Properties p) {
+    public ResistorBlock(Properties p) {
         super(p);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
-        factory.setConstructor((module, entity, factory, level, pos) -> {
-            module.setElement(new VoltageSource(0));
-        });
+        factory.setConstructor(
+                (module, entity, factory, level, pos) -> {
+                    module.setElement(new Resistor(1));
+                }
+        );
     }
 
     @Override
@@ -39,16 +41,21 @@ public class VoltageSourceBlock extends ElectricalBlock {
         var result = super.useWithoutItem(state, level, pos, player, hitResult);
         if (result.consumesAction())
             return result;
-        if (level.getBlockEntity(pos) instanceof ElectricalBE source && player.getMainHandItem().is(Items.AIR))
+        if (level.getBlockEntity(pos) instanceof ElectricalBE element && player.getMainHandItem().is(Items.AIR))
         {
             if (!level.isClientSide)
             {
-                final double voltage = source.getElement().getVoltageDifference() + (player.isShiftKeyDown() ? -10 : 10);
-                ((VoltageSource) source.getElement()).setSourceVoltage(voltage);
-                source.setChanged();
-                source.getElectricalModule().dirtMaster();
-                level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-                ((ServerPlayer) player).sendSystemMessage(Component.literal("Voltage set to: " + voltage).withColor(DyeColor.ORANGE.getTextColor()));
+                if ( element.getElement() instanceof Resistor resistor)
+                {
+                    final double resistance = resistor.getResistance() * (player.isShiftKeyDown() ? 0.5 : 2);
+                    resistor.setResistance(Math.max(10e-6, resistance));//1microOhm of min resistence
+                    element.setChanged();
+                    element.getElectricalModule().dirtMaster();
+                    level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
+                    ((ServerPlayer) player).sendSystemMessage(Component.literal("Resistance set to: " + resistance).withColor(DyeColor.ORANGE.getTextColor()));
+                    return InteractionResult.SUCCESS;
+                }
+                return InteractionResult.FAIL;
             }
             return InteractionResult.SUCCESS;
         }

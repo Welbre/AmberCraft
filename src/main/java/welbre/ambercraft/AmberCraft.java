@@ -16,13 +16,14 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.*;
 import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.*;
+import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.blockentity.electrical.GroundBE;
 import welbre.ambercraft.blockentity.heat.*;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.electrical.ElectricalBlock;
 import welbre.ambercraft.blocks.electrical.GroundBlock;
-import welbre.ambercraft.blocks.electrical.VoltageSourceBE;
+import welbre.ambercraft.blocks.electrical.ResistorBlock;
 import welbre.ambercraft.blocks.electrical.VoltageSourceBlock;
 import welbre.ambercraft.blocks.heat.*;
 import welbre.ambercraft.item.components.FacedCableComponent;
@@ -45,10 +46,9 @@ import welbre.ambercraft.network.PayLoadRegister;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Mod(AmberCraft.MOD_ID)
 public class AmberCraft {
@@ -99,13 +99,17 @@ public class AmberCraft {
         public static final DeferredHolder<Block, FacedCableBlock> ABSTRACT_FACED_CABLE_BLOCK = REGISTER.registerBlock("faced_cable", FacedCableBlock::new);
 
         /// contains all blocks that can use {@link HeatBE}
-        public static final List<DeferredHolder<Block, ? extends HeatBlock>> HEAT_BE_USES = new ArrayList<>(List.of(
+        public static final List<DeferredHolder<Block, ? extends Block>> HEAT_BE_USES = new ArrayList<>(List.of(
                 COPPER_HEAT_CONDUCTOR_BLOCK,IRON_HEAT_CONDUCTOR_BLOCK,GOLD_HEAT_CONDUCTOR_BLOCK,CREATIVE_HEAT_CONDUCTOR_BLOCK, HEAT_SOURCE_BLOCK
         ));
 
         /// Contains all blocks that can use {@link ElectricalBE}
-        public static final List<DeferredHolder<Block,? extends ElectricalBlock>> ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
-                VOLTAGE_SOURCE_BLOCK
+        public static final List<DeferredHolder<Block,? extends Block>> ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
+
+        ));
+        /// Contains all blocks that can use {@link welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE}
+        public static final List<DeferredHolder<Block,? extends Block>> DIRECTIONAl_ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
+                VOLTAGE_SOURCE_BLOCK, RESISTOR_BLOCK
         ));
     }
 
@@ -137,17 +141,20 @@ public class AmberCraft {
     }
 
     public static final class BlockEntity {
+        private static Set<Block> GET_BLOCKS(Collection<DeferredHolder<Block, ? extends Block>> set) {
+            return set.stream().map(DeferredHolder::get).collect(Collectors.toSet());
+        }
         public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
 
-        public static final Supplier<BlockEntityType<HeatBE>> HEAT_BE = REGISTER.register("heat", () -> new BlockEntityType<>(HeatBE::new, Blocks.HEAT_BE_USES.stream().map(DeferredHolder::get).toArray(Block[]::new)));
+        public static final Supplier<BlockEntityType<HeatBE>> HEAT_BE = REGISTER.register("heat", () -> new BlockEntityType<>(HeatBE::new, GET_BLOCKS(Blocks.HEAT_BE_USES)));
         public static final Supplier<BlockEntityType<HeatFurnaceBE>> HEAT_FURNACE_BE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceBE::new, Blocks.HEAT_FURNACE_BLOCK.get()));
         public static final Supplier<BlockEntityType<HeatSourceBE>> HEAT_SOURCE_BE = REGISTER.register("heat_source", () -> new BlockEntityType<>(HeatSourceBE::new,Blocks.HEAT_SOURCE_BLOCK.get()));
         public static final Supplier<BlockEntityType<HeatPumpBE>> HEAT_PUMP_BE = REGISTER.register("heat_pump", () -> new BlockEntityType<>(HeatPumpBE::new, Blocks.HEAT_PUMP_BLOCK.get()));
         public static final Supplier<BlockEntityType<CreativeHeatFurnaceBE>> CREATIVE_HEAT_FURNACE_BE = REGISTER.register("creative_heat_furnace", () -> new BlockEntityType<>(CreativeHeatFurnaceBE::new,Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get()));
 
         //electrical
-        public static final Supplier<BlockEntityType<ElectricalBE>> ELECTRICAL_BE = REGISTER.register("electrical", () -> new BlockEntityType<>(ElectricalBE::new, Blocks.ELECTRICAL_BE_USERS.stream().map(DeferredHolder::get).toArray(Block[]::new)));
-        public static final Supplier<BlockEntityType<VoltageSourceBE>> VOLTAGE_SOURCE_BE = REGISTER.register("voltage_source", () -> new BlockEntityType<>(VoltageSourceBE::new, Blocks.VOLTAGE_SOURCE_BLOCK.get()));
+        public static final Supplier<BlockEntityType<ElectricalBE>> ELECTRICAL_BE = REGISTER.register("electrical", () -> new BlockEntityType<>(ElectricalBE::new, GET_BLOCKS(Blocks.ELECTRICAL_BE_USERS)));
+        public static final Supplier<BlockEntityType<DirectionalElectricalBE>> DIRECTIONAL_ELECTRICAL_BE = REGISTER.register("directional_electrical", () -> new BlockEntityType<>(DirectionalElectricalBE::new, GET_BLOCKS(Blocks.DIRECTIONAl_ELECTRICAL_BE_USERS)));
         public static final Supplier<BlockEntityType<GroundBE>> GROUND_BE = REGISTER.register("ground", () -> new BlockEntityType<>(GroundBE::new, Blocks.GROUND_BLOCK.get()));
 
         public static final Supplier<BlockEntityType<HeatSinkBE>> HEAT_SINK_BLOCK_BE = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBE::new,Blocks.HEAT_SINK_BLOCK.get()));

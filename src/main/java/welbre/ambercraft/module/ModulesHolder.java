@@ -143,9 +143,9 @@ public abstract class ModulesHolder extends BlockEntity {
         }catch (Exception e)
         {
             if (module == null)
-                AmberCraft.LOGGER.error("Error loading modules holder block entity at {}!", getBlockPos());
+                AmberCraft.LOGGER.error("Error loading modules holder {} block entity at {}!", getClass().getSimpleName(), getBlockPos());
             else
-                AmberCraft.LOGGER.error("Error loading {} for block entity at {} with ID 0x{}", module.getClass().getSimpleName(), getBlockPos(), Integer.toHexString(module.getID()), e);
+                AmberCraft.LOGGER.error("Error loading modules holder {}, module {} for block entity at {} with ID 0x{}", getClass().getSimpleName(), module.getClass().getSimpleName(), getBlockPos(), Integer.toHexString(module.getID()), e);
             level.removeBlock(getBlockPos(), false);
         }
     }
