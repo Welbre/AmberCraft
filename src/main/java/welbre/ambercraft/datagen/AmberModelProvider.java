@@ -94,6 +94,8 @@ public class AmberModelProvider extends ModelProvider {
                 "connection_creative_block", "connection_creative_block", "resistor_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.CAPACITOR_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "capacitor_block");
+        CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.INDUCTOR_BLOCK.get(),
+                "connection_creative_block", "connection_creative_block", "inductor_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.GROUND_BLOCK.get(),
                 "connection_creative_block", "ground_block","ground_block");
 

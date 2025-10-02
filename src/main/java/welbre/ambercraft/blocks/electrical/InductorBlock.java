@@ -1,6 +1,7 @@
 package welbre.ambercraft.blocks.electrical;
 
 import kuse.welbre.sim.electrical.elements.Capacitor;
+import kuse.welbre.sim.electrical.elements.Inductor;
 import kuse.welbre.tools.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,12 +16,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 
-public class CapacitorBlock extends DirectionalElectricalBlock {
-    public CapacitorBlock(Properties p) {
+public class InductorBlock extends DirectionalElectricalBlock {
+    public InductorBlock(Properties p) {
         super(p);
         factory.setConstructor(
                 (module, entity, factory, level, pos) -> {
-                    module.setElement(new Capacitor(10e-6));//1uF
+                    module.setElement(new Inductor(10e-6));//1uH
                 }
         );
     }
@@ -34,14 +35,14 @@ public class CapacitorBlock extends DirectionalElectricalBlock {
         {
             if (!level.isClientSide)
             {
-                if (element.getElement() instanceof Capacitor capacitor)
+                if (element.getElement() instanceof Inductor inductor)
                 {
-                    final double capacitance = capacitor.getCapacitance() * (player.isShiftKeyDown() ? 0.5 : 2);
-                    capacitor.setCapacitance(Math.max(1e-6, capacitance));//1uF of min capacitance
+                    final double inductance = inductor.getInductance() * (player.isShiftKeyDown() ? 0.5 : 2);
+                    inductor.setInductance(Math.max(1e-6, inductance));//1uH of min inductance
                     element.setChanged();
                     element.getElectricalModule().dirtMaster();
                     level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-                    ((ServerPlayer) player).sendSystemMessage(Component.translatable("ambercraft.capacitance.set", Tools.proprietyToSi(capacitance, capacitor.getPropertiesSymbols()[0])).withColor(DyeColor.ORANGE.getTextColor()));
+                    ((ServerPlayer) player).sendSystemMessage(Component.translatable("ambercraft.inductance.set", Tools.proprietyToSi(inductance, inductor.getPropertiesSymbols()[0])).withColor(DyeColor.ORANGE.getTextColor()));
                     return InteractionResult.SUCCESS;
                 }
                 return InteractionResult.FAIL;
@@ -50,5 +51,4 @@ public class CapacitorBlock extends DirectionalElectricalBlock {
         }
         return InteractionResult.PASS;
     }
-
 }

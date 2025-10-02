@@ -76,6 +76,32 @@ public class CircuitTest
                 );
     }
 
+    @PrefixGameTestTemplate(false)
+    @GameTest(template = "electrical/voltage_source_and_inductor", timeoutTicks = 300)
+    public static void electrical_vs_and_indutor(GameTestHelper helper)
+    {
+        RUN_ELEMENT_TEST(6, helper,
+                new ElectricalCircuitTestHelper<>(
+                        0,
+                        GET_SUPPLIER_FROM_BE(helper, new BlockPos(1,1,1)),
+                        CURRENT_ABS_BIGGER_THAT_CHECK(0),
+                        CURRENT_ABS_BIGGER_THAT_CRASHER(0)
+                ),
+                new ElectricalCircuitTestHelper<>(
+                        5,
+                        GET_SUPPLIER_FROM_BE(helper, new BlockPos(1,1,1)),
+                        CURRENT_ABS_CHECK(25),
+                        CURRENT_ABS_CRASHER(25)
+                ),
+                new ElectricalCircuitTestHelper<>(
+                        3,
+                        GET_SUPPLIER_FROM_BE(helper, new BlockPos(1,1,1)),
+                        CURRENT_ABS_BETWEEN_CHECK(0, 25),
+                        CURRENT_ABS_BETWEEN_CRASHER(0, 25)
+                )
+        );
+    }
+
     //------------------------------------------------------------------------------------------------------------------
     //-----------------------------------------------utils--------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------

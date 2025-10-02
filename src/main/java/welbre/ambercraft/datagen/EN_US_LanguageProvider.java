@@ -15,8 +15,11 @@ public class EN_US_LanguageProvider extends LanguageProvider {
 
         //electrical
         addBlock(AmberCraft.Blocks.VOLTAGE_SOURCE_BLOCK, "Voltage source");
-        addBlock(AmberCraft.Blocks.CAPACITOR_BLOCK, "Capacitor");
         addBlock(AmberCraft.Blocks.RESISTOR_BLOCK, "Resistor");
+        addBlock(AmberCraft.Blocks.CAPACITOR_BLOCK, "Capacitor");
+        add("ambercraft.capacitance.set", "Capacitance set to: %s");
+        addBlock(AmberCraft.Blocks.INDUCTOR_BLOCK, "Inductor");
+        add("ambercraft.inductance.set", "Inductance set to: %s");
         addBlock(AmberCraft.Blocks.GROUND_BLOCK, "Ground");
 
         addBlock(AmberCraft.Blocks.HEAT_FURNACE_BLOCK, "Heat furnace");

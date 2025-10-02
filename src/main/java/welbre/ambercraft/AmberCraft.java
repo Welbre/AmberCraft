@@ -22,10 +22,7 @@ import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.blockentity.electrical.GroundBE;
 import welbre.ambercraft.blockentity.heat.*;
 import welbre.ambercraft.blocks.*;
-import welbre.ambercraft.blocks.electrical.CapacitorBlock;
-import welbre.ambercraft.blocks.electrical.GroundBlock;
-import welbre.ambercraft.blocks.electrical.ResistorBlock;
-import welbre.ambercraft.blocks.electrical.VoltageSourceBlock;
+import welbre.ambercraft.blocks.electrical.*;
 import welbre.ambercraft.blocks.heat.*;
 import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.cables.CableType;
@@ -81,6 +78,7 @@ public class AmberCraft {
         public static final DeferredHolder<Block, VoltageSourceBlock> VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("voltage_source_block", VoltageSourceBlock::new);
         public static final DeferredHolder<Block, ResistorBlock> RESISTOR_BLOCK = REGISTER.registerBlock("resistor_block", ResistorBlock::new);
         public static final DeferredHolder<Block, CapacitorBlock> CAPACITOR_BLOCK = REGISTER.registerBlock("capacitor_block", CapacitorBlock::new);
+        public static final DeferredHolder<Block, InductorBlock> INDUCTOR_BLOCK = REGISTER.registerBlock("inductor_block", InductorBlock::new);
         public static final DeferredHolder<Block, GroundBlock> GROUND_BLOCK = REGISTER.registerBlock("ground_block", GroundBlock::new);
 
         public static final DeferredHolder<Block, Block> IRON_MACHINE_CASE_BLOCK = REGISTER.registerSimpleBlock("iron_machine_case_block");
@@ -111,7 +109,7 @@ public class AmberCraft {
         ));
         /// Contains all blocks that can use {@link welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE}
         public static final List<DeferredHolder<Block,? extends Block>> DIRECTIONAl_ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
-                VOLTAGE_SOURCE_BLOCK, RESISTOR_BLOCK, CAPACITOR_BLOCK
+                VOLTAGE_SOURCE_BLOCK, RESISTOR_BLOCK, CAPACITOR_BLOCK, INDUCTOR_BLOCK
         ));
     }
 
@@ -122,6 +120,7 @@ public class AmberCraft {
         public static final DeferredItem<BlockItem> VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.VOLTAGE_SOURCE_BLOCK);
         public static final DeferredItem<BlockItem> RESISTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.RESISTOR_BLOCK);
         public static final DeferredItem<BlockItem> CAPACITOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CAPACITOR_BLOCK);
+        public static final DeferredItem<BlockItem> INDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.INDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> GROUND_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GROUND_BLOCK);
         public static final DeferredItem<BlockItem> HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_FURNACE_BLOCK);
         public static final DeferredItem<BlockItem> CREATIVE_HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CREATIVE_HEAT_FURNACE_BLOCK);
