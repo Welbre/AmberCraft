@@ -3,6 +3,7 @@ package welbre.ambercraft;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -21,7 +22,7 @@ import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.blockentity.electrical.GroundBE;
 import welbre.ambercraft.blockentity.heat.*;
 import welbre.ambercraft.blocks.*;
-import welbre.ambercraft.blocks.electrical.ElectricalBlock;
+import welbre.ambercraft.blocks.electrical.CapacitorBlock;
 import welbre.ambercraft.blocks.electrical.GroundBlock;
 import welbre.ambercraft.blocks.electrical.ResistorBlock;
 import welbre.ambercraft.blocks.electrical.VoltageSourceBlock;
@@ -79,6 +80,7 @@ public class AmberCraft {
         // electrical blocks
         public static final DeferredHolder<Block, VoltageSourceBlock> VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("voltage_source_block", VoltageSourceBlock::new);
         public static final DeferredHolder<Block, ResistorBlock> RESISTOR_BLOCK = REGISTER.registerBlock("resistor_block", ResistorBlock::new);
+        public static final DeferredHolder<Block, CapacitorBlock> CAPACITOR_BLOCK = REGISTER.registerBlock("capacitor_block", CapacitorBlock::new);
         public static final DeferredHolder<Block, GroundBlock> GROUND_BLOCK = REGISTER.registerBlock("ground_block", GroundBlock::new);
 
         public static final DeferredHolder<Block, Block> IRON_MACHINE_CASE_BLOCK = REGISTER.registerSimpleBlock("iron_machine_case_block");
@@ -96,7 +98,7 @@ public class AmberCraft {
         public static final DeferredHolder<Block, GoldHeatConductorBlock> GOLD_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("gold_heat_conductor", GoldHeatConductorBlock::new);
         public static final DeferredHolder<Block, CreativeHeatConductorBlock> CREATIVE_HEAT_CONDUCTOR_BLOCK = REGISTER.registerBlock("creative_heat_conductor", CreativeHeatConductorBlock::new);
 
-        public static final DeferredHolder<Block, FacedCableBlock> ABSTRACT_FACED_CABLE_BLOCK = REGISTER.registerBlock("faced_cable", FacedCableBlock::new);
+        public static final DeferredHolder<Block, FacedCableBlock> FACED_CABLE_BLOCK = REGISTER.registerBlock("faced_cable", FacedCableBlock::new);
 
         /// contains all blocks that can use {@link HeatBE}
         public static final List<DeferredHolder<Block, ? extends Block>> HEAT_BE_USES = new ArrayList<>(List.of(
@@ -109,7 +111,7 @@ public class AmberCraft {
         ));
         /// Contains all blocks that can use {@link welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE}
         public static final List<DeferredHolder<Block,? extends Block>> DIRECTIONAl_ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
-                VOLTAGE_SOURCE_BLOCK, RESISTOR_BLOCK
+                VOLTAGE_SOURCE_BLOCK, RESISTOR_BLOCK, CAPACITOR_BLOCK
         ));
     }
 
@@ -119,6 +121,7 @@ public class AmberCraft {
         public static final DeferredItem<BlockItem> IRON_MACHINE_CASE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_MACHINE_CASE_BLOCK);
         public static final DeferredItem<BlockItem> VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.VOLTAGE_SOURCE_BLOCK);
         public static final DeferredItem<BlockItem> RESISTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.RESISTOR_BLOCK);
+        public static final DeferredItem<BlockItem> CAPACITOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CAPACITOR_BLOCK);
         public static final DeferredItem<BlockItem> GROUND_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GROUND_BLOCK);
         public static final DeferredItem<BlockItem> HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_FURNACE_BLOCK);
         public static final DeferredItem<BlockItem> CREATIVE_HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CREATIVE_HEAT_FURNACE_BLOCK);
@@ -141,9 +144,8 @@ public class AmberCraft {
     }
 
     public static final class BlockEntity {
-        private static Set<Block> GET_BLOCKS(Collection<DeferredHolder<Block, ? extends Block>> set) {
-            return set.stream().map(DeferredHolder::get).collect(Collectors.toSet());
-        }
+        private static Set<Block> GET_BLOCKS(Collection<DeferredHolder<Block, ? extends Block>> set) {return set.stream().map(DeferredHolder::get).collect(Collectors.toSet());}
+
         public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
 
         public static final Supplier<BlockEntityType<HeatBE>> HEAT_BE = REGISTER.register("heat", () -> new BlockEntityType<>(HeatBE::new, GET_BLOCKS(Blocks.HEAT_BE_USES)));
@@ -158,7 +160,7 @@ public class AmberCraft {
         public static final Supplier<BlockEntityType<GroundBE>> GROUND_BE = REGISTER.register("ground", () -> new BlockEntityType<>(GroundBE::new, Blocks.GROUND_BLOCK.get()));
 
         public static final Supplier<BlockEntityType<HeatSinkBE>> HEAT_SINK_BLOCK_BE = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBE::new,Blocks.HEAT_SINK_BLOCK.get()));
-        public static final Supplier<BlockEntityType<FacedCableBE>> FACED_CABLE_BLOCK_BE = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBE::new,Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()));
+        public static final Supplier<BlockEntityType<FacedCableBE>> FACED_CABLE_BLOCK_BE = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBE::new,Blocks.FACED_CABLE_BLOCK.get()));
     }
 
     public static final class AmberRegisters {
@@ -246,12 +248,14 @@ public class AmberCraft {
                     var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
                     stack.set(Components.CABLE_DATA_COMPONENT.get(),
                             new FacedCableComponent(CableTypes.HEAT_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
+                    stack.set(DataComponents.CUSTOM_NAME, Component.literal( color.getName() + " heat cable"));//todo add in the translatable file
                     list.add(stack);
                 }
                 {
                     var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
                     stack.set(Components.CABLE_DATA_COMPONENT.get(),
                             new FacedCableComponent(CableTypes.ELECTRICAL_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
+                    stack.set(DataComponents.CUSTOM_NAME, Component.literal( color.getName() + " electrical cable"));//todo add in the translatable file
                     list.add(stack);
                 }
             }

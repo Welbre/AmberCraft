@@ -35,9 +35,9 @@ public record FacedCableRemoveFacePayload(BlockPos pos, Direction face) implemen
             cable.getBrain().removeCenter(face);
 
             //update diagonal and neighbors
-            level.updateNeighborsAt(pos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get());
+            level.updateNeighborsAt(pos, AmberCraft.Blocks.FACED_CABLE_BLOCK.get());
             for (Direction dir : CableState.GET_FACE_DIRECTIONS(face))
-                level.neighborChanged(cable.getBlockPos().relative(dir).relative(face), AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
+                level.neighborChanged(cable.getBlockPos().relative(dir).relative(face), AmberCraft.Blocks.FACED_CABLE_BLOCK.get(), null);
 
             // remove if is empty, else update
             if (cable.getState().isEmpty())

@@ -78,9 +78,9 @@ public class FacedCableBlock extends Block implements EntityBlock {
                     cable.removeCenter(face);
 
                     //send block update the neighbors
-                    level.updateNeighborsAt(pos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get());
+                    level.updateNeighborsAt(pos, AmberCraft.Blocks.FACED_CABLE_BLOCK.get());
                     for (Direction dir : CableState.GET_FACE_DIRECTIONS(face))
-                        level.neighborChanged(cable.getBlockPos().relative(dir).relative(face), AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
+                        level.neighborChanged(cable.getBlockPos().relative(dir).relative(face), AmberCraft.Blocks.FACED_CABLE_BLOCK.get(), null);
                 }
             }
             if (cable.getState().isEmpty())//remove if is empty
@@ -150,6 +150,30 @@ public class FacedCableBlock extends Block implements EntityBlock {
             if (dir.isEmpty())
                 return InteractionResult.FAIL;
 
+            if (stack.isEmpty())
+            {
+                if (player.isCrouching())
+                {
+                    if (level instanceof ServerLevel)
+                    {
+                        Optional<Direction> direction = GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, player);
+                        if (direction.isEmpty())
+                            return InteractionResult.FAIL;
+
+                        cable.toggleIgnoreColor(direction.get());
+
+                        player.displayClientMessage(Component.literal("Cable toggled!").withColor(0x08dd08), false);
+                    }
+                }
+                else
+                {
+                    player.displayClientMessage(Component.literal(cable.getState() + " client: " + level.isClientSide).withColor(level.isClientSide ?
+                            DyeColor.ORANGE.getTextColor() : DyeColor.LIGHT_BLUE.getTextColor()), false);
+                    player.displayClientMessage(Component.empty(), false);
+                }
+                return InteractionResult.SUCCESS;
+            }
+
             FaceBrain brain = cable.getBrain().getFaceBrain(dir.get());
             InteractionResult result = InteractionResult.PASS;
             if (brain != null)
@@ -175,39 +199,21 @@ public class FacedCableBlock extends Block implements EntityBlock {
         }
         if (level.getBlockEntity(pos) instanceof FacedCableBE cable)
         {
-            if (player.isCrouching())
+            Optional<Direction> dir = GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, player);
+            if (dir.isEmpty())
+                return InteractionResult.FAIL;
+
+            FaceBrain brain = cable.getBrain().getFaceBrain(dir.get());
+            InteractionResult result = InteractionResult.PASS;
+            if (brain != null)
             {
-                if (level instanceof ServerLevel serverLevel)
+                for (Module module : brain.modules())
                 {
-                    Optional<Direction> direction = GET_FACE_DIRECTION_USING_RAY_CAST(cable, pos, player);
-                    if (direction.isEmpty())
-                        return InteractionResult.FAIL;
-
-                    FaceState status = cable.getState().getFaceStatus(direction.get());
-                    status.data.ignoreColor = !status.data.ignoreColor;
-
-                    final var result = cable.updateState();
-                    cable.updateBrain();
-
-                    cable.setChanged();
-
-                    if (result.changed())
-                        PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
-
-                    for (var p : result.diagonal())
-                        serverLevel.neighborChanged(p, this, null);
-                    serverLevel.updateNeighborsAt(pos, this);
-
-                    player.displayClientMessage(Component.literal("Cable toggled!").withColor(0x08dd08), false);
+                    var resultLocal = module.getType().useWithoutItem(module, state, level, pos, player, hitResult);
+                    if (resultLocal.consumesAction())
+                        result = resultLocal;
                 }
-                return InteractionResult.SUCCESS;
-            }
-            else
-            {
-                player.displayClientMessage(Component.literal(cable.getState() + " client: " + level.isClientSide).withColor(level.isClientSide ?
-                        DyeColor.ORANGE.getTextColor() : DyeColor.LIGHT_BLUE.getTextColor()), false);
-                player.displayClientMessage(Component.empty(), false);
-                return InteractionResult.SUCCESS;
+                return result;
             }
         }
         return InteractionResult.FAIL;

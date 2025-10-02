@@ -1,7 +1,10 @@
 package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.Circuit;
+import kuse.welbre.sim.electrical.CircuitAnalyser;
 import kuse.welbre.sim.electrical.abstractt.Element;
+import kuse.welbre.sim.electrical.abstractt.Element3Pin;
+import kuse.welbre.sim.electrical.abstractt.Element4Pin;
 import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,6 +16,7 @@ import java.util.*;
 
 public class ElectricalModulesMaster extends Master {
     public transient AutoGroundingCircuit circuit;
+    public boolean isCrashed = false;
 
     public ElectricalModulesMaster(NetworkModule master) {
         super(master);
@@ -60,11 +64,23 @@ public class ElectricalModulesMaster extends Master {
         {
             AmberCraft.LOGGER.warn("ElectricalModuleMaster failed to preCompile!", e);
             Profiler.get().pop();
+            isCrashed = true;
             return true;
         }
 
         Profiler.get().pop();
         return true;
+    }
+
+    @Override
+    protected void tick(BlockEntity entity, boolean isClientSide) {
+        if (isCrashed)
+            return;
+
+        Profiler.get().push("ElectricalModuleMaster tick");
+        if (!isClientSide)
+            circuit.tick();
+        Profiler.get().pop();
     }
 
     /**
@@ -119,9 +135,10 @@ public class ElectricalModulesMaster extends Master {
                 biggestPin.address = gnd.address;
                 elements_per_pin.remove(gnd);
                 gnd = biggestPin;
-                changePins = true;
             }
 
+            //find pins that are not connected and connect it to a high-resistence resistor to beable the simulation to run.
+            //this is a trick because the mna can't solve unground circuits.
             for (Map.Entry<Pin, List<Element>> entry : elements_per_pin.entrySet())
             {
                 //is connected only to one element.
@@ -131,7 +148,6 @@ public class ElectricalModulesMaster extends Master {
                     entry.getValue().add(resistor);
                     elements_per_pin.get(gnd).add(resistor);
                     addElement(resistor);
-                    changePins = true;
                 }
             }
 
@@ -151,13 +167,27 @@ public class ElectricalModulesMaster extends Master {
                             key));
                 }
             }
+
+            //assign the gnd pin to null
+            for (Element element : elements_per_pin.get(gnd))
+            {
+                if (element.getPinA() != null)
+                    if (element.getPinA().address == gnd.address)
+                        element.connectA(null);
+                if (element.getPinB() != null)
+                    if (element.getPinB().address == gnd.address)
+                        element.connectB(null);
+                if (element instanceof Element3Pin tpe)
+                    if (tpe.getPinC() != null)
+                        if (tpe.getPinC().address == gnd.address)
+                            tpe.connectC(null);
+                if (element instanceof Element4Pin fpe)
+                    if (fpe.getPinD() != null)
+                        if (fpe.getPinD().address == gnd.address)
+                            fpe.connectD(null);
+            }
+            //redo the analyses to compute the new pins amount.
+            this.analyseResult = new CircuitAnalyser(this);
         }
-    }
-
-    @Override
-    protected void tick(BlockEntity entity, boolean isClientSide) {
-        Profiler.get().push("ElectricalModuleMaster tick");
-
-        Profiler.get().pop();
     }
 }

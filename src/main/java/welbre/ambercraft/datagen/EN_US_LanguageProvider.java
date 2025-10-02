@@ -12,9 +12,13 @@ public class EN_US_LanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         addBlock(AmberCraft.Blocks.IRON_MACHINE_CASE_BLOCK, "Iron machine case");
+
+        //electrical
         addBlock(AmberCraft.Blocks.VOLTAGE_SOURCE_BLOCK, "Voltage source");
+        addBlock(AmberCraft.Blocks.CAPACITOR_BLOCK, "Capacitor");
         addBlock(AmberCraft.Blocks.RESISTOR_BLOCK, "Resistor");
         addBlock(AmberCraft.Blocks.GROUND_BLOCK, "Ground");
+
         addBlock(AmberCraft.Blocks.HEAT_FURNACE_BLOCK, "Heat furnace");
         addBlock(AmberCraft.Blocks.CREATIVE_HEAT_FURNACE_BLOCK, "Creative heat furnace");
         addBlock(AmberCraft.Blocks.COPPER_HEAT_CONDUCTOR_BLOCK, "Copper heat conductor");
@@ -25,8 +29,9 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addBlock(AmberCraft.Blocks.HEAT_SOURCE_BLOCK, "Heat source");
         addBlock(AmberCraft.Blocks.HEAT_PUMP_BLOCK, "Heat pump");
 
-        addBlock(AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK, "Abstract cable");
+        addBlock(AmberCraft.Blocks.FACED_CABLE_BLOCK, "Abstract cable");
 
+        //tools
         addItem(AmberCraft.Items.NETWORK_TOOL, "Network Tool");
         addItem(AmberCraft.Items.THERMOMETER, "Thermometer");
         addMultimeter();

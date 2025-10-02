@@ -92,6 +92,8 @@ public class AmberModelProvider extends ModelProvider {
                 "connection_creative_block", "connection_creative_block", "voltage_source_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.RESISTOR_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "resistor_block");
+        CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.CAPACITOR_BLOCK.get(),
+                "connection_creative_block", "connection_creative_block", "capacitor_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.GROUND_BLOCK.get(),
                 "connection_creative_block", "ground_block","ground_block");
 
@@ -110,7 +112,7 @@ public class AmberModelProvider extends ModelProvider {
         CABLES.CREATE_CENTRED(blocks, AmberCraft.Blocks.GOLD_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("minecraft:block/gold_block"));
         CABLES.CREATE_CENTRED(blocks, AmberCraft.Blocks.CREATIVE_HEAT_CONDUCTOR_BLOCK.get(), ResourceLocation.parse("ambercraft:block/creative_machine_base"));
 
-        CABLES.CREATE_FACED(blocks, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), ResourceLocation.parse("minecraft:block/white_wool"));
+        CABLES.CREATE_FACED(blocks, AmberCraft.Blocks.FACED_CABLE_BLOCK.get(), ResourceLocation.parse("minecraft:block/white_wool"));
     }
 
     private static void CREATE_HEAT_PUMP(@NotNull BlockModelGenerators blocks) {

@@ -9,11 +9,13 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.cables.*;
@@ -21,6 +23,7 @@ import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.NetworkModule;
+import welbre.ambercraft.network.facedcable.FacedCableStateChangePayload;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -149,7 +152,7 @@ public class FacedCableBE extends ModulesHolder {
                 //diagonal connection
                 BlockPos diagonal = neighbor.relative(face);
                 BlockState n_state = level.getBlockState(neighbor);
-                if ((n_state.isAir() || n_state.getBlock() == AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()) && level.getBlockEntity(diagonal) instanceof FacedCableBE other)
+                if ((n_state.isAir() || n_state.getBlock() == AmberCraft.Blocks.FACED_CABLE_BLOCK.get()) && level.getBlockEntity(diagonal) instanceof FacedCableBE other)
                 {
                     BlockPos dia_face_vec = anchor.subtract(diagonal);
                     Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
@@ -222,7 +225,7 @@ public class FacedCableBE extends ModulesHolder {
                 //diagonal connection
                 BlockPos diagonal = neighbor.relative(face);
                 BlockState n_state = level.getBlockState(neighbor);
-                if ((n_state.isAir() || n_state.getBlock() == AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get()) && level.getBlockEntity(diagonal) instanceof FacedCableBE other)
+                if ((n_state.isAir() || n_state.getBlock() == AmberCraft.Blocks.FACED_CABLE_BLOCK.get()) && level.getBlockEntity(diagonal) instanceof FacedCableBE other)
                 {
                     BlockPos dia_face_vec = anchor.subtract(diagonal);
                     Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
@@ -260,6 +263,34 @@ public class FacedCableBE extends ModulesHolder {
         BlockPos pos = getBlockPos();
         ItemEntity item = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
         level.addFreshEntity(item);
+    }
+
+    /**
+     * Toggles the ignore variable in the cable data.<br>
+     * <code color="red">Server side only!</code>
+     * @param dir
+     */
+    public void toggleIgnoreColor(Direction dir)
+    {
+        FaceState status = state.getFaceStatus(dir);
+        if (status == null)
+            throw new IllegalArgumentException("The direction " + dir + " doesn't have a cable!");
+        if ( ! (this.getLevel() instanceof ServerLevel serverLevel))//server side only
+            throw new RuntimeException("Called from the wrong side!");
+
+        status.data.ignoreColor = !status.data.ignoreColor;
+        final var result = updateState();
+        updateBrain();
+
+        setChanged();
+
+        if (result.changed())
+            PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(this));
+        var block = AmberCraft.Blocks.FACED_CABLE_BLOCK.get();
+
+        for (var p : result.diagonal())
+            serverLevel.neighborChanged(p, block, null);
+        serverLevel.updateNeighborsAt(getBlockPos(), block);
     }
 
     @Override

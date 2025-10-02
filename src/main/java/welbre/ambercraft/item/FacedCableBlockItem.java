@@ -29,7 +29,7 @@ import welbre.ambercraft.network.facedcable.FacedCableStateChangePayload;
 
 public class FacedCableBlockItem extends BlockItem {
     public FacedCableBlockItem(Item.Properties properties) {
-        super(AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(),properties);
+        super(AmberCraft.Blocks.FACED_CABLE_BLOCK.get(),properties);
     }
 
     //client and server side.
@@ -76,9 +76,9 @@ public class FacedCableBlockItem extends BlockItem {
                     FacedCableBE.UpdateShapeResult result = cable.updateState();
 
                     PacketDistributor.sendToPlayersInDimension(serverLevel, new FacedCableStateChangePayload(cable));
-                    level.updateNeighborsAt(pos, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get());
+                    level.updateNeighborsAt(pos, AmberCraft.Blocks.FACED_CABLE_BLOCK.get());
                     for (var p : result.diagonal())
-                        serverLevel.neighborChanged(p, AmberCraft.Blocks.ABSTRACT_FACED_CABLE_BLOCK.get(), null);
+                        serverLevel.neighborChanged(p, AmberCraft.Blocks.FACED_CABLE_BLOCK.get(), null);
 
                     cable.updateBrain();
                     level.sendBlockUpdated(pos, state, state, 0);

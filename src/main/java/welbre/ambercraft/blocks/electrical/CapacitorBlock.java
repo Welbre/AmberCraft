@@ -1,34 +1,25 @@
 package welbre.ambercraft.blocks.electrical;
 
-
-import kuse.welbre.sim.electrical.elements.Resistor;
+import kuse.welbre.sim.electrical.elements.Capacitor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 
-public class ResistorBlock extends DirectionalElectricalBlock {
-    public ResistorBlock(Properties p) {
+public class CapacitorBlock extends DirectionalElectricalBlock {
+    public CapacitorBlock(Properties p) {
         super(p);
         factory.setConstructor(
                 (module, entity, factory, level, pos) -> {
-                    module.setElement(new Resistor(1));
+                    module.setElement(new Capacitor(10e-6));//1uF
                 }
         );
     }
@@ -42,14 +33,14 @@ public class ResistorBlock extends DirectionalElectricalBlock {
         {
             if (!level.isClientSide)
             {
-                if ( element.getElement() instanceof Resistor resistor)
+                if (element.getElement() instanceof Capacitor capacitor)
                 {
-                    final double resistance = resistor.getResistance() * (player.isShiftKeyDown() ? 0.5 : 2);
-                    resistor.setResistance(Math.max(10e-6, resistance));//1microOhm of min resistence
+                    final double capacitance = capacitor.getCapacitance() * (player.isShiftKeyDown() ? 0.5 : 2);
+                    capacitor.setCapacitance(Math.max(1e-6, capacitance));//1uF of min capacitance
                     element.setChanged();
                     element.getElectricalModule().dirtMaster();
                     level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-                    ((ServerPlayer) player).sendSystemMessage(Component.literal("Resistance set to: " + resistance).withColor(DyeColor.ORANGE.getTextColor()));
+                    ((ServerPlayer) player).sendSystemMessage(Component.literal("Capacitance set to: " + capacitance).withColor(DyeColor.ORANGE.getTextColor()));
                     return InteractionResult.SUCCESS;
                 }
                 return InteractionResult.FAIL;
@@ -58,4 +49,5 @@ public class ResistorBlock extends DirectionalElectricalBlock {
         }
         return InteractionResult.PASS;
     }
+
 }
