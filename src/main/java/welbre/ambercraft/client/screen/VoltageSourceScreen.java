@@ -182,7 +182,7 @@ public class VoltageSourceScreen extends Screen {
         } else if (type == 2)
         {
             if (source.getElement() instanceof SquareVoltageSource sq)
-                voltage = sq.getVoltage();
+                voltage = sq.getSourceVoltage();
         }
         buf.writeDouble(voltage);
         buf.writeByte((byte) type);

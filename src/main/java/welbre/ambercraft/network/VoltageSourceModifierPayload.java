@@ -5,7 +5,6 @@ import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.sim.electrical.elements.ACVoltageSource;
 import kuse.welbre.sim.electrical.elements.SquareVoltageSource;
 import kuse.welbre.sim.electrical.elements.VoltageSource;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -73,7 +72,7 @@ public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, d
             case SQUARE -> {
                 if (element instanceof SquareVoltageSource vs)
                 {
-                    vs.setVoltage(voltage);
+                    vs.setSourceVoltage(voltage);
                     vs.setFrequency(frequency);
                 }
             }
