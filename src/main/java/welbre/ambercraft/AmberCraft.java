@@ -76,6 +76,8 @@ public class AmberCraft {
 
         // electrical blocks
         public static final DeferredHolder<Block, VoltageSourceBlock> VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("voltage_source_block", VoltageSourceBlock::new);
+        public static final DeferredHolder<Block, ACVoltageSourceBlock> AC_VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("ac_voltage_source_block", ACVoltageSourceBlock::new);
+        public static final DeferredHolder<Block, SquareVoltageSourceBlock> SQUARE_VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("square_voltage_source_block", SquareVoltageSourceBlock::new);
         public static final DeferredHolder<Block, ResistorBlock> RESISTOR_BLOCK = REGISTER.registerBlock("resistor_block", ResistorBlock::new);
         public static final DeferredHolder<Block, CapacitorBlock> CAPACITOR_BLOCK = REGISTER.registerBlock("capacitor_block", CapacitorBlock::new);
         public static final DeferredHolder<Block, InductorBlock> INDUCTOR_BLOCK = REGISTER.registerBlock("inductor_block", InductorBlock::new);
@@ -109,19 +111,25 @@ public class AmberCraft {
         ));
         /// Contains all blocks that can use {@link welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE}
         public static final List<DeferredHolder<Block,? extends Block>> DIRECTIONAl_ELECTRICAL_BE_USERS = new ArrayList<>(List.of(
-                VOLTAGE_SOURCE_BLOCK, RESISTOR_BLOCK, CAPACITOR_BLOCK, INDUCTOR_BLOCK
+                VOLTAGE_SOURCE_BLOCK, AC_VOLTAGE_SOURCE_BLOCK, SQUARE_VOLTAGE_SOURCE_BLOCK, RESISTOR_BLOCK, CAPACITOR_BLOCK, INDUCTOR_BLOCK
         ));
     }
 
     public static final class Items{
         public static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(MOD_ID);
-        //block itens
-        public static final DeferredItem<BlockItem> IRON_MACHINE_CASE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_MACHINE_CASE_BLOCK);
+
+        //electrical
         public static final DeferredItem<BlockItem> VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.VOLTAGE_SOURCE_BLOCK);
+        public static final DeferredItem<BlockItem> AC_VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.AC_VOLTAGE_SOURCE_BLOCK);
+        public static final DeferredItem<BlockItem> SQUARE_VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.SQUARE_VOLTAGE_SOURCE_BLOCK);
         public static final DeferredItem<BlockItem> RESISTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.RESISTOR_BLOCK);
         public static final DeferredItem<BlockItem> CAPACITOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CAPACITOR_BLOCK);
         public static final DeferredItem<BlockItem> INDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.INDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> GROUND_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GROUND_BLOCK);
+
+
+        //block itens
+        public static final DeferredItem<BlockItem> IRON_MACHINE_CASE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_MACHINE_CASE_BLOCK);
         public static final DeferredItem<BlockItem> HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.HEAT_FURNACE_BLOCK);
         public static final DeferredItem<BlockItem> CREATIVE_HEAT_FURNACE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CREATIVE_HEAT_FURNACE_BLOCK);
 

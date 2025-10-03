@@ -15,6 +15,19 @@ public class EN_US_LanguageProvider extends LanguageProvider {
 
         //electrical
         addBlock(AmberCraft.Blocks.VOLTAGE_SOURCE_BLOCK, "Voltage source");
+        addBlock(AmberCraft.Blocks.AC_VOLTAGE_SOURCE_BLOCK, "Alternated voltage source");
+        addBlock(AmberCraft.Blocks.SQUARE_VOLTAGE_SOURCE_BLOCK, "Square voltage source");
+        add("ambercraft.voltage.set", "Voltage set to: %s");
+        add("ambercraft.voltage.screen.title", "Voltage source settings");
+        add("ambercraft.voltage.screen.done", "Done");
+        add("ambercraft.voltage.screen.voltage", "Voltage");
+        add("ambercraft.voltage.screen.frequency", "Frequency");
+        add("ambercraft.voltage.screen.voltage_suggestion", "The voltage difference between the terminals in Volts");
+        add("ambercraft.voltage.screen.frequency_suggestion", "The source frequency in Hertz");
+        add("ambercraft.voltage.screen.mode", "Mode");
+        add("ambercraft.voltage.screen.voltage_mode.dc", "Direct voltage");
+        add("ambercraft.voltage.screen.voltage_mode.sine", "Alternated voltage");
+        add("ambercraft.voltage.screen.voltage_mode.square", "Square voltage");
         addBlock(AmberCraft.Blocks.RESISTOR_BLOCK, "Resistor");
         addBlock(AmberCraft.Blocks.CAPACITOR_BLOCK, "Capacitor");
         add("ambercraft.capacitance.set", "Capacitance set to: %s");
@@ -50,7 +63,7 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         add("item.ambercraft.multimeter.voltage", "Voltage: %s");
         add("item.ambercraft.multimeter.current", "Current: %s");
         add("item.ambercraft.multimeter.power", "Power: %s");
-        add("item.ambercraft.multimeter.resistence", "Resistence: %s");
+        add("item.ambercraft.multimeter.resistance", "Resistance: %s");
         add("item.ambercraft.multimeter.first_click", "First point selected");
         add("item.ambercraft.multimeter.voltage_same_spot", "You are measuring the voltage difference in the same point, it will always be zero!");
         add("item.ambercraft.multimeter.current_same_terminal", "You can't measure the current in the same terminal!");

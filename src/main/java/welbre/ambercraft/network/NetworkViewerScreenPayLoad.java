@@ -32,7 +32,7 @@ public record NetworkViewerScreenPayLoad(byte[] data, BlockPos pos) implements C
         buf.writeBlockPos(payLoad.pos());
         buf.writeByteArray(payLoad.data());
         // The array wrote in the convert step, should be unserialized in the Screen constructor using the buffer.
-        AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.NETWORK_DEBUG_TOOL, buf, (LocalPlayer) context.player());
+        AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.NETWORK_DEBUG_TOOL, buf);
     }
 
 

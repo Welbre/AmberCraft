@@ -90,6 +90,10 @@ public class AmberModelProvider extends ModelProvider {
 
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.VOLTAGE_SOURCE_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "voltage_source_block");
+        CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.AC_VOLTAGE_SOURCE_BLOCK.get(),
+                "connection_creative_block", "connection_creative_block", "ac_voltage_source_block");
+        CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.SQUARE_VOLTAGE_SOURCE_BLOCK.get(),
+                "connection_creative_block", "connection_creative_block", "square_voltage_source_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.RESISTOR_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "resistor_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.CAPACITOR_BLOCK.get(),

@@ -1,14 +1,14 @@
 package welbre.ambercraft.blocks.electrical;
 
 
+import io.netty.buffer.Unpooled;
 import kuse.welbre.sim.electrical.elements.VoltageSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -19,9 +19,16 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
+import welbre.ambercraft.client.AmberCraftScreenHelper;
+import welbre.ambercraft.client.screen.VoltageSourceScreen;
+import welbre.ambercraft.network.AmberCraftScreenOpenerPayload;
+import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
+
+import java.util.UUID;
 
 public class VoltageSourceBlock extends ElectricalBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
@@ -43,13 +50,26 @@ public class VoltageSourceBlock extends ElectricalBlock {
         {
             if (!level.isClientSide)
             {
+                AmberCraftScreenHelper.openInClient(
+                        AmberCraftScreenHelper.TYPES.VOLTAGE_SOURCE_SETTINGS,
+                        VoltageSourceScreen.CREATE_BUFFER(level, pos),
+                        (ServerPlayer) player
+                );
+                //send a new key to the client to modify the block via AmberCraftVoltageSourceModifierPayload
+                UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, source.getClass(), (ServerPlayer) player);
+            }
+            /*
+            if (!level.isClientSide)
+            {
                 final double voltage = source.getElement().getVoltageDifference() + (player.isShiftKeyDown() ? -10 : 10);
                 ((VoltageSource) source.getElement()).setSourceVoltage(voltage);
                 source.setChanged();
                 source.getElectricalModule().dirtMaster();
                 level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-                ((ServerPlayer) player).sendSystemMessage(Component.literal("Voltage set to: " + voltage).withColor(DyeColor.ORANGE.getTextColor()));
+                ((ServerPlayer) player).sendSystemMessage(Component.translatable("ambercraft.voltage.set",voltage).withColor(DyeColor.ORANGE.getTextColor()));
             }
+
+             */
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

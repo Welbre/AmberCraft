@@ -1,7 +1,6 @@
 package welbre.ambercraft.blocks.heat;
 
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -46,7 +45,7 @@ public class HeatSourceBlock extends HeatBlock {
         if (level.getBlockEntity(pos) instanceof HeatSourceBE source)
         {
             if (level.isClientSide)
-                AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.HEAT_SOURCE, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(pos), (LocalPlayer) player);
+                AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.HEAT_SOURCE, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(pos));
             else
                 ((ServerPlayer)player).connection.send(ClientboundBlockEntityDataPacket.create(source));
         }

@@ -33,6 +33,18 @@ public class PayLoadRegister {
                 ModifyFieldsPayLoad::handleOnServer
         );
 
+        registrar.playToClient(
+                AmberCraftScreenOpenerPayload.TYPE,
+                AmberCraftScreenOpenerPayload.STREAM_CODEC,
+                AmberCraftScreenOpenerPayload::handleOnClient
+        );
+
+        registrar.playToServer(
+                VoltageSourceModifierPayload.TYPE,
+                VoltageSourceModifierPayload.STREAM_CODEC,
+                VoltageSourceModifierPayload::handleOnServer
+        );
+
         //faced cables payloads
         registrar.playToServer(FacedCableRemoveFacePayload.TYPE, FacedCableRemoveFacePayload.STREAM_CODEC, FacedCableRemoveFacePayload::handleOnServer);
         registrar.playToClient(FacedCableStateChangePayload.TYPE, FacedCableStateChangePayload.STREAM_CODEC, FacedCableStateChangePayload::handleOnClient);
