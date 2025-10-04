@@ -14,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
+import welbre.ambercraft.client.screen.widget.Slider;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 import welbre.ambercraft.network.VoltageSourceModifierPayload;
 
@@ -28,6 +29,7 @@ public class VoltageSourceScreen extends Screen {
     public VoltageSourceType type;
 
     public EditBox voltageBox;
+    public Slider voltageSlider;
     public double voltage;
 
     StringWidget frequencyString;
@@ -61,6 +63,10 @@ public class VoltageSourceScreen extends Screen {
         voltageBox.setFilter(DOUBLE_BOX_FILTER(voltageBox));
         voltageBox.setValue(String.valueOf(voltage));
 
+        voltageSlider = new Slider(width / 2 + 5, 125, 100, 20, 1000,-1000, Component.literal(""));
+        voltageSlider.setValue(voltage, false);
+        voltageSlider.setOnValueChange(this::VOLTAGE_SLIDER_ON_CHANGE);
+
         {
             Component text = Component.translatable("ambercraft.voltage.screen.frequency");
             int textWidth = font.width(text);
@@ -80,12 +86,23 @@ public class VoltageSourceScreen extends Screen {
 
         addRenderableWidget(voltageString);
         addRenderableWidget(voltageBox);
+        addRenderableWidget(voltageSlider);
         addRenderableWidget(frequencyString);
         addRenderableWidget(frequencyBox);
         addRenderableWidget(modeButton);
         addRenderableWidget(done);
 
         MODE_CHANGED(modeButton, type);//update the components to the actual type
+    }
+
+    private void VOLTAGE_SLIDER_ON_CHANGE(Slider ignored, double value)
+    {
+        voltage = value;
+        //used doesn't call the editbox responder again and modifies the field
+        voltageBox.setResponder((s) -> {});
+        voltageBox.setValue(String.valueOf(voltage));
+        voltageBox.moveCursorToStart(false);
+        voltageBox.setResponder(this::VOLTAGE_BOX_RESPONDER);
     }
 
     private void DONE_BUTTON_ON_PRESS(Button button)
@@ -125,6 +142,8 @@ public class VoltageSourceScreen extends Screen {
         } else {
             voltageBox.setSuggestion("");
             voltage = Double.parseDouble(string);
+            if (voltageSlider != null)
+                voltageSlider.setValue(voltage, false);
         }
     }
 
