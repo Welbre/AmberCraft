@@ -17,17 +17,7 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addBlock(AmberCraft.Blocks.VOLTAGE_SOURCE_BLOCK, "Voltage source");
         addBlock(AmberCraft.Blocks.AC_VOLTAGE_SOURCE_BLOCK, "Alternated voltage source");
         addBlock(AmberCraft.Blocks.SQUARE_VOLTAGE_SOURCE_BLOCK, "Square voltage source");
-        add("ambercraft.voltage.set", "Voltage set to: %s");
-        add("ambercraft.voltage.screen.title", "Voltage source settings");
-        add("ambercraft.voltage.screen.done", "Done");
-        add("ambercraft.voltage.screen.voltage", "Voltage");
-        add("ambercraft.voltage.screen.frequency", "Frequency");
-        add("ambercraft.voltage.screen.voltage_suggestion", "The voltage difference between the terminals in Volts");
-        add("ambercraft.voltage.screen.frequency_suggestion", "The source frequency in Hertz");
-        add("ambercraft.voltage.screen.mode", "Mode");
-        add("ambercraft.voltage.screen.voltage_mode.dc", "Direct voltage");
-        add("ambercraft.voltage.screen.voltage_mode.sine", "Alternated voltage");
-        add("ambercraft.voltage.screen.voltage_mode.square", "Square voltage");
+        addVoltageScreen();
         addBlock(AmberCraft.Blocks.RESISTOR_BLOCK, "Resistor");
         addBlock(AmberCraft.Blocks.CAPACITOR_BLOCK, "Capacitor");
         add("ambercraft.capacitance.set", "Capacitance set to: %s");
@@ -54,6 +44,27 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addItem(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM, "Faced cable");
     }
 
+
+    private void addVoltageScreen()
+    {
+        add("ambercraft.voltage.set", "Voltage set to: %s");
+        add("ambercraft.voltage.screen.title", "Voltage source settings");
+        add("ambercraft.voltage.screen.done", "Done");
+        add("ambercraft.voltage.screen.voltage", "Voltage");
+        add("ambercraft.voltage.screen.frequency", "Frequency");
+        add("ambercraft.voltage.screen.dutycycle", "Duty cycle");
+        add("ambercraft.voltage.screen.phaseshift", "Phase shift");
+        add("ambercraft.voltage.screen.voff", "Voltage offset");
+        add("ambercraft.voltage.screen.voltage_suggestion", "The voltage difference between the terminals in Volts");
+        add("ambercraft.voltage.screen.frequency_suggestion", "The source frequency in Hertz");
+        add("ambercraft.voltage.screen.dutycycle_suggestion", "The ratio between the \"on\" state and the \"off\" on a period in percent");
+        add("ambercraft.voltage.screen.phaseshift_suggestion", "The fase dislocation in degrees");
+        add("ambercraft.voltage.screen.voff_suggestion", "A fix voltage component on the source in Volts");
+        add("ambercraft.voltage.screen.mode", "Mode");
+        add("ambercraft.voltage.screen.voltage_mode.dc", "Direct voltage");
+        add("ambercraft.voltage.screen.voltage_mode.sine", "Alternated voltage");
+        add("ambercraft.voltage.screen.voltage_mode.square", "Square voltage");
+    }
 
     private void addMultimeter()
     {

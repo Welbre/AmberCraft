@@ -18,12 +18,16 @@ import java.util.function.Function;
  */
 public class Slider extends AbstractWidget
 {
+    public static final int INVERSE_INTERPOLATION_RESOLUTION = 500;
+
     public static final ResourceLocation TEXTURE = ResourceLocation.parse("ambercraft:textures/gui/slider_potentiometer.png");
     private double high, low;
     /// A function that receives a double in an intervale of [1;0] and returns a double in the same intervale.
     /// The received double is where the knob is positioned, zero is the low, and 1 is on the high.
     /// The return of this function then is used to determine the slide value using a linear interpolation.
-    public Function<Double, Double> interpolation;
+    private Function<Double, Double> interpolation;
+    /// Used to do an interpolation in the inverse of the {@link #interpolation} function.
+    private double[] points;
     private BiConsumer<Slider, Double> onValueChange = (slider, value) -> {};
     /// How much of the width can't be used in the knob position.<br> should be a value on {1;0} range!<br>
     /// Exemple, the default texture has 200 pixels in width. However, the first 10 pixels and the last 10 pixels have some details, so,
@@ -37,9 +41,11 @@ public class Slider extends AbstractWidget
     public Slider(int x, int y, int width, int height, double high, double low, Component message)
     {
         super(x, y, width, height, message);
+        if (high <= low)
+            throw new IllegalArgumentException("The high value must be greater than the low value!");
         this.high = high;
         this.low = low;
-        this.interpolation = (v) -> v;//linear
+        this.setInterpolation((v) -> v);//linear
         setDeadPoint(20.0 / 200.0);
     }
 
@@ -88,7 +94,7 @@ public class Slider extends AbstractWidget
 
     public void setValue(double value, boolean notify)
     {
-        double relative = (value-low)/(high-low);
+        double relative = getInversePoint(value);
         where = Math.clamp(relative, 0, 1);
         if (notify)
             onValueChange.accept(this, getValue());
@@ -110,12 +116,36 @@ public class Slider extends AbstractWidget
         this.onValueChange = onValueChange;
     }
 
+    public void setInterpolation(Function<Double, Double> interpolation) {
+        this.interpolation = interpolation;
+        points = new double[INVERSE_INTERPOLATION_RESOLUTION];
+        final double step = 1.0 / INVERSE_INTERPOLATION_RESOLUTION;
+        int index = 0;
+        for (double i = 0; i <= 1; i += step)
+            points[index++] = (high-low)*interpolation.apply(i) + low;
+    }
+
+    public double getInversePoint(double value)
+    {
+        final double clamped = Math.clamp(value, low, high);
+        final double step = 1.0 / INVERSE_INTERPOLATION_RESOLUTION;
+        for (int i = 0; i < INVERSE_INTERPOLATION_RESOLUTION-1; i++)
+        {
+            if (points[i] <= clamped && points[i+1] >= clamped)
+                return (i + ((clamped-points[i]) / (points[i+1]-points[i]))) * step;
+        }
+        return 0;
+    }
+
     public double getHigh() {
         return high;
     }
 
     public void setHigh(double high) {
+        if (high <= low)
+            throw new IllegalArgumentException("The high value must be greater than the low value!");
         this.high = high;
+        setInterpolation(interpolation);
     }
 
     public double getLow() {
@@ -123,7 +153,10 @@ public class Slider extends AbstractWidget
     }
 
     public void setLow(double low) {
+        if (high <= low)
+            throw new IllegalArgumentException("The high value must be greater than the low value!");
         this.low = low;
+        setInterpolation(interpolation);
     }
 
     @Override

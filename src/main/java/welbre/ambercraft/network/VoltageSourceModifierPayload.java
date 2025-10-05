@@ -22,11 +22,11 @@ import welbre.ambercraft.blocks.electrical.DirectionalElectricalBlock;
 
 import java.util.UUID;
 
-public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, double voltage, double frequency) implements CustomPacketPayload {
+public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, double voltage, double frequency, double duty, double phase, double offset) implements CustomPacketPayload {
 
-    public VoltageSourceModifierPayload(String key, int vsType, double voltage, double frequency)
+    public VoltageSourceModifierPayload(String key, int vsType, double voltage, double frequency, double duty, double phase, double offset)
     {
-        this(UUID.fromString(key), VoltageSourceType.values()[vsType], voltage, frequency);
+        this(UUID.fromString(key), VoltageSourceType.values()[vsType], voltage, frequency, duty, phase, offset);
     }
 
     public void handleOnServer(IPayloadContext context) {
@@ -50,7 +50,7 @@ public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, d
         };
         Direction facing = level.getBlockState(pos).getValue(DirectionalElectricalBlock.FACING);
         state = state.setValue(DirectionalElectricalBlock.FACING, facing);
-        level.setBlockAndUpdate(pos, state);
+        level.setBlock(pos, state, 0);
 
         if (! (level.getBlockEntity(pos) instanceof ElectricalBE electricalBE))
             return;
@@ -74,11 +74,15 @@ public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, d
                 {
                     vs.setSourceVoltage(voltage);
                     vs.setFrequency(frequency);
+                    vs.setDutyCycle(duty);
+                    vs.setPhaseShift(phase);
+                    vs.setV_off(offset);
                 }
             }
         }
         electricalBE.setChanged();
         electricalBE.getElectricalModule().dirtMaster();
+        level.sendBlockUpdated(pos, state, state, DirectionalElectricalBlock.UPDATE_ALL);
     }
 
 
@@ -87,6 +91,9 @@ public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, d
             ByteBufCodecs.BYTE, VoltageSourceModifierPayload::vsTypeAsByte,
             ByteBufCodecs.DOUBLE, VoltageSourceModifierPayload::voltage,
             ByteBufCodecs.DOUBLE, VoltageSourceModifierPayload::frequency,
+            ByteBufCodecs.DOUBLE, VoltageSourceModifierPayload::duty,
+            ByteBufCodecs.DOUBLE, VoltageSourceModifierPayload::phase,
+            ByteBufCodecs.DOUBLE, VoltageSourceModifierPayload::offset,
             VoltageSourceModifierPayload::new
             );
     public static final Type<VoltageSourceModifierPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(AmberCraft.MOD_ID, "voltage_source_modifier_payload"));
