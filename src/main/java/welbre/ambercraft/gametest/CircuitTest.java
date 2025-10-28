@@ -24,7 +24,7 @@ import static net.minecraft.world.level.block.Blocks.*;
 public class CircuitTest
 {
     public static final int NUMBER_OF_RUNS = 30;
-    public static boolean SHOULD_DISPLAY_SCHEDULER = true;
+    public static boolean SHOULD_DISPLAY_SCHEDULER = false;
     public static final Block STRUCTURE_BLOCK = QUARTZ_BRICKS;
     public static final List<Block> TEST_BLOCKS = List.of(REDSTONE_BLOCK, EMERALD_BLOCK, DIAMOND_BLOCK, COPPER_BLOCK, IRON_BLOCK, LAPIS_BLOCK, AMETHYST_BLOCK, NETHERITE_BLOCK);
 

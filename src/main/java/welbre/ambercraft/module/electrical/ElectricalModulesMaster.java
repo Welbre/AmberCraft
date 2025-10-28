@@ -45,7 +45,7 @@ public class ElectricalModulesMaster extends Master {
             visited.add(next);
 
             if (next instanceof ElectricalTerminalModule)
-                throw new IllegalStateException("ElectricalTerminalModule is not a valid module for an ElectricalModuleMaster!");
+                throw new IllegalStateException("ElectricalTerminalModule should be connected in the network, it is only a placeholder!");
 
             if (next instanceof ElectricalModule eem)//add all elements
                 elements.addAll(Arrays.asList(eem.compile()));
@@ -90,10 +90,12 @@ public class ElectricalModulesMaster extends Master {
      */
     public static class AutoGroundingCircuit extends Circuit
     {
+        public Pin gnd;
+
         @Override
         protected void checkInconsistencies() {
             //initiation
-            Pin gnd = new Pin();
+            gnd = new Pin();
             HashMap<Pin, List<Element>> elements_per_pin = new HashMap<>();
 
             //All pins to map
@@ -105,8 +107,6 @@ public class ElectricalModulesMaster extends Master {
             for (Element element : getElements())
                 for (Pin pin : element.getPins())
                     elements_per_pin.get(pin == null ? gnd : pin).add(element);
-
-            boolean changePins = false;
 
             //ungrounded check
             //the ground is extremely important to the solver, if isn't presente set the pin with more elements to be the ground.
@@ -158,7 +158,7 @@ public class ElectricalModulesMaster extends Master {
                 if (entry.getValue().isEmpty())
                     throw new IllegalStateException(String.format("%s have no connections! possible fault in circuit formation.", key));
 
-                if (entry.getValue().size() == 1) {
+                if (entry.getValue().size() == 1 && entry.getKey() != gnd) {
                     Element element = list.getFirst();
                     throw new IllegalStateException(String.format("%s[%s,%s] is connected to %s without a path, possible fault in circuit formation!",
                             element.getClass().getSimpleName(),

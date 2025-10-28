@@ -35,7 +35,7 @@ public class MultimeterItem extends Item {
     private static final String MSG_VOLTAGE = "item.ambercraft.multimeter.voltage";
     private static final String MSG_CURRENT= "item.ambercraft.multimeter.current";
     private static final String MSG_POWER = "item.ambercraft.multimeter.power";
-    private static final String MSG_RESISTENCE = "item.ambercraft.multimeter.resistence";
+    private static final String MSG_RESISTENCE = "item.ambercraft.multimeter.resistance";
     private static final String MSG_FIRST_CLICK = "item.ambercraft.multimeter.first_click";
     private static final String MSG_VOLTAGE_SAME_SPLOT = "item.ambercraft.multimeter.voltage_same_spot";
     private static final String MSG_CURRENT_SAME_TERMINAL = "item.ambercraft.multimeter.current_same_terminal";
@@ -212,14 +212,14 @@ public class MultimeterItem extends Item {
     {
         pinMap.put(id, pin);
         if (!ignoreFirstClickMessage)
-            player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK));
+            player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK).withColor(DyeColor.LIME.getTextColor()));
     }
 
     private void mapModule(UUID id, NetworkModule module, ServerPlayer player)
     {
         moduleMap.put(id, module);
         if (!ignoreFirstClickMessage)
-            player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK));
+            player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK).withColor(DyeColor.LIME.getTextColor()));
     }
 
     private void sendVdiff(ServerPlayer player, Circuit.Pin a, Circuit.Pin b)
@@ -261,7 +261,7 @@ public class MultimeterItem extends Item {
         if (result0.consumesAction())
         {
             if (!contains)
-                player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK));
+                player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK).withColor(DyeColor.LIME.getTextColor()));
             return InteractionResult.SUCCESS;
         }
         else
@@ -367,18 +367,34 @@ public class MultimeterItem extends Item {
         List<Resistor> resistors = new ArrayList<>();
         resistors.addAll(FIND_RESISTOR(preview));
         resistors.addAll(FIND_RESISTOR(ecm));
+        Resistor common = null;
 
-        //find the resistor connected between ecm and ecm0
-        List<Resistor> common = resistors.stream().filter(r ->
-                (r.getPinA() == preview.getTerminal()[0] || r.getPinB() == preview.getTerminal()[0]) && (r.getPinA() == ecm.getTerminal()[0] || r.getPinB() == ecm.getTerminal()[0])
-        ).toList();
+        head:
+        for (int i = 0; i < resistors.size(); i++)
+        {
+            Resistor ri = resistors.get(i);
+            Circuit.Pin a = ri.getPinA(), b = ri.getPinB();
+            for (int j = i+1; j < resistors.size(); j++)
+            {
+                Resistor rj = resistors.get(j);
+                Circuit.Pin a0 = rj.getPinA(), b0 = rj.getPinB();
+                if (a == a0 || a == b0)
+                    if (b == a0 || b == b0)
+                    {
+                        common = ri;
+                        break head;
+                    }
+            }
+        }
 
         //check to avoid crashs
-        if (common.isEmpty())
+        if (common == null)
+        {
+            player.sendSystemMessage(Component.literal("Internal Error").withColor(0xffdd0000));
             return;
+        }
 
-        Resistor resistor = common.getFirst();
-        sendCurrent(resistor, ecm.getTerminal()[0], player);
+        sendCurrent(common, ecm.getTerminal()[0], player);
     }
 
     private static void sendCurrent(Element element, Circuit.Pin positivePin, ServerPlayer player)
