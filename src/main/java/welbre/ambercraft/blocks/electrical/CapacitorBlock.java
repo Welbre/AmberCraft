@@ -1,6 +1,7 @@
 package welbre.ambercraft.blocks.electrical;
 
 import kuse.welbre.sim.electrical.elements.Capacitor;
+import kuse.welbre.sim.electrical.elements.Resistor;
 import kuse.welbre.tools.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -13,7 +14,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
+import welbre.ambercraft.client.AmberCraftScreenHelper;
+import welbre.ambercraft.client.screen.AmberValueModifierScreen;
+import welbre.ambercraft.network.AmberValueModifierPayload;
+import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
+
+import java.util.UUID;
 
 public class CapacitorBlock extends DirectionalElectricalBlock {
     public CapacitorBlock(Properties p) {
@@ -32,21 +40,18 @@ public class CapacitorBlock extends DirectionalElectricalBlock {
             return result;
         if (level.getBlockEntity(pos) instanceof ElectricalBE element && player.getMainHandItem().is(Items.AIR))
         {
-            if (!level.isClientSide)
+            if (element.getElement() instanceof Capacitor capacitor)
             {
-                if (element.getElement() instanceof Capacitor capacitor)
+                if (!level.isClientSide)
                 {
-                    final double capacitance = capacitor.getCapacitance() * (player.isShiftKeyDown() ? 0.5 : 2);
-                    capacitor.setCapacitance(Math.max(1e-6, capacitance));//1uF of min capacitance
-                    element.setChanged();
-                    element.getElectricalModule().dirtMaster();
-                    level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-                    ((ServerPlayer) player).sendSystemMessage(Component.translatable("ambercraft.capacitance.set", Tools.proprietyToSi(capacitance, capacitor.getPropertiesSymbols()[0])).withColor(DyeColor.ORANGE.getTextColor()));
-                    return InteractionResult.SUCCESS;
+                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, DirectionalElectricalBE.class, (ServerPlayer) player);
+                    var buf = AmberValueModifierScreen.GET_BUFFER(pos, AmberValueModifierPayload.Type.CAPACITANCE, capacitor.getCapacitance(), "ambercraft.measures.capacitance", "F");
+                    AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.AMBER_VALUE_MODIFIER, buf, (ServerPlayer) player);
                 }
-                return InteractionResult.FAIL;
+
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
+            return InteractionResult.FAIL;
         }
         return InteractionResult.PASS;
     }

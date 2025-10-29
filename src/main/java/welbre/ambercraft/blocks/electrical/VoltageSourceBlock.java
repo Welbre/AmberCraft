@@ -58,18 +58,6 @@ public class VoltageSourceBlock extends ElectricalBlock {
                 //send a new key to the client to modify the block via AmberCraftVoltageSourceModifierPayload
                 UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, source.getClass(), (ServerPlayer) player);
             }
-            /*
-            if (!level.isClientSide)
-            {
-                final double voltage = source.getElement().getVoltageDifference() + (player.isShiftKeyDown() ? -10 : 10);
-                ((VoltageSource) source.getElement()).setSourceVoltage(voltage);
-                source.setChanged();
-                source.getElectricalModule().dirtMaster();
-                level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-                ((ServerPlayer) player).sendSystemMessage(Component.translatable("ambercraft.voltage.set",voltage).withColor(DyeColor.ORANGE.getTextColor()));
-            }
-
-             */
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

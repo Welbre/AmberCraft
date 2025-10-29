@@ -45,6 +45,12 @@ public class PayLoadRegister {
                 VoltageSourceModifierPayload::handleOnServer
         );
 
+        registrar.playToServer(
+                AmberValueModifierPayload.TYPE,
+                AmberValueModifierPayload.STREAM_CODEC,
+                AmberValueModifierPayload::handleOnServer
+        );
+
         //faced cables payloads
         registrar.playToServer(FacedCableRemoveFacePayload.TYPE, FacedCableRemoveFacePayload.STREAM_CODEC, FacedCableRemoveFacePayload::handleOnServer);
         registrar.playToClient(FacedCableStateChangePayload.TYPE, FacedCableStateChangePayload.STREAM_CODEC, FacedCableStateChangePayload::handleOnClient);

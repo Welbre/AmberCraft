@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
+import welbre.ambercraft.client.screen.AmberValueModifierScreen;
 import welbre.ambercraft.client.screen.HeatSourceScreen;
 import welbre.ambercraft.client.screen.ModifyFieldsScreen;
 import welbre.ambercraft.client.screen.VoltageSourceScreen;
@@ -16,12 +17,19 @@ import welbre.ambercraft.network.AmberCraftScreenOpenerPayload;
 import java.util.ArrayList;
 import java.util.function.Function;
 
+/**
+ * A helper to deal with screens,
+ * any screen that {@link #openInClient} can open should be added in the static method.<br>
+ * The extra data is passed in the screen constructor,
+ * and the data integrity is exclusively the responsibility of the caller.
+ */
 public final class AmberCraftScreenHelper {
     public enum TYPES {
         HEAT_SOURCE,
         MODIFY_FIELDS,
         NETWORK_DEBUG_TOOL,
-        VOLTAGE_SOURCE_SETTINGS
+        VOLTAGE_SOURCE_SETTINGS,
+        AMBER_VALUE_MODIFIER
     }
 
     @OnlyIn(Dist.CLIENT) public static final ArrayList<Function<FriendlyByteBuf, Screen>> FACTORY = new ArrayList<>(TYPES.values().length);
@@ -31,6 +39,7 @@ public final class AmberCraftScreenHelper {
         FACTORY.add(ModifyFieldsScreen::new);
         FACTORY.add(NetworkViewerScreen::new);
         FACTORY.add(VoltageSourceScreen::new);
+        FACTORY.add(AmberValueModifierScreen::new);
     }
 
     /**

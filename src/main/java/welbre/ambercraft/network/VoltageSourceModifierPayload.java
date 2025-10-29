@@ -39,8 +39,6 @@ public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, d
             return;
 
         Level level = context.player().level();
-        if (level == null)
-            return;
 
         BlockState state = switch (vsType)
         {

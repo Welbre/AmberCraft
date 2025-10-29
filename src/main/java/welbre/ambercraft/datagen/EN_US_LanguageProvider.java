@@ -37,6 +37,9 @@ public class EN_US_LanguageProvider extends LanguageProvider {
 
         addBlock(AmberCraft.Blocks.FACED_CABLE_BLOCK, "Abstract cable");
 
+        //electrical measures
+        addElectricalMeasures();
+
         //tools
         addItem(AmberCraft.Items.NETWORK_TOOL, "Network Tool");
         addItem(AmberCraft.Items.THERMOMETER, "Thermometer");
@@ -80,5 +83,15 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         add("item.ambercraft.multimeter.current_same_terminal", "You can't measure the current in the same terminal!");
         add("item.ambercraft.multimeter.current_dif_element", "You can't measure the current in different element!");
         add("item.ambercraft.multimeter.current_dif_circuit", "You can't measure the current in different circuits!");
+    }
+
+    private void addElectricalMeasures()
+    {
+        add("ambercraft.measures.voltage", "Voltage");
+        add("ambercraft.measures.current", "Current");
+        add("ambercraft.measures.resistance", "Resistance");
+        add("ambercraft.measures.capacitance", "Capacitance");
+        add("ambercraft.measures.inductance", "Inductance");
+        add("ambercraft.measures.power", "Power");
     }
 }

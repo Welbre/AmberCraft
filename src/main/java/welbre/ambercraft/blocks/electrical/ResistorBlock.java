@@ -3,25 +3,22 @@ package welbre.ambercraft.blocks.electrical;
 
 import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
+import welbre.ambercraft.client.AmberCraftScreenHelper;
+import welbre.ambercraft.client.screen.AmberValueModifierScreen;
+import welbre.ambercraft.network.AmberValueModifierPayload.Type;
+import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
+
+import java.util.UUID;
 
 public class ResistorBlock extends DirectionalElectricalBlock {
     public ResistorBlock(Properties p) {
@@ -34,27 +31,24 @@ public class ResistorBlock extends DirectionalElectricalBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
         var result = super.useWithoutItem(state, level, pos, player, hitResult);
         if (result.consumesAction())
             return result;
         if (level.getBlockEntity(pos) instanceof ElectricalBE element && player.getMainHandItem().is(Items.AIR))
         {
-            if (!level.isClientSide)
+            if (element.getElement() instanceof Resistor resistor)
             {
-                if ( element.getElement() instanceof Resistor resistor)
+                if (!level.isClientSide)
                 {
-                    final double resistance = resistor.getResistance() * (player.isShiftKeyDown() ? 0.5 : 2);
-                    resistor.setResistance(Math.max(10e-6, resistance));//1microOhm of min resistence
-                    element.setChanged();
-                    element.getElectricalModule().dirtMaster();
-                    level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-                    ((ServerPlayer) player).sendSystemMessage(Component.literal("Resistance set to: " + resistance).withColor(DyeColor.ORANGE.getTextColor()));
-                    return InteractionResult.SUCCESS;
+                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, DirectionalElectricalBE.class, (ServerPlayer) player);
+                    var buf = AmberValueModifierScreen.GET_BUFFER(pos, Type.RESISTANCE, resistor.getResistance(), "ambercraft.measures.resistance", "Ω");
+                    AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.AMBER_VALUE_MODIFIER, buf, (ServerPlayer) player);
                 }
-                return InteractionResult.FAIL;
+
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
+            return InteractionResult.FAIL;
         }
         return InteractionResult.PASS;
     }

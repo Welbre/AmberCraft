@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+/**
+ * A screen to modify <b>any</b> field in a block entity.<br>
+ * Use carefully! This screen can break the block entity or an entire world.
+ */
 @OnlyIn(Dist.CLIENT)
 public class ModifyFieldsScreen extends Screen {
     final BlockEntity entity;
