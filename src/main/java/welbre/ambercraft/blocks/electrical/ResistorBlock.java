@@ -41,7 +41,7 @@ public class ResistorBlock extends DirectionalElectricalBlock {
             {
                 if (!level.isClientSide)
                 {
-                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, DirectionalElectricalBE.class, (ServerPlayer) player);
+                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(pos, DirectionalElectricalBE.class, (ServerPlayer) player);
                     var buf = AmberValueModifierScreen.GET_BUFFER(pos, Type.RESISTANCE, resistor.getResistance(), "ambercraft.measures.resistance", "Ω");
                     AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.AMBER_VALUE_MODIFIER, buf, (ServerPlayer) player);
                 }

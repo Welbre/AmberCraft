@@ -44,7 +44,7 @@ public class CapacitorBlock extends DirectionalElectricalBlock {
             {
                 if (!level.isClientSide)
                 {
-                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, DirectionalElectricalBE.class, (ServerPlayer) player);
+                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(pos, DirectionalElectricalBE.class, (ServerPlayer) player);
                     var buf = AmberValueModifierScreen.GET_BUFFER(pos, AmberValueModifierPayload.Type.CAPACITANCE, capacitor.getCapacitance(), "ambercraft.measures.capacitance", "F");
                     AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.AMBER_VALUE_MODIFIER, buf, (ServerPlayer) player);
                 }

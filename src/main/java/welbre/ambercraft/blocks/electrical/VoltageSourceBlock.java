@@ -56,7 +56,7 @@ public class VoltageSourceBlock extends ElectricalBlock {
                         (ServerPlayer) player
                 );
                 //send a new key to the client to modify the block via AmberCraftVoltageSourceModifierPayload
-                UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, source.getClass(), (ServerPlayer) player);
+                UpdateAmberSecureKeyPayload.ADD_NEW_KEY(pos, source.getClass(), (ServerPlayer) player);
             }
             return InteractionResult.SUCCESS;
         }

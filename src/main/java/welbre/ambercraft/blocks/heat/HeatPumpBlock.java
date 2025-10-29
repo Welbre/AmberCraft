@@ -120,7 +120,7 @@ public class HeatPumpBlock extends Block implements EntityBlock {
                 return InteractionResult.FAIL;
 
             serverPlayer.connection.send(ClientboundBlockEntityDataPacket.create(entity));
-            UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, entity.getClass(), serverPlayer);
+            UpdateAmberSecureKeyPayload.ADD_NEW_KEY(pos, entity.getClass(), serverPlayer);
         }
         return InteractionResult.SUCCESS;
     }

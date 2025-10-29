@@ -46,6 +46,12 @@ public record UpdateAmberSecureKeyPayload(String uuid) implements CustomPacketPa
         PacketDistributor.sendToPlayer(player, new UpdateAmberSecureKeyPayload(uuid.toString()));
     }
 
+    /// Assigns a random uuid to a player at a block of blockEntityClass.
+    public static void ADD_NEW_KEY(BlockPos pos, Class<? extends BlockEntity> aClass, ServerPlayer player)
+    {
+        ADD_NEW_KEY(UUID.randomUUID(), pos, aClass, player);
+    }
+
     public static @Nullable BlockPos validadeKey(String playerName, Class<?> beClass, LevelAccessor level)
     {
         if (playerName == null || beClass == null || level == null)

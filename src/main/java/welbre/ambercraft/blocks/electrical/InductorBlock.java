@@ -45,7 +45,7 @@ public class InductorBlock extends DirectionalElectricalBlock {
             {
                 if (!level.isClientSide)
                 {
-                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(UUID.randomUUID(), pos, DirectionalElectricalBE.class, (ServerPlayer) player);
+                    UpdateAmberSecureKeyPayload.ADD_NEW_KEY(pos, DirectionalElectricalBE.class, (ServerPlayer) player);
                     var buf = AmberValueModifierScreen.GET_BUFFER(pos, AmberValueModifierPayload.Type.INDUCTANCE, inductor.getInductance(), "ambercraft.measures.inductance", "H");
                     AmberCraftScreenHelper.openInClient(AmberCraftScreenHelper.TYPES.AMBER_VALUE_MODIFIER, buf, (ServerPlayer) player);
                 }
