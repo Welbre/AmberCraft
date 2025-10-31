@@ -48,7 +48,7 @@ public record VoltageSourceModifierPayload(UUID key, VoltageSourceType vsType, d
         };
         Direction facing = level.getBlockState(pos).getValue(DirectionalElectricalBlock.FACING);
         state = state.setValue(DirectionalElectricalBlock.FACING, facing);
-        level.setBlock(pos, state, 0);
+        level.setBlock(pos, state, DirectionalElectricalBlock.UPDATE_ALL);
 
         if (! (level.getBlockEntity(pos) instanceof ElectricalBE electricalBE))
             return;
