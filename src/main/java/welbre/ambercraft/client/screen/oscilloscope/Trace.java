@@ -17,6 +17,8 @@ public class Trace
     public double heightScale = 20;
     /// how many pixels the y is moved; Positive values move down!
     public double heightOffSet;
+    /// how many pixels the x is moved from the zero; Positive means more right.
+    public double widthOffSet;
 
     /// The header of the data, where the next value will be stored.
     public int header = 0;
@@ -50,8 +52,14 @@ public class Trace
         for (int i = 0; i < points.length; i++)
         {
             final double y = data[i] / 2.0 / heightScale;
+            final int height = (int) Math.round(Math.clamp(yZero + y, chartPosition.y, yDown));
 
-            points[i] = (int) Math.round( Math.clamp(yZero + y, chartPosition.y, yDown));
+            if (i + widthOffSet >= points.length)
+                points[(int) Math.round(i + widthOffSet - points.length)] = height;
+            else if (i + widthOffSet < 0)
+                points[(int) Math.round(i + points.length + widthOffSet)] = height;
+            else
+                points[(int) Math.round(i + widthOffSet)] = height;
         }
     }
 
@@ -84,7 +92,10 @@ public class Trace
             points[points.length-1] = point;
         }
         else
-            points[header++] = point;
+            if (header + widthOffSet >= points.length)
+                points[(int) Math.round(header++ + 1 - widthOffSet)] = point;
+            else
+                points[(int) Math.round(header++ + widthOffSet)] = point;
 
         //-------------- auto y-scale
         //wait for 10 data and auto-scale the oscilloscope
@@ -129,7 +140,7 @@ public class Trace
 
         for (int x = 0; x < info.chartWidth * widthScale && x < header; x++)
         {
-            int fx = Math.toIntExact(Math.round(x / widthScale));
+            int fx = Math.round(Math.round(x / widthScale));
             int y = points[x];
 
             buffer.addVertex(xLeft + fx, y, 0);

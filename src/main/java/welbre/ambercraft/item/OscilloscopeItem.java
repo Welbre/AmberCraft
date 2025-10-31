@@ -49,7 +49,7 @@ public class OscilloscopeItem extends MultimeterItem
             case ElectricalTerminalModule etm ->
             {
                 if (contains)
-                    initWatcher(player, (ElectricalModulesMaster) etm.getRoot().getMaster(), etm.getTerminal()[0], preview);
+                    initWatcher(player, (ElectricalModulesMaster) etm.getElectrical().getRoot().getMaster(), etm.getTerminal()[0], preview);
                 else
                     mapPin(component.id(), etm.getTerminal()[0], player);
                 return InteractionResult.SUCCESS;

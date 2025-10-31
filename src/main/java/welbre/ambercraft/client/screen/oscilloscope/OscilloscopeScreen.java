@@ -102,16 +102,24 @@ public class OscilloscopeScreen extends Screen
         //todo refactor this to using a dedicated widget
         if (isInChart(mouseX, mouseY))
         {
-            if (hasShiftDown())
+
+            if (hasControlDown())//zoom
+                if (hasShiftDown())//zoom in the x axes
+                {
+                    for (Trace trace : traces)
+                        trace.widthScale *= scrollY < 0 ? 2 : 0.5;
+                }
+                else
+                {
+                    for (Trace trace : traces)//zoom in the y axes
+                        trace.heightScale *= scrollY < 0 ? 2 : 0.5;
+                }
+            else if (hasShiftDown())//move x
+                for (Trace trace : traces)
+                    trace.widthOffSet -= 5 * (int) scrollY;
+            else//move y
                 for (Trace trace : traces)
                     trace.heightOffSet -= 5 * (int) scrollY;
-            else if (hasControlDown())
-                for (Trace trace : traces)
-                    trace.widthScale *= scrollY < 0 ? 2 : 0.5;
-            else
-                for (Trace trace : traces)
-                    trace.heightScale *= scrollY < 0 ? 2 : 0.5;
-
 
             for (Trace trace : traces)
                 trace.reComputeAllPoints(this);
