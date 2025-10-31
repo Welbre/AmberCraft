@@ -1,5 +1,6 @@
 package welbre.ambercraft.client.screen.oscilloscope;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
@@ -74,7 +75,8 @@ public class OscilloscopeScreen extends Screen
 
     public void clearData()
     {
-
+        for (Trace trace : traces)
+            trace.clearData();
     }
 
     public void updateData(double value)
@@ -93,6 +95,26 @@ public class OscilloscopeScreen extends Screen
     public boolean isInChart(double mouseX, double mouseY)
     {
         return mouseX >= chartPosition.x && mouseX <= chartPosition.x + chartWidth && mouseY >= chartPosition.y && mouseY <= chartPosition.y + charHeight;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        //auto y-scale
+        if (keyCode == InputConstants.KEY_SPACE)
+        {
+            for (Trace trace : traces)
+                trace.autoScaleY(this);
+            return true;
+        }
+        //resetData
+        if (keyCode == InputConstants.KEY_R && hasControlDown())
+        {
+            for (Trace trace : traces)
+                trace.clearData();
+            return true;
+        }
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

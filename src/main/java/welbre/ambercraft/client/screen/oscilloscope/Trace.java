@@ -41,6 +41,26 @@ public class Trace
         this.heightOffSet = info.charHeight / 2.0;
     }
 
+
+    public void clearData()
+    {
+        isFull = false;
+        header = 0;
+        data = new double[data.length];
+        points = new int[points.length];
+    }
+
+    /// fit the y-axis in the screen.
+    public void autoScaleY(OscilloscopeScreen info)
+    {
+        double max = Arrays.stream(data).max().getAsDouble();
+        double min = Arrays.stream(data).min().getAsDouble();
+        double range = Math.abs(max - min);
+
+        //1.2 is a margin of 20% from the top and bottom of the chart.
+        heightScale = range * 1.2 / (2.0 * info.charHeight);
+        reComputeAllPoints(info);
+    }
     public void reComputeAllPoints(OscilloscopeScreen info)
     {
         if (data.length == 0)
@@ -100,17 +120,7 @@ public class Trace
         //-------------- auto y-scale
         //wait for 10 data and auto-scale the oscilloscope
         if (!isFull && header == 10)
-        {
-            final var subSet = new double[10];
-            System.arraycopy(data,0, subSet, 0, subSet.length);
-            double max = Arrays.stream(subSet).max().getAsDouble();
-            double min = Arrays.stream(subSet).min().getAsDouble();
-            double range = Math.abs(max - min);
-
-            //1.2 is a margin of 20% from the top and bottom of the chart.
-            heightScale = range * 1.2 / (2.0 * info.charHeight);
-            reComputeAllPoints(info);
-        }
+            autoScaleY(info);
     }
 
     /// Don't change any field in the screen, only read it!
