@@ -30,29 +30,29 @@ import java.util.function.BiConsumer;
 import static welbre.ambercraft.AmberCraft.Components.MULTIMETER_CACHE_DATA_COMPONENT;
 //todo, get all text message and put as static member
 public class MultimeterItem extends Item {
-    private static final String MSG_TOO_FAR = "item.ambercraft.multimeter.too_far";
-    private static final String MSG_MODE_CHANGED = "item.ambercraft.multimeter.mode_changed";
-    private static final String MSG_VOLTAGE = "item.ambercraft.multimeter.voltage";
-    private static final String MSG_CURRENT= "item.ambercraft.multimeter.current";
-    private static final String MSG_POWER = "item.ambercraft.multimeter.power";
-    private static final String MSG_RESISTENCE = "item.ambercraft.multimeter.resistance";
-    private static final String MSG_FIRST_CLICK = "item.ambercraft.multimeter.first_click";
-    private static final String MSG_VOLTAGE_SAME_SPLOT = "item.ambercraft.multimeter.voltage_same_spot";
-    private static final String MSG_CURRENT_SAME_TERMINAL = "item.ambercraft.multimeter.current_same_terminal";
-    private static final String MSG_CURRENT_DIF_ELEMENT = "item.ambercraft.multimeter.current_dif_element";
-    private static final String MSG_CURRENT_DIF_CIRCUIT = "item.ambercraft.multimeter.current_dif_circuit";
+    protected static final String MSG_TOO_FAR = "item.ambercraft.multimeter.too_far";
+    protected static final String MSG_MODE_CHANGED = "item.ambercraft.multimeter.mode_changed";
+    protected static final String MSG_VOLTAGE = "item.ambercraft.multimeter.voltage";
+    protected static final String MSG_CURRENT= "item.ambercraft.multimeter.current";
+    protected static final String MSG_POWER = "item.ambercraft.multimeter.power";
+    protected static final String MSG_RESISTENCE = "item.ambercraft.multimeter.resistance";
+    protected static final String MSG_FIRST_CLICK = "item.ambercraft.multimeter.first_click";
+    protected static final String MSG_VOLTAGE_SAME_SPLOT = "item.ambercraft.multimeter.voltage_same_spot";
+    protected static final String MSG_CURRENT_SAME_TERMINAL = "item.ambercraft.multimeter.current_same_terminal";
+    protected static final String MSG_CURRENT_DIF_ELEMENT = "item.ambercraft.multimeter.current_dif_element";
+    protected static final String MSG_CURRENT_DIF_CIRCUIT = "item.ambercraft.multimeter.current_dif_circuit";
 
-    private static final BiConsumer<ServerPlayer, Double> SEND_VOLTAGE_IN_CHAT = (player, voltage) -> player.sendSystemMessage(Component.translatable(MSG_VOLTAGE, Tools.proprietyToSi(voltage, "V")) );
-    private static final BiConsumer<ServerPlayer, Double> SEND_CURRENT_IN_CHAT = (player, current) -> player.sendSystemMessage(Component.translatable(MSG_CURRENT, Tools.proprietyToSi(current, "A")));
-    private static final BiConsumer<ServerPlayer, Double> SEND_POWER_IN_CHAT = (player, power) -> player.sendSystemMessage(Component.translatable(MSG_POWER, Tools.proprietyToSi(power, "W")));
-    private static final BiConsumer<ServerPlayer, Double> SEND_RESISTENCE_IN_CHAT = (player, power) -> player.sendSystemMessage(Component.translatable(MSG_RESISTENCE, Tools.proprietyToSi(power, "Ω")));
-    private static BiConsumer<ServerPlayer, Double> SEND_VOLTAGE_ACTION = SEND_VOLTAGE_IN_CHAT;
-    private static BiConsumer<ServerPlayer, Double> SEND_CURRENT_ACTION = SEND_CURRENT_IN_CHAT;
-    private static Double VOLTAGE_VALUE = null;
-    private static Double CURRENT_VALUE = null;
-    private static final BiConsumer<ServerPlayer, Double> VOLTAGE_GETTER = ((player, v) -> VOLTAGE_VALUE = v);
-    private static final BiConsumer<ServerPlayer, Double> CURRENT_GETTER = ((player, v) -> CURRENT_VALUE = v);
-    private static boolean ignoreFirstClickMessage = false;
+    protected static final BiConsumer<ServerPlayer, Double> SEND_VOLTAGE_IN_CHAT = (player, voltage) -> player.sendSystemMessage(Component.translatable(MSG_VOLTAGE, Tools.proprietyToSi(voltage, "V")) );
+    protected static final BiConsumer<ServerPlayer, Double> SEND_CURRENT_IN_CHAT = (player, current) -> player.sendSystemMessage(Component.translatable(MSG_CURRENT, Tools.proprietyToSi(current, "A")));
+    protected static final BiConsumer<ServerPlayer, Double> SEND_POWER_IN_CHAT = (player, power) -> player.sendSystemMessage(Component.translatable(MSG_POWER, Tools.proprietyToSi(power, "W")));
+    protected static final BiConsumer<ServerPlayer, Double> SEND_RESISTENCE_IN_CHAT = (player, power) -> player.sendSystemMessage(Component.translatable(MSG_RESISTENCE, Tools.proprietyToSi(power, "Ω")));
+    protected static BiConsumer<ServerPlayer, Double> SEND_VOLTAGE_ACTION = SEND_VOLTAGE_IN_CHAT;
+    protected static BiConsumer<ServerPlayer, Double> SEND_CURRENT_ACTION = SEND_CURRENT_IN_CHAT;
+    protected static Double VOLTAGE_VALUE = null;
+    protected static Double CURRENT_VALUE = null;
+    protected static final BiConsumer<ServerPlayer, Double> VOLTAGE_GETTER = ((player, v) -> VOLTAGE_VALUE = v);
+    protected static final BiConsumer<ServerPlayer, Double> CURRENT_GETTER = ((player, v) -> CURRENT_VALUE = v);
+    protected static boolean ignoreFirstClickMessage = false;
 
     public static final HashMap<UUID, Circuit.Pin> pinMap = new HashMap<>();
     public static final HashMap<UUID, NetworkModule> moduleMap = new HashMap<>();
@@ -118,7 +118,7 @@ public class MultimeterItem extends Item {
         };
     }
 
-    private @NotNull InteractionResult handleVoltage(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    protected @NotNull InteractionResult handleVoltage(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
     {
         final Circuit.Pin preview = contains ? pinMap.remove(component.id()) : null;//if contains remove, else just assign with anything
         switch (module)
@@ -151,7 +151,7 @@ public class MultimeterItem extends Item {
         }
     }
 
-    private @NotNull InteractionResult handleCurrent(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    protected @NotNull InteractionResult handleCurrent(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
     {
         final NetworkModule preview = contains ? moduleMap.remove(component.id()) : null;//if contains remove, else just assign with anything
         switch (module)
@@ -184,7 +184,7 @@ public class MultimeterItem extends Item {
         }
     }
 
-    private @NotNull InteractionResult handlePower(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    protected @NotNull InteractionResult handlePower(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
     {
         InteractionResult result = GET_VOLTAGE_AND_CURRENT(contains, component, player, module);
         if (!result.consumesAction()) return InteractionResult.FAIL;
@@ -196,7 +196,7 @@ public class MultimeterItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
-    private @NotNull InteractionResult handleResistence(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    protected @NotNull InteractionResult handleResistence(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
     {
         InteractionResult result = GET_VOLTAGE_AND_CURRENT(contains, component, player, module);
         if (!result.consumesAction()) return InteractionResult.FAIL;
@@ -208,21 +208,21 @@ public class MultimeterItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
-    private void mapPin(UUID id, Circuit.Pin pin, ServerPlayer player)
+    protected void mapPin(UUID id, Circuit.Pin pin, ServerPlayer player)
     {
         pinMap.put(id, pin);
         if (!ignoreFirstClickMessage)
             player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK).withColor(DyeColor.LIME.getTextColor()));
     }
 
-    private void mapModule(UUID id, NetworkModule module, ServerPlayer player)
+    protected void mapModule(UUID id, NetworkModule module, ServerPlayer player)
     {
         moduleMap.put(id, module);
         if (!ignoreFirstClickMessage)
             player.sendSystemMessage(Component.translatable(MSG_FIRST_CLICK).withColor(DyeColor.LIME.getTextColor()));
     }
 
-    private void sendVdiff(ServerPlayer player, Circuit.Pin a, Circuit.Pin b)
+    protected void sendVdiff(ServerPlayer player, Circuit.Pin a, Circuit.Pin b)
     {
         if (a == b)
         {
@@ -238,7 +238,7 @@ public class MultimeterItem extends Item {
         SEND_VOLTAGE_ACTION.accept(player, vb - va);
     }
 
-    private @NotNull InteractionResult GET_VOLTAGE_AND_CURRENT(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
+    protected @NotNull InteractionResult GET_VOLTAGE_AND_CURRENT(final boolean contains, MultimeterComponent component, ServerPlayer player, NetworkModule module)
     {
         ignoreFirstClickMessage = true;
         //collects the voltage to the VOLTAGE_VALUE
@@ -268,7 +268,7 @@ public class MultimeterItem extends Item {
             return InteractionResult.FAIL;
     }
 
-    private static void sendTerminalCurrent(ServerPlayer player, ElectricalTerminalModule etm, NetworkModule preview)
+    protected void sendTerminalCurrent(ServerPlayer player, ElectricalTerminalModule etm, NetworkModule preview)
     {
         if (preview instanceof ElectricalTerminalModule module)
         {
@@ -293,7 +293,7 @@ public class MultimeterItem extends Item {
             sendCableTerminalCurrent(player, ecm, etm);
     }
 
-    private static void sendCableCurrent(ServerPlayer player, ElectricalCableModule ecm, NetworkModule preview)
+    protected void sendCableCurrent(ServerPlayer player, ElectricalCableModule ecm, NetworkModule preview)
     {
         //terminal modules are volatility, the circuit isn't connected to it, it is a warper.
         if (!(preview instanceof ElectricalTerminalModule) && ecm.getRoot() != preview.getRoot())
@@ -326,7 +326,7 @@ public class MultimeterItem extends Item {
         }
     }
 
-    private static Resistor getResistorInCableTerminal(ElectricalCableModule ecm, ElectricalTerminalModule etm)
+    protected Resistor getResistorInCableTerminal(ElectricalCableModule ecm, ElectricalTerminalModule etm)
     {
         final List<Resistor> resistors = FIND_RESISTOR(ecm);
         final Circuit.Pin pin = etm.getTerminal()[0];
@@ -340,7 +340,7 @@ public class MultimeterItem extends Item {
     }
 
     /// from a cable to a terminal, the cable is the preview "first clicked"!
-    private static void sendCableTerminalCurrent(ServerPlayer player, ElectricalCableModule ecm, ElectricalTerminalModule etm)
+    protected void sendCableTerminalCurrent(ServerPlayer player, ElectricalCableModule ecm, ElectricalTerminalModule etm)
     {
         final Resistor resistor = getResistorInCableTerminal(ecm, etm);
         if (resistor == null)
@@ -351,7 +351,7 @@ public class MultimeterItem extends Item {
         sendCurrent(resistor, etm.getTerminal()[0], player);
     }
 
-    private static void sendTerminalCableCurrent(ServerPlayer player, ElectricalTerminalModule etm, ElectricalCableModule ecm)
+    protected void sendTerminalCableCurrent(ServerPlayer player, ElectricalTerminalModule etm, ElectricalCableModule ecm)
     {
         final Resistor resistor = getResistorInCableTerminal(ecm, etm);
         if (resistor == null)
@@ -362,7 +362,7 @@ public class MultimeterItem extends Item {
         sendCurrent(resistor, ecm.getTerminal()[0], player);
     }
 
-    private static void sendCableCableCurrent(ServerPlayer player, ElectricalCableModule ecm, ElectricalCableModule preview)
+    protected void sendCableCableCurrent(ServerPlayer player, ElectricalCableModule ecm, ElectricalCableModule preview)
     {
         List<Resistor> resistors = new ArrayList<>();
         resistors.addAll(FIND_RESISTOR(preview));
@@ -397,7 +397,7 @@ public class MultimeterItem extends Item {
         sendCurrent(common, ecm.getTerminal()[0], player);
     }
 
-    private static void sendCurrent(Element element, Circuit.Pin positivePin, ServerPlayer player)
+    protected void sendCurrent(Element element, Circuit.Pin positivePin, ServerPlayer player)
     {
         final double current;
         if (element.getPinA() == positivePin)
@@ -408,13 +408,13 @@ public class MultimeterItem extends Item {
         sendCurrent(current, player);
     }
 
-    private static void sendCurrent(double current, ServerPlayer player)
+    protected void sendCurrent(double current, ServerPlayer player)
     {
         SEND_CURRENT_ACTION.accept(player, current);
     }
 
     /// Find all resistors that are connected to the ElectricalCableModule
-    private static List<Resistor> FIND_RESISTOR(ElectricalCableModule ecm)
+    protected static List<Resistor> FIND_RESISTOR(ElectricalCableModule ecm)
     {
         //we need to iterate in all neighbors because the resistor only is one of the cables in the connection
         HashSet<Resistor> resistors = new HashSet<>(Arrays.asList(ecm.getResistors()));
@@ -429,7 +429,7 @@ public class MultimeterItem extends Item {
     }
 
     /// Return the resistor that has more absolute current flowing in it.
-    private static Resistor FIND_BIGEST_RESISTOR(ElectricalCableModule ecm)
+    protected static Resistor FIND_BIGEST_RESISTOR(ElectricalCableModule ecm)
     {
         //all resistors that are connected to the pin sorted by the current value.
         List<Resistor> connectedTo = FIND_RESISTOR(ecm).stream().sorted(Comparator.comparing(Resistor::getCurrent)).toList();
@@ -449,7 +449,7 @@ public class MultimeterItem extends Item {
         return null;
     }
 
-    private static MultimeterComponent PUT_MODULE_IF_ABSTENDE(ItemStack stack)
+    protected static MultimeterComponent PUT_MODULE_IF_ABSTENDE(ItemStack stack)
     {
         MultimeterComponent component = stack.getComponents().get(MULTIMETER_CACHE_DATA_COMPONENT.get());
 
@@ -462,7 +462,7 @@ public class MultimeterItem extends Item {
         return component;
     }
 
-    private List<NetworkModule> filterModules(Module[] modules)
+    protected List<NetworkModule> filterModules(Module[] modules)
     {
         return Arrays.stream(modules)
                 .filter(a -> a instanceof NetworkModule)

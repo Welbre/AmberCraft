@@ -27,8 +27,13 @@ public class ElectricalTerminalModuleType implements ModuleType<ElectricalTermin
     public InteractionResult useItemOn(ElectricalTerminalModule module, ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (stack.getItem() == AmberCraft.Items.MULTIMETER.get())
         {
-            if (!level.isClientSide())
+            if (!level.isClientSide)
                 return AmberCraft.Items.MULTIMETER.get().handle(stack, (ServerPlayer) player, module);
+            return InteractionResult.SUCCESS;
+        } else if (stack.getItem() == AmberCraft.Items.OSCILLOSCOPE.get())
+        {
+            if (!level.isClientSide)
+                return AmberCraft.Items.OSCILLOSCOPE.get().handle(stack, (ServerPlayer) player, module);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;

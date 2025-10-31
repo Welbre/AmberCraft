@@ -7,10 +7,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
-import welbre.ambercraft.client.screen.AmberValueModifierScreen;
-import welbre.ambercraft.client.screen.HeatSourceScreen;
-import welbre.ambercraft.client.screen.ModifyFieldsScreen;
-import welbre.ambercraft.client.screen.VoltageSourceScreen;
+import welbre.ambercraft.client.screen.*;
+import welbre.ambercraft.client.screen.oscilloscope.OscilloscopeScreen;
 import welbre.ambercraft.debug.network.NetworkViewerScreen;
 import welbre.ambercraft.network.AmberCraftScreenOpenerPayload;
 
@@ -29,7 +27,8 @@ public final class AmberCraftScreenHelper {
         MODIFY_FIELDS,
         NETWORK_DEBUG_TOOL,
         VOLTAGE_SOURCE_SETTINGS,
-        AMBER_VALUE_MODIFIER
+        AMBER_VALUE_MODIFIER,
+        OSCILLOSCOPE,
     }
 
     @OnlyIn(Dist.CLIENT) public static final ArrayList<Function<FriendlyByteBuf, Screen>> FACTORY = new ArrayList<>(TYPES.values().length);
@@ -40,6 +39,7 @@ public final class AmberCraftScreenHelper {
         FACTORY.add(NetworkViewerScreen::new);
         FACTORY.add(VoltageSourceScreen::new);
         FACTORY.add(AmberValueModifierScreen::new);
+        FACTORY.add(OscilloscopeScreen::new);
     }
 
     /**

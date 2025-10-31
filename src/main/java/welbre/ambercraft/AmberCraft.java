@@ -24,15 +24,12 @@ import welbre.ambercraft.blockentity.heat.*;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.electrical.*;
 import welbre.ambercraft.blocks.heat.*;
+import welbre.ambercraft.item.*;
 import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.types.HeatCableType;
 import welbre.ambercraft.cables.types.ElectricalCableType;
 import welbre.ambercraft.commands.Event;
-import welbre.ambercraft.item.FacedCableBlockItem;
-import welbre.ambercraft.item.MultimeterItem;
-import welbre.ambercraft.item.NetworkTool;
-import welbre.ambercraft.item.ThermometerItem;
 import welbre.ambercraft.item.components.MultimeterComponent;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.electrical.ElectricalCableModuleType;
@@ -146,6 +143,7 @@ public class AmberCraft {
         public static final DeferredItem<NetworkTool> NETWORK_TOOL = REGISTER.registerItem("network_tool", NetworkTool::new, new Item.Properties());
         public static final DeferredItem<ThermometerItem> THERMOMETER = REGISTER.registerItem("thermometer", ThermometerItem::new, new Item.Properties());
         public static final DeferredItem<MultimeterItem> MULTIMETER = REGISTER.registerItem("multimeter", MultimeterItem::new, new Item.Properties());
+        public static final DeferredItem<MultimeterItem> OSCILLOSCOPE = REGISTER.registerItem("oscilloscope", OscilloscopeItem::new, new Item.Properties());
         @TABS.SKIP
         public static final DeferredItem<FacedCableBlockItem> FACED_CABLE_BLOCK_ITEM = REGISTER.registerItem("faced_cable", FacedCableBlockItem::new);
     }

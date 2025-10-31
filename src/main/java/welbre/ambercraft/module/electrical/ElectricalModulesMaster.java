@@ -5,16 +5,20 @@ import kuse.welbre.sim.electrical.CircuitAnalyser;
 import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.sim.electrical.abstractt.Element3Pin;
 import kuse.welbre.sim.electrical.abstractt.Element4Pin;
+import kuse.welbre.sim.electrical.abstractt.Watcher;
 import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.debug.network.Scheduler;
 import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.*;
 
 public class ElectricalModulesMaster extends Master {
+    /// Runs each tick after the circuit tick, useful to attack watchers.
+    public transient Scheduler scheduler = new Scheduler();
     public transient AutoGroundingCircuit circuit;
     public boolean isCrashed = false;
 
@@ -79,7 +83,10 @@ public class ElectricalModulesMaster extends Master {
 
         Profiler.get().push("ElectricalModuleMaster tick");
         if (!isClientSide)
+        {
             circuit.tick();
+            scheduler.tick();
+        }
         Profiler.get().pop();
     }
 

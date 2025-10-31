@@ -96,6 +96,10 @@ public class Scheduler {
         public boolean isDone() {
             return time >= delay;
         }
+
+        public void markToRemove() {
+            shouldRemove = true;
+        }
     }
 
     public static class EachTickTask extends Task

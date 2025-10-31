@@ -44,6 +44,7 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addItem(AmberCraft.Items.NETWORK_TOOL, "Network Tool");
         addItem(AmberCraft.Items.THERMOMETER, "Thermometer");
         addMultimeter();
+        addItem(AmberCraft.Items.OSCILLOSCOPE, "oscilloscope");
         addItem(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM, "Faced cable");
     }
 
