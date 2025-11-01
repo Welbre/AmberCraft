@@ -14,13 +14,15 @@ import welbre.ambercraft.module.Module;
  * All blocks that use this BlockEntity must have a <code>facing</code> property! Or an exception can be trowed.<br>
  * <div color="#FFCC00">Remember to add yous block that uses this BlockEntity in {@link AmberCraft.Blocks#DIRECTIONAl_ELECTRICAL_BE_USERS}</div>
  */
-public class DirectionalElectricalBE extends ElectricalBE {
+public class DirectionalElectricalBE extends ElectricalBE
+{
     public DirectionalElectricalBE(BlockPos pos, BlockState state) {
         super(AmberCraft.BlockEntity.DIRECTIONAL_ELECTRICAL_BE.get(), pos, state);
     }
 
     @Override
-    public @NotNull welbre.ambercraft.module.Module[] getModule(Direction direction) {
+    public @NotNull welbre.ambercraft.module.Module[] getModule(Direction direction)
+    {
         assert getLevel() != null;
 
         var facing = this.getLevel().getBlockState(this.getBlockPos()).getValue(BlockStateProperties.FACING);

@@ -48,23 +48,6 @@ public class ElectricalBlock extends Block implements EntityBlock {
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         factory.create(level, pos);
-        if (level.getBlockEntity(pos) instanceof ElectricalBE be)
-        {
-            for (Direction dir : Direction.values())
-            {
-                @NotNull Module[] modules = be.getModule(dir);
-                if (modules.length > 0 && level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder holder)
-                {
-                    for (Module module : modules)
-                    {
-                       if (module instanceof NetworkModule networkModule)
-                           for (Module other : holder.getModule(dir.getOpposite()))
-                               if (other instanceof NetworkModule otherNetworkModule)
-                                    otherNetworkModule.connect(networkModule);
-                    }
-                }
-            }
-        }
     }
 
     @Override

@@ -48,8 +48,8 @@ public class ElectricalModulesMaster extends Master {
             if (visited.contains(next)) continue;
             visited.add(next);
 
-            if (next instanceof ElectricalTerminalModule)
-                throw new IllegalStateException("ElectricalTerminalModule should be connected in the network, it is only a placeholder!");
+//            if (next instanceof ElectricalTerminalModule)
+//                throw new IllegalStateException("ElectricalTerminalModule should be connected in the network, it is only a placeholder!");
 
             if (next instanceof ElectricalModule eem)//add all elements
                 elements.addAll(Arrays.asList(eem.compile()));

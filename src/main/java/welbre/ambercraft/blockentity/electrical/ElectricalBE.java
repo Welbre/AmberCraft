@@ -37,7 +37,7 @@ public class ElectricalBE extends ModulesHolder {
 
     @Override
     public @NotNull Module[] getModules() {
-        return new Module[]{electricalModule};
+        return new Module[]{electricalModule, electricalModule.getTerminalA(), electricalModule.getTerminalB()};
     }
 
     @Override

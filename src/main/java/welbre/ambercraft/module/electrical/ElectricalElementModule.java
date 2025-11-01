@@ -8,7 +8,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
+import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.module.DebugToolInfo;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleType;
@@ -20,15 +22,14 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-//todo re write this documentation
 /**
  * <h5>This module is used to store/handle a {@link Element electricalElement}.</h5>
  * Notice that {@link ElectricalElementModule#terminalA} and {@link ElectricalElementModule#terminalB} are modules too,
- * but you <b>NEVER</b> should serialize it! They are used only as a wrapper.<br>
+ * any it is always connected to this module! <a color="red">Don't disconnect it!</a>.<br>
  * The {@link  ElectricalElementModule#element} is the most important field, it stores the electrical element that will be used in the {@link kuse.welbre.sim.electrical.Circuit}.<br><br>
  * Basically to use this module, you return it in {@link ModulesHolder#getModules()} and <b>NEVER</b> return this module in another place,
  * and returns the {@link ElectricalElementModule#terminalA} and {@link ElectricalElementModule#terminalB} in {@link ModulesHolder#getModule(Direction)}.
- * But why? This module doesn't connect directly to others, instead, the use the {@link ElectricalTerminalModule} as a wrapper, each <code>EPM</code> is designed to connect/disconnect the {@link #element}.
+ * But why? This module doesn't connect directly to others, instead, they use the {@link ElectricalTerminalModule} as a wrapper, each <code>ETM</code> is designed to connect/disconnect the {@link #element}.
  * Therefore, if you return this module in the holder, it will connect the module but won't connect the element, setting this module in an illegal state.
  *
  * @see ElectricalTerminalModule
@@ -38,7 +39,12 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
     private ElectricalTerminalModule terminalA;
     private ElectricalTerminalModule terminalB;
 
-    public ElectricalElementModule() {
+    public ElectricalElementModule()
+    {
+        terminalA = new ElectricalTerminalModule(this);
+        terminalB = new ElectricalTerminalModule(this);
+        connect(terminalA);
+        connect(terminalB);
     }
 
     public ElectricalElementModule(Element element)
@@ -49,8 +55,6 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
     public void setElement(Element e)
     {
         element = e;
-        terminalA = new ElectricalTerminalModule(this);
-        terminalB = new ElectricalTerminalModule(this);
     }
 
     public Element getElement() {
@@ -158,7 +162,8 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
     }
 
     @Override
-    public void onLoad(ModulesHolder entity) {
+    public void onLoad(ModulesHolder entity)
+    {
         if (isFresh)
             return;
 
@@ -168,8 +173,18 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
         if (level.isClientSide())
             return;
 
+        //the modulesHolder don't run the terminal logic, don't remove this from this method.
         terminalA.onLoad(entity);
         terminalB.onLoad(entity);
+        // connect with surroundings
+        if (entity instanceof ElectricalBE be)
+            for (Direction dir : Direction.values())
+                if (be.getModule(dir).length > 0 && level.getBlockEntity(be.getBlockPos().relative(dir)) instanceof ModulesHolder holder)
+                    for (Module module : be.getModule(dir))
+                        if (module instanceof NetworkModule networkModule)
+                            for (Module other : holder.getModule(dir.getOpposite()))
+                                if (other instanceof NetworkModule otherNetworkModule)
+                                    otherNetworkModule.connect(networkModule);
 
         isFresh = true;
     }

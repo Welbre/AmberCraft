@@ -45,31 +45,21 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
     }
 
     @Override
-    public boolean connect(NetworkModule target) {
-        //cable -> pin connection
-        //creates a resistor with half-cable resistence
-        if (target instanceof ElectricalTerminalModule epm)
+    public boolean connect(NetworkModule target)
+    {
+        if (super.connect(target))
         {
-            if (super.connect(epm.electrical))//connect to the elementModule instead of the pin!
-            {
-                addResistor(epm.terminal, resistence / 2);//only create a new resistor if a new connection has been created.
-                return true;
-            }
-            return false;
+            //cable -> pin connection
+            //creates a resistor with half-cable resistence
+            if (target instanceof ElectricalTerminalModule etm)
+                addResistor(etm.terminal, resistence / 2.0);
+            // cable -> cable connection
+            // computes the average between the pins resistence and creates a resistor to connect the pins.
+            else if (target instanceof ElectricalCableModule ecm)
+                addResistor(ecm.terminal, (resistence + ecm.resistence) / 2.0);
+            return true;
         }
-        // cable -> cable connection
-        // computes the average between the pins resistence and creates a resistor to connect the pins.
-        else if (target instanceof ElectricalCableModule ecm)
-        {
-            if (super.connect(target))
-            {
-                addResistor(ecm.terminal, (resistence + ecm.resistence) / 2);
-                return true;
-            }
-            return false;
-        } else {
-            return super.connect(target);
-        }
+        return false;
     }
 
     @Override

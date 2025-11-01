@@ -1,56 +1,58 @@
 package welbre.ambercraft.module.electrical;
 
 import kuse.welbre.sim.electrical.Circuit;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.redstone.Orientation;
-import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
 
 /**
- * <h5>This class is a wrapper to the {@link ElectricalElementModule}!</h5>
- * Only used to handle a connection in an electrical element.
- * In your BlockEntity that contains an ElectricalModule,
- * you should return an instance of this class in {@link ModulesHolder#getModule(Direction)} method.
- * Don't store or serialize this class,
- * it is only used in the connection / disconnection process to create the electrical elements.<br>
+ * This module represents a pin in the circuit, is used in combination with {@link ElectricalElementModule} to connect different pins in the element.<br>
+ * <h3>Practical example</h3>
+ * {@link welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE DirectionalElectricalBE} returns different terminal modules depending on the face,
+ * after the connection is done, in the compilation face the {@link ElectricalElementModule#compile()} uses the terminal module returned by the BE that
+ * is stored in {@link ElectricalElementModule#terminalA} and {@link ElectricalElementModule#terminalB} to set the {@link ElectricalElementModule#element elemet} pins.<br>
+ * <h3>How to use</h3>
+ * <p>
+ *     Create a {@link ElectricalElementModule} and return the element module and him terminals it in you {@link ModulesHolder},
+ *     use {@link ElectricalElementModule#getTerminalA()} and {@link ElectricalElementModule#getTerminalB()} to access the terminal modules.
+ * </p>
+ * <p>
+ *     In the {@link ModulesHolder#getModule(Direction)} you can send different terminals depending on how you desire that the block work.
+ * </p>
+ *
+ * <i>
+ *     See: {@link welbre.ambercraft.blockentity.electrical.ElectricalBE ElectricalBE} and {@link welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE DirectionalElectricalBE}
+ *     to see a practical example.
+ * </i>
  */
 public class ElectricalTerminalModule extends NetworkModule {
     protected final ElectricalModule electrical;
     protected Circuit.Pin[] terminal = {new Circuit.Pin()};
 
-    public ElectricalTerminalModule(ElectricalModule electrical) {
+    public ElectricalTerminalModule(ElectricalModule electrical)
+    {
         this.electrical = electrical;
     }
 
     @Override
-    public boolean connect(NetworkModule target) {
-        if (target instanceof ElectricalTerminalModule terminalModule)//pin pin connection
-        {
-            if (this.electrical.connect(terminalModule.electrical))
-            {
-                terminalModule.terminal = this.terminal;
-                return true;
-            }
-            return false;
-        }
-        else
-            return super.connect(target);
+    public boolean connect(NetworkModule target)
+    {
+        //Set the target pin as this pin.
+        //Therefore, in the compilation step they have the same pin and connect currency in the MNA
+        if (target instanceof ElectricalTerminalModule etm)
+            etm.terminal = this.terminal;
+
+        return super.connect(target);
+    }
+
+    @Override
+    public void disconnectAll()
+    {
+        super.disconnectAll();
+        terminal = new Circuit.Pin[]{new Circuit.Pin()};
     }
 
     public ElectricalModule getElectrical() {
@@ -62,7 +64,8 @@ public class ElectricalTerminalModule extends NetworkModule {
     }
 
     @Override
-    public void onLoad(ModulesHolder entity) {
+    public void onLoad(ModulesHolder entity)
+    {
 
     }
 
@@ -72,8 +75,11 @@ public class ElectricalTerminalModule extends NetworkModule {
     }
 
     @Override
-    public void tick(ModulesHolder entity) {
-        throw new UnsupportedOperationException("ElectricalPinModule is not tickable!");
+    public void tick(ModulesHolder entity)
+    {
+        if (!this.isMaster())
+            return;
+        master.tick(entity);
     }
 
     @Override
