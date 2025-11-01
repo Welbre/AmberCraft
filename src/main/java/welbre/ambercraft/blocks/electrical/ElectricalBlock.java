@@ -60,7 +60,7 @@ public class ElectricalBlock extends Block implements EntityBlock {
                        if (module instanceof NetworkModule networkModule)
                            for (Module other : holder.getModule(dir.getOpposite()))
                                if (other instanceof NetworkModule otherNetworkModule)
-                                    networkModule.connect(otherNetworkModule);
+                                    otherNetworkModule.connect(networkModule);
                     }
                 }
             }

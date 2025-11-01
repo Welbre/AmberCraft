@@ -176,7 +176,7 @@ public class ElectricalModulesMaster extends Master {
             }
 
             //assign the gnd pin to null
-            for (Element element : elements_per_pin.get(gnd))
+            for (Element element : Optional.ofNullable(elements_per_pin.get(gnd)).orElse(Collections.emptyList()))
             {
                 if (element.getPinA() != null)
                     if (element.getPinA().address == gnd.address)
