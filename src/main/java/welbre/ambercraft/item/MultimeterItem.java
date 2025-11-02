@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 import static welbre.ambercraft.AmberCraft.Components.MULTIMETER_CACHE_DATA_COMPONENT;
-//todo, get all text message and put as static member
+
 public class MultimeterItem extends Item {
     protected static final String MSG_TOO_FAR = "item.ambercraft.multimeter.too_far";
     protected static final String MSG_MODE_CHANGED = "item.ambercraft.multimeter.mode_changed";
@@ -41,6 +41,8 @@ public class MultimeterItem extends Item {
     protected static final String MSG_CURRENT_SAME_TERMINAL = "item.ambercraft.multimeter.current_same_terminal";
     protected static final String MSG_CURRENT_DIF_ELEMENT = "item.ambercraft.multimeter.current_dif_element";
     protected static final String MSG_CURRENT_DIF_CIRCUIT = "item.ambercraft.multimeter.current_dif_circuit";
+    protected static final String MSG_CORRUPTION = "item.ambercraft.multimeter.corruption";
+    protected static final String MSG_INTERNAL_ERROR = "item.ambercraft.multimeter.internal_error";
 
     protected static final BiConsumer<ServerPlayer, Double> SEND_VOLTAGE_IN_CHAT = (player, voltage) -> player.sendSystemMessage(Component.translatable(MSG_VOLTAGE, Tools.proprietyToSi(voltage, "V")) );
     protected static final BiConsumer<ServerPlayer, Double> SEND_CURRENT_IN_CHAT = (player, current) -> player.sendSystemMessage(Component.translatable(MSG_CURRENT, Tools.proprietyToSi(current, "A")));
@@ -285,7 +287,7 @@ public class MultimeterItem extends Item {
                         sendCurrent(element.getElement(), etm.getTerminal()[0], player);
                     }
                     else
-                        player.sendSystemMessage(Component.literal("Corruption in the circuit formation :(, send this message to the devs!").withColor(DyeColor.RED.getTextColor()));
+                        player.sendSystemMessage(Component.translatable(MSG_CORRUPTION).withColor(DyeColor.RED.getTextColor()));
                 }
             }
         }
@@ -390,7 +392,7 @@ public class MultimeterItem extends Item {
         //check to avoid crashs
         if (common == null)
         {
-            player.sendSystemMessage(Component.literal("Internal Error").withColor(0xffdd0000));
+            player.sendSystemMessage(Component.translatable(MSG_INTERNAL_ERROR).withColor(0xffdd0000));
             return;
         }
 

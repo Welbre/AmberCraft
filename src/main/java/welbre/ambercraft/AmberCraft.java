@@ -253,14 +253,14 @@ public class AmberCraft {
                     var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
                     stack.set(Components.CABLE_DATA_COMPONENT.get(),
                             new FacedCableComponent(CableTypes.HEAT_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
-                    stack.set(DataComponents.CUSTOM_NAME, Component.literal( color.getName() + " heat cable"));//todo add in the translatable file
+                    stack.set(DataComponents.CUSTOM_NAME, Component.literal(color.getName()).append(" ").append(Component.translatable("ambercraft.item.faced_cable.heat_cable")));
                     list.add(stack);
                 }
                 {
                     var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
                     stack.set(Components.CABLE_DATA_COMPONENT.get(),
                             new FacedCableComponent(CableTypes.ELECTRICAL_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
-                    stack.set(DataComponents.CUSTOM_NAME, Component.literal( color.getName() + " electrical cable"));//todo add in the translatable file
+                    stack.set(DataComponents.CUSTOM_NAME, Component.literal(color.getName()).append(" ").append(Component.translatable("ambercraft.item.faced_cable.electrical_cable")));
                     list.add(stack);
                 }
             }

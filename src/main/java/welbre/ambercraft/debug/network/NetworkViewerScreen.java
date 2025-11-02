@@ -146,25 +146,7 @@ public class NetworkViewerScreen extends Screen {
             }
         } else if (button == 1)//left
         {
-            for (NetworkWidget widget : getVisibleWidgets())
-            {
-                if (widget.visible && widget.isMouseOver(mouse.x, mouse.y))
-                {
-                    //todo remove this
-                    try
-                    {
-                        Method setRoot = NetworkModule.class.getDeclaredMethod("setRoot");
-                        setRoot.setAccessible(true);
-                        setRoot.invoke(widget.serverModule);
-                        init();
 
-                    } catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                    break;
-                }
-            }
         } else if (button == 2)
             rotationPoint = mouse;
 

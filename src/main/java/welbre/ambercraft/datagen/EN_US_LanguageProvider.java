@@ -46,6 +46,8 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addMultimeter();
         addItem(AmberCraft.Items.OSCILLOSCOPE, "oscilloscope");
         addItem(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM, "Faced cable");
+
+        addFacedCables();
     }
 
 
@@ -84,6 +86,8 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         add("item.ambercraft.multimeter.current_same_terminal", "You can't measure the current in the same terminal!");
         add("item.ambercraft.multimeter.current_dif_element", "You can't measure the current in different element!");
         add("item.ambercraft.multimeter.current_dif_circuit", "You can't measure the current in different circuits!");
+        add("item.ambercraft.multimeter.corruption", "Corruption in the circuit formation :(, send this message to the devs!");
+        add("item.ambercraft.multimeter.internal_error", "Internal Error");
     }
 
     private void addElectricalMeasures()
@@ -94,5 +98,11 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         add("ambercraft.measures.capacitance", "Capacitance");
         add("ambercraft.measures.inductance", "Inductance");
         add("ambercraft.measures.power", "Power");
+    }
+
+    private void addFacedCables()
+    {
+        add("ambercraft.item.faced_cable.heat_cable", "heat cable");
+        add("ambercraft.item.faced_cable.electrical_cable", "electrical cable");
     }
 }

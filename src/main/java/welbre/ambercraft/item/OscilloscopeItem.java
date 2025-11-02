@@ -266,6 +266,7 @@ public class OscilloscopeItem extends MultimeterItem
 
     protected void initWatcher(ServerPlayer player, ElectricalModulesMaster master, Supplier<Double> dataSupplier)
     {
+        System.out.println("created!");
         //start the scheduler that will update the oscilloscope data.
         master.scheduler.scheduleEachTick(0, 0, 99999999, (s) -> {}, task -> {
             if (SHOULD_END_WATCHER(player))

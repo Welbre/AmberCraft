@@ -6,10 +6,16 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +37,7 @@ public class NetworkWidget extends AbstractWidget {
     public static final int CHILDREN_CONNECTION_COLOR = 0XFF7D86D1;
     public static final int FATHER_CONNECTION_COLOR = 0XFFCB200F;
     public static final int DEFAULT_SIZE = 60;
+    public static final float BLOCK_SCALE = 30f;
 
     public int color = 0;
     public final ModulesHolder holder;
@@ -52,6 +59,7 @@ public class NetworkWidget extends AbstractWidget {
     //aesthetics
     public Animation animation;
     public Connection[] childConnection = new Connection[0];
+    public double yRotation = 0;
 
     public NetworkWidget(int x, int y, NetworkModule serverModule, NetworkModule clientModule, ModulesHolder holder, boolean isMain) {
         super(x, y, DEFAULT_SIZE, DEFAULT_SIZE, Component.literal("module"));
@@ -92,20 +100,7 @@ public class NetworkWidget extends AbstractWidget {
             RENDER_FATHER_ARROW(graphics, mouseX, mouseY, partialTick);
         }
 
-        //fixme, at the moment the render is incorrect, they are rendering faces that is behind other faces, and other culling problems
-        graphics.pose().pushPose();
-        var p = graphics.pose();
-        p.translate(x + width/2f - 10,y + height/2f,10);
-        p.rotateAround(new Quaternionf().rotateY((float) Math.toRadians(45)).rotateLocalX((float) Math.toRadians(30)),10f,10f,10f);
-        p.scale(20,20, 20);
-
-        graphics.drawSpecial(drawer -> {
-            BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(holder.getBlockState());
-            ModelData data = model.getModelData(holder.getLevel(), holder.getBlockPos(), holder.getBlockState(), holder.getModelData());
-            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(holder.getBlockState(), p, drawer, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, data, null);
-        });
-
-        graphics.pose().popPose();
+        renderBlock(graphics, partialTick);
     }
 
     @Override
@@ -234,6 +229,43 @@ public class NetworkWidget extends AbstractWidget {
             scheduler.add(animation);
             this.animation = animation;
         }
+    }
+
+    public void renderBlock(GuiGraphics graphics, float partialTick)
+    {
+        var blockPos = holder.getBlockPos();
+        ModelData modelData = Minecraft.getInstance().level.getModelDataManager().getAt(blockPos);
+
+        BlockState blockState = Minecraft.getInstance().level.getBlockState(blockPos);
+        RenderShape rendershape = blockState.getRenderShape();
+        if (rendershape == RenderShape.INVISIBLE)
+            return;
+
+        yRotation += partialTick;
+
+        // stack control
+        graphics.pose().pushPose();
+        var p = graphics.pose();
+        p.translate(getX() + width/2f - BLOCK_SCALE/2f, getY()+ height/2f - BLOCK_SCALE/2f, 40);
+        p.rotateAround(new Quaternionf().rotateZ((float) Math.PI).rotateY((float) (yRotation / 30f)).rotateX((float) (Math.PI / 6f)), BLOCK_SCALE/2f,BLOCK_SCALE/2f,-BLOCK_SCALE/2f);
+        p.scale(BLOCK_SCALE,BLOCK_SCALE,-BLOCK_SCALE);
+
+        BlockRenderDispatcher renderer = Minecraft.getInstance().getBlockRenderer();
+        BakedModel bakedmodel = renderer.getBlockModel(blockState);
+        modelData = bakedmodel.getModelData(Minecraft.getInstance().level, blockPos, blockState, modelData);
+        int blockColor = Minecraft.getInstance().getBlockColors().getColor(blockState, Minecraft.getInstance().level, blockPos, 0);
+        float r = (blockColor >> 16 & 0xff) / 255f;
+        float g = (blockColor >> 8 & 0xff) / 255f;
+        float b = (blockColor & 0xff) / 255f;
+
+        for (RenderType renderType : bakedmodel.getRenderTypes(blockState, RandomSource.create(42), modelData))
+        {
+            var consume = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(renderType);
+            for (BakedQuad quad : bakedmodel.getQuads(blockState, null, RandomSource.create(42), modelData, renderType))
+                consume.putBulkData(graphics.pose().last(), quad, r, g, b, 1f, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, true);
+        }
+
+        graphics.pose().popPose();
     }
 
     @Override

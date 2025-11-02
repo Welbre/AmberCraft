@@ -2,8 +2,6 @@ package welbre.ambercraft.client.screen.oscilloscope;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.KeyboardHandler;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
-import org.joml.Vector3f;
+import welbre.ambercraft.client.screen.widget.InfiniteKnob;
 import welbre.ambercraft.network.oscilloscope.OscilloscopeClosedPayload;
 
 public class OscilloscopeScreen extends Screen
@@ -39,6 +37,8 @@ public class OscilloscopeScreen extends Screen
         super.init();
         addRenderableWidget(new StringWidget(Component.literal("olá"), font));
         chartPosition = new Vector2i((width - chartWidth) / 2,(height - charHeight) / 2);
+        addRenderableWidget(new InfiniteKnob(100 ,100 ,50 ,50, new double[]{0.01,0.01}, 1).setOnValueChange(this::zoomXAxes).setRestriction(d -> {return d > 0;}));
+        addRenderableWidget(new InfiniteKnob(100 ,150 ,50 ,50, new double[]{0.01,0.01}, 20).setOnValueChange(this::zoomYAxes).setRestriction(d -> {return d > 0;}));
     }
 
     @Override
@@ -148,6 +148,24 @@ public class OscilloscopeScreen extends Screen
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    public void zoomXAxes(InfiniteKnob infiniteKnob, double delta)
+    {
+        for (Trace trace : traces)
+        {
+            trace.widthScale = infiniteKnob.value;
+            trace.reComputeAllPoints(this);
+        }
+    }
+
+    public void zoomYAxes(InfiniteKnob infiniteKnob, double delta)
+    {
+        for (Trace trace : traces)
+        {
+            trace.heightScale *= delta < 0 ? 2 : 0.5;
+            trace.reComputeAllPoints(this);
+        }
     }
 
     @Override

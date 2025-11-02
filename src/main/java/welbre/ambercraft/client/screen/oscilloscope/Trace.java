@@ -1,7 +1,6 @@
 package welbre.ambercraft.client.screen.oscilloscope;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Vector3f;
 
 import java.util.Arrays;
@@ -56,6 +55,8 @@ public class Trace
         double max = Arrays.stream(data).max().getAsDouble();
         double min = Arrays.stream(data).min().getAsDouble();
         double range = Math.abs(max - min);
+        if (range == 0)
+            return;
 
         //1.2 is a margin of 20% from the top and bottom of the chart.
         heightScale = range * 1.2 / (2.0 * info.charHeight);
@@ -148,17 +149,21 @@ public class Trace
             buffer.setNormal(1, 0, 0);
         }
 
-        for (int x = 0; x < info.chartWidth * widthScale && x < header; x++)
+        for (int x = 0; x < (info.chartWidth * widthScale)  && x < header -1; x++)
         {
-            int fx = Math.round(Math.round(x / widthScale));
+            int fx = xLeft + Math.round(Math.round(x / widthScale));
             int y = points[x];
 
-            buffer.addVertex(xLeft + fx, y, 0);
+            int fx2 = xLeft + Math.round(Math.round((x+1) / widthScale));
+            int y2 = points[x + 1];
+
+            buffer.addVertex(fx, y, 0);
             buffer.setColor(color);
-            buffer.setNormal(0, 1, 0);
-            buffer.addVertex(xLeft + fx, finalYZero, 0);
+            buffer.setNormal(fx2-fx, y2-y, 0);
+
+            buffer.addVertex(fx2, y2, 0);
             buffer.setColor(color);
-            buffer.setNormal(0, 1, 0);
+            buffer.setNormal(fx-fx2, y-y2 ,0);
         }
     }
 }

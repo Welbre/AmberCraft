@@ -39,7 +39,7 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
     }
 
     @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData extraData, @Nullable RenderType renderType) {
+    public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
         ArrayList<BakedQuad> quads = new ArrayList<>();
         QuadBakingVertexConsumer consumer = new QuadBakingVertexConsumer();
 
@@ -279,7 +279,7 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
 
     @Override
     public boolean usesBlockLight() {
-        return false;
+        return true;
     }
 
     @Override
@@ -294,6 +294,8 @@ public class FacedCableBakedModel implements IDynamicBakedModel {
 
     @Override
     public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data) {
+        if (true)
+            return ChunkRenderTypeSet.of(RenderType.solid());
         return ItemBlockRenderTypes.getRenderLayers(state);
     }
 }

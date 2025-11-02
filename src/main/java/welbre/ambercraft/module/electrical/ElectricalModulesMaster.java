@@ -5,7 +5,6 @@ import kuse.welbre.sim.electrical.CircuitAnalyser;
 import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.sim.electrical.abstractt.Element3Pin;
 import kuse.welbre.sim.electrical.abstractt.Element4Pin;
-import kuse.welbre.sim.electrical.abstractt.Watcher;
 import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -47,9 +46,6 @@ public class ElectricalModulesMaster extends Master {
             if (next == null) break;
             if (visited.contains(next)) continue;
             visited.add(next);
-
-//            if (next instanceof ElectricalTerminalModule)
-//                throw new IllegalStateException("ElectricalTerminalModule should be connected in the network, it is only a placeholder!");
 
             if (next instanceof ElectricalModule eem)//add all elements
                 elements.addAll(Arrays.asList(eem.compile()));
