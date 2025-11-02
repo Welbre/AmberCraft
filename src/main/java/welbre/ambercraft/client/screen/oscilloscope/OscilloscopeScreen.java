@@ -38,7 +38,9 @@ public class OscilloscopeScreen extends Screen
         addRenderableWidget(new StringWidget(Component.literal("olá"), font));
         chartPosition = new Vector2i((width - chartWidth) / 2,(height - charHeight) / 2);
         addRenderableWidget(new InfiniteKnob(100 ,100 ,50 ,50, new double[]{0.01,0.01}, 1).setOnValueChange(this::zoomXAxes).setRestriction(d -> {return d > 0;}));
-        addRenderableWidget(new InfiniteKnob(100 ,150 ,50 ,50, new double[]{0.01,0.01}, 20).setOnValueChange(this::zoomYAxes).setRestriction(d -> {return d > 0;}));
+        addRenderableWidget(new InfiniteKnob(100 ,150 ,50 ,50, new double[]{0.01,0.01}, 20).setOnValueChange(this::moveXAxes).setRestriction(d -> {return d > 0;}));
+        addRenderableWidget(new InfiniteKnob(100 ,200 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::zoomYAxes).setRestriction(d -> {return true;}));
+        addRenderableWidget(new InfiniteKnob(100 ,250 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::moveYAxes).setRestriction(d -> {return true;}));
     }
 
     @Override
@@ -120,33 +122,6 @@ public class OscilloscopeScreen extends Screen
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY)
     {
-        //knob control
-        //todo refactor this to using a dedicated widget
-        if (isInChart(mouseX, mouseY))
-        {
-
-            if (hasControlDown())//zoom
-                if (hasShiftDown())//zoom in the x axes
-                {
-                    for (Trace trace : traces)
-                        trace.widthScale *= scrollY < 0 ? 2 : 0.5;
-                }
-                else
-                {
-                    for (Trace trace : traces)//zoom in the y axes
-                        trace.heightScale *= scrollY < 0 ? 2 : 0.5;
-                }
-            else if (hasShiftDown())//move x
-                for (Trace trace : traces)
-                    trace.widthOffSet -= 5 * (int) scrollY;
-            else//move y
-                for (Trace trace : traces)
-                    trace.heightOffSet -= 5 * (int) scrollY;
-
-            for (Trace trace : traces)
-                trace.reComputeAllPoints(this);
-            return true;
-        }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
@@ -159,11 +134,29 @@ public class OscilloscopeScreen extends Screen
         }
     }
 
+    public void moveXAxes(InfiniteKnob infiniteKnob, double delta)
+    {
+        for (Trace trace : traces)
+        {
+            trace.widthOffSet -= 50 * delta;
+            trace.reComputeAllPoints(this);
+        }
+    }
+
     public void zoomYAxes(InfiniteKnob infiniteKnob, double delta)
     {
         for (Trace trace : traces)
         {
             trace.heightScale *= delta < 0 ? 2 : 0.5;
+            trace.reComputeAllPoints(this);
+        }
+    }
+
+    public void moveYAxes(InfiniteKnob infiniteKnob, double delta)
+    {
+        for (Trace trace : traces)
+        {
+            trace.heightOffSet -= 50 * delta;
             trace.reComputeAllPoints(this);
         }
     }

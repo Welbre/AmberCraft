@@ -18,6 +18,10 @@ public class Trace
     public double heightOffSet;
     /// how many pixels the x is moved from the zero; Positive means more right.
     public double widthOffSet;
+    /// if the oscilloscope sample size
+    public int sampleSize;
+    /// if the oscilloscope displays the values continuously
+    public boolean isContinuos = true;
 
     /// The header of the data, where the next value will be stored.
     public int header = 0;
@@ -37,6 +41,7 @@ public class Trace
     {
         this.data = data;
         this.points = new int[info.chartWidth];
+        this.sampleSize = data.length;
         this.heightOffSet = info.charHeight / 2.0;
     }
 
@@ -75,12 +80,13 @@ public class Trace
             final double y = data[i] / 2.0 / heightScale;
             final int height = (int) Math.round(Math.clamp(yZero + y, chartPosition.y, yDown));
 
-            if (i + widthOffSet >= points.length)
-                points[(int) Math.round(i + widthOffSet - points.length)] = height;
-            else if (i + widthOffSet < 0)
-                points[(int) Math.round(i + points.length + widthOffSet)] = height;
+            final int index = (int) Math.round(i + widthOffSet);
+            if (index >= points.length)
+                points[index - points.length] = height;
+            else if (index < 0)
+                points[index + points.length] = height;
             else
-                points[(int) Math.round(i + widthOffSet)] = height;
+                points[index] = height;
         }
     }
 
