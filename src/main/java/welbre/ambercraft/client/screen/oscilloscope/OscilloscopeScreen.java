@@ -3,6 +3,7 @@ package welbre.ambercraft.client.screen.oscilloscope;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -41,6 +42,13 @@ public class OscilloscopeScreen extends Screen
         addRenderableWidget(new InfiniteKnob(100 ,150 ,50 ,50, new double[]{0.01,0.01}, 20).setOnValueChange(this::moveXAxes).setRestriction(d -> {return d > 0;}));
         addRenderableWidget(new InfiniteKnob(100 ,200 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::zoomYAxes).setRestriction(d -> {return true;}));
         addRenderableWidget(new InfiniteKnob(100 ,250 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::moveYAxes).setRestriction(d -> {return true;}));
+        Button.Builder builder = Button.builder(Component.literal("clear"), button -> {
+            for (Trace trace : traces)
+            {
+                trace.isContinuos = !trace.isContinuos;
+            }
+        });
+        addRenderableWidget(builder.bounds(100, 300, 50, 50).build());
     }
 
     @Override

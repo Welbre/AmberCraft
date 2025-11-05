@@ -24,6 +24,7 @@ public class EN_US_LanguageProvider extends LanguageProvider {
         addBlock(AmberCraft.Blocks.INDUCTOR_BLOCK, "Inductor");
         add("ambercraft.inductance.set", "Inductance set to: %s");
         addBlock(AmberCraft.Blocks.GROUND_BLOCK, "Ground");
+        addBlock(AmberCraft.Blocks.INSULATOR_BLOCk, "Insulator");
 
         addBlock(AmberCraft.Blocks.HEAT_FURNACE_BLOCK, "Heat furnace");
         addBlock(AmberCraft.Blocks.CREATIVE_HEAT_FURNACE_BLOCK, "Creative heat furnace");

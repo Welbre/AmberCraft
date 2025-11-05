@@ -28,6 +28,7 @@ public class Trace
     public boolean isFull = false;
     public double[] data;
 
+    public int pointer_head;
     public int[] points;
 
     public Trace(int size, OscilloscopeScreen info)
@@ -109,14 +110,23 @@ public class Trace
         final double y = value / 2.0 / heightScale;
         final int point = (int) Math.round( Math.clamp(yZero + y, chartPosition.y, yDown) );
 
-        if (header >= points.length)
+        if (header >= points.length * widthScale)
         {
-            final int[] nPoints = new int[points.length];
-            //todo fix used a better approach, maybe a "end less" array
-            if (nPoints.length - 1 >= 0)
-                System.arraycopy(points, 1, nPoints, 0, nPoints.length-1);
-            points = nPoints;
-            points[points.length-1] = point;
+            if (isContinuos)
+            {
+                final int[] nPoints = new int[points.length];
+                //todo fix used a better approach, maybe a "end less" array
+                if (nPoints.length - 1 >= 0)
+                    System.arraycopy(points, 1, nPoints, 0, nPoints.length - 1);
+                points = nPoints;
+                points[points.length - 1] = point;
+            }
+            else
+            {
+                if (pointer_head >= points.length * widthScale)
+                    pointer_head = 0;
+                points[pointer_head++] = point;
+            }
         }
         else
             if (header + widthOffSet >= points.length)

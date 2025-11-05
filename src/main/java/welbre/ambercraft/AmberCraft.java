@@ -20,6 +20,7 @@ import welbre.ambercraft.blockentity.*;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.blockentity.electrical.GroundBE;
+import welbre.ambercraft.blockentity.electrical.InsulatorBE;
 import welbre.ambercraft.blockentity.heat.*;
 import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.electrical.*;
@@ -79,6 +80,7 @@ public class AmberCraft {
         public static final DeferredHolder<Block, CapacitorBlock> CAPACITOR_BLOCK = REGISTER.registerBlock("capacitor_block", CapacitorBlock::new);
         public static final DeferredHolder<Block, InductorBlock> INDUCTOR_BLOCK = REGISTER.registerBlock("inductor_block", InductorBlock::new);
         public static final DeferredHolder<Block, GroundBlock> GROUND_BLOCK = REGISTER.registerBlock("ground_block", GroundBlock::new);
+        public static final DeferredHolder<Block, InsulatorBlock> INSULATOR_BLOCk = REGISTER.registerBlock("insulator_block", InsulatorBlock::new);
 
         public static final DeferredHolder<Block, Block> IRON_MACHINE_CASE_BLOCK = REGISTER.registerSimpleBlock("iron_machine_case_block");
 
@@ -123,6 +125,7 @@ public class AmberCraft {
         public static final DeferredItem<BlockItem> CAPACITOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.CAPACITOR_BLOCK);
         public static final DeferredItem<BlockItem> INDUCTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.INDUCTOR_BLOCK);
         public static final DeferredItem<BlockItem> GROUND_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.GROUND_BLOCK);
+        public static final DeferredItem<BlockItem> INSULATOR_BLOCk_ITEM = REGISTER.registerSimpleBlockItem(Blocks.INSULATOR_BLOCk);
 
 
         //block itens
@@ -163,6 +166,7 @@ public class AmberCraft {
         public static final Supplier<BlockEntityType<ElectricalBE>> ELECTRICAL_BE = REGISTER.register("electrical", () -> new BlockEntityType<>(ElectricalBE::new, GET_BLOCKS(Blocks.ELECTRICAL_BE_USERS)));
         public static final Supplier<BlockEntityType<DirectionalElectricalBE>> DIRECTIONAL_ELECTRICAL_BE = REGISTER.register("directional_electrical", () -> new BlockEntityType<>(DirectionalElectricalBE::new, GET_BLOCKS(Blocks.DIRECTIONAl_ELECTRICAL_BE_USERS)));
         public static final Supplier<BlockEntityType<GroundBE>> GROUND_BE = REGISTER.register("ground", () -> new BlockEntityType<>(GroundBE::new, Blocks.GROUND_BLOCK.get()));
+        public static final Supplier<BlockEntityType<InsulatorBE>> INSULATOR_BE = REGISTER.register("insulator", () -> new BlockEntityType<>(InsulatorBE::new, Blocks.INSULATOR_BLOCk.get()));
 
         public static final Supplier<BlockEntityType<HeatSinkBE>> HEAT_SINK_BLOCK_BE = REGISTER.register("heat_sink", () -> new BlockEntityType<>(HeatSinkBE::new,Blocks.HEAT_SINK_BLOCK.get()));
         public static final Supplier<BlockEntityType<FacedCableBE>> FACED_CABLE_BLOCK_BE = REGISTER.register("faced_cable", () -> new BlockEntityType<>(FacedCableBE::new,Blocks.FACED_CABLE_BLOCK.get()));
@@ -193,6 +197,7 @@ public class AmberCraft {
 
         public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat", HeatModuleType::new);
 
+        //electrical
         public static final DeferredHolder<ModuleType<?>, ElectricalModuleType> ELECTRICAL_MODULE_TYPE = REGISTER.register("electrical", ElectricalModuleType::new);
         public static final DeferredHolder<ModuleType<?>, ElectricalTerminalModuleType> ELECTRICAL_TERMINAL_MODULE_TYPE = REGISTER.register("electrical_terminal", ElectricalTerminalModuleType::new);
         public static final DeferredHolder<ModuleType<?>, ElectricalCableModuleType> ELECTRICAL_CABLE_MODULE_TYPE = REGISTER.register("electrical_cable", ElectricalCableModuleType::new);

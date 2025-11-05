@@ -5,7 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import welbre.ambercraft.blockentity.FacedCableBE;
+import welbre.ambercraft.blockentity.electrical.InsulatorBE;
 import welbre.ambercraft.cables.CableState;
+import welbre.ambercraft.client.BER.InsulatorBER;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.NetworkModule;
@@ -74,6 +76,15 @@ public class NetworkViewerHelper {
         {
             ModulesHolder next = queue.pop();
             BlockPos nextPos = next.getBlockPos();
+
+            //search in connectors
+            if (next instanceof InsulatorBE insulator)
+            {
+                if (insulator.isConnected())
+                    for (BlockPos cable : insulator.getCablePos())
+                        if (level.getBlockEntity(cable) instanceof ModulesHolder holder && !visited.contains(holder))
+                            queue.add(holder);
+            }
 
             //search
             for (var dir : Direction.values())

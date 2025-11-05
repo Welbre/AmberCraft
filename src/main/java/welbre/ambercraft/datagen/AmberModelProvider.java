@@ -12,6 +12,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blocks.heat.HeatPumpBlock;
@@ -103,6 +104,7 @@ public class AmberModelProvider extends ModelProvider {
                 "connection_creative_block", "connection_creative_block", "inductor_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.GROUND_BLOCK.get(),
                 "connection_creative_block", "ground_block","ground_block");
+        blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(AmberCraft.Blocks.INSULATOR_BLOCk.get(), Variant.variant().with(VariantProperties.MODEL, ResourceLocation.parse("ambercraft:block/insulator_block"))));
 
         CREATE_HEAT_FURNACE(blocks);
         CREATE_AMBER_FREE_BLOCK_STATE(blocks, AmberCraft.Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get(), new TextureMapping()

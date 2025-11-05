@@ -11,6 +11,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import welbre.ambercraft.client.BER.HeatSinkBER;
+import welbre.ambercraft.client.BER.InsulatorBER;
 import welbre.ambercraft.client.item.CableSpecialRender;
 import welbre.ambercraft.client.models.CentredCableModelLoader;
 import welbre.ambercraft.client.models.FacedCableModelLoader;
@@ -18,6 +19,7 @@ import welbre.ambercraft.datagen.template.CentredCableLoaderBuilder;
 import welbre.ambercraft.datagen.template.FacedCableLoaderBuilder;
 
 import static welbre.ambercraft.AmberCraft.BlockEntity.HEAT_SINK_BLOCK_BE;
+import static welbre.ambercraft.AmberCraft.BlockEntity.INSULATOR_BE;
 import static welbre.ambercraft.AmberCraft.MOD_ID;
 
 @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
@@ -27,6 +29,7 @@ public class ClientMain {
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(HEAT_SINK_BLOCK_BE.get(), HeatSinkBER::new);
+        event.registerBlockEntityRenderer(INSULATOR_BE.get(), InsulatorBER::new);
     }
 
     @SubscribeEvent

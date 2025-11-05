@@ -207,4 +207,9 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
     public double getResistence() {
         return resistence;
     }
+
+    public void setResistence(double resistence)
+    {
+        this.resistence = resistence;
+    }
 }
