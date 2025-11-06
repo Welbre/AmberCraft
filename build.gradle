@@ -121,6 +121,7 @@ dependencies {
     // For all intends and purposes: You can treat this dependency as if it is a normal library you would use.
     implementation "net.neoforged:neoforge:${neo_version}"
     implementation "curse.maven:sodium-394468:6382663"
+    implementation "curse.maven:sodium-225608:6338613"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation 'thedarkcolour:kotlinforforge-neoforge:5.9.0'
     implementation "kuse.welbre:ElectricalSim"
