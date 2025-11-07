@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
-import welbre.ambercraft.blocks.electrical.ResistorBlock;
 
 import java.util.UUID;
 

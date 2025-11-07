@@ -18,8 +18,6 @@ import welbre.ambercraft.client.screen.AmberValueModifierScreen;
 import welbre.ambercraft.network.AmberValueModifierPayload.Type;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 
-import java.util.UUID;
-
 public class ResistorBlock extends DirectionalElectricalBlock {
     public ResistorBlock(Properties p) {
         super(p);

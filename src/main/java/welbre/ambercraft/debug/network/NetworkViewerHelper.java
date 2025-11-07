@@ -7,7 +7,6 @@ import net.minecraft.world.level.Level;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.blockentity.electrical.InsulatorBE;
 import welbre.ambercraft.cables.CableState;
-import welbre.ambercraft.client.BER.InsulatorBER;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.NetworkModule;

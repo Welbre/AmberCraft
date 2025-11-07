@@ -1,17 +1,12 @@
 package welbre.ambercraft.blocks.electrical;
 
 import kuse.welbre.sim.electrical.elements.Capacitor;
-import kuse.welbre.sim.electrical.elements.Resistor;
-import kuse.welbre.tools.Tools;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
@@ -20,8 +15,6 @@ import welbre.ambercraft.client.AmberCraftScreenHelper;
 import welbre.ambercraft.client.screen.AmberValueModifierScreen;
 import welbre.ambercraft.network.AmberValueModifierPayload;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
-
-import java.util.UUID;
 
 public class CapacitorBlock extends DirectionalElectricalBlock {
     public CapacitorBlock(Properties p) {

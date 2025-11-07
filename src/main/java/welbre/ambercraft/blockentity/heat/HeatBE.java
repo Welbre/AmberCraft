@@ -4,8 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;

@@ -2,7 +2,6 @@ package welbre.ambercraft.client.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;

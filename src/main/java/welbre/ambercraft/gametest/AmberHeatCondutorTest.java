@@ -12,9 +12,11 @@ import welbre.ambercraft.blockentity.heat.HeatBE;
 import welbre.ambercraft.blockentity.heat.HeatFurnaceBE;
 import welbre.ambercraft.blockentity.heat.HeatSinkBE;
 import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.module.network.NetworkModule;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 @GameTestHolder(AmberCraft.MOD_ID)

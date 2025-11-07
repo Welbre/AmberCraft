@@ -34,8 +34,6 @@ import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 
-import java.util.UUID;
-
 public class HeatPumpBlock extends Block implements EntityBlock {
     public final ModuleFactory<HeatModule, HeatPumpBE> COLD_FACTORY = new ModuleFactory<>(HeatPumpBE.class,
             AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,

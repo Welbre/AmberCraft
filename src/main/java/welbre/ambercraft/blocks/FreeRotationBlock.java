@@ -15,7 +15,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.datagen.template.AmberModelTemplate;
 
 /**
  * This block is used for each AmberCraft block that can face any of 6 direction and rotate around the facing direction.<br>

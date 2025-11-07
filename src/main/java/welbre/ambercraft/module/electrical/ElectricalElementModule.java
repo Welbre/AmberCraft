@@ -8,7 +8,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
-import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.module.DebugToolInfo;

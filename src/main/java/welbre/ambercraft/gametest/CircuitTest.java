@@ -2,9 +2,10 @@ package welbre.ambercraft.gametest;
 
 import kuse.welbre.sim.electrical.abstractt.Element;
 import net.minecraft.core.BlockPos;
-import net.minecraft.gametest.framework.*;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.StructureUtils;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.GameTestHolder;

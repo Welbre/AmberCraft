@@ -30,7 +30,6 @@ import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
-
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
 public class HeatFurnaceBlock extends HeatBlock {

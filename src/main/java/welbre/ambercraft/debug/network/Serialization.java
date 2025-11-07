@@ -1,7 +1,7 @@
 package welbre.ambercraft.debug.network;
 
 import org.apache.commons.lang3.NotImplementedException;
-import sun.reflect.ReflectionFactory;//fixme refactor this to don't use the Reflection factory
+import sun.reflect.ReflectionFactory;
 
 import java.io.*;
 import java.lang.reflect.Array;

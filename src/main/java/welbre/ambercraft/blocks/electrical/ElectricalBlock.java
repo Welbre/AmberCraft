@@ -1,7 +1,6 @@
 package welbre.ambercraft.blocks.electrical;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -9,15 +8,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
-import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.electrical.ElectricalElementModule;
-import welbre.ambercraft.module.network.NetworkModule;
 
 public class ElectricalBlock extends Block implements EntityBlock {
     public ModuleFactory<ElectricalElementModule, ElectricalBE> factory = new ModuleFactory<>(

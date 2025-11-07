@@ -22,8 +22,10 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.network.NetworkModule;
 import welbre.ambercraft.network.NetworkViewerScreenPayLoad;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 
 //todo check for problems because we change how network modules works!
 //todo create a context menu in the left click in a widget

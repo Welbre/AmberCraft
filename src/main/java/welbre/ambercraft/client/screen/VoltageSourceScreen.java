@@ -5,7 +5,8 @@ import kuse.welbre.sim.electrical.elements.ACVoltageSource;
 import kuse.welbre.sim.electrical.elements.SquareVoltageSource;
 import kuse.welbre.sim.electrical.elements.VoltageSource;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -18,9 +19,8 @@ import welbre.ambercraft.client.screen.widget.ParameterSet;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 import welbre.ambercraft.network.VoltageSourceModifierPayload;
 
-
 import static net.minecraft.network.chat.Component.translatable;
-import static welbre.ambercraft.network.VoltageSourceModifierPayload.*;
+import static welbre.ambercraft.network.VoltageSourceModifierPayload.VoltageSourceType;
 
 public class VoltageSourceScreen extends Screen {
     /// Used to set the position in the done button when the ac mode is active.
