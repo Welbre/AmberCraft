@@ -69,6 +69,9 @@ runs {
         // You can set various levels here.
         // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
         systemProperty 'forge.logging.console.level', 'debug'
+        dependencies {
+            runtime 'com.github.Welbre:CircuitSimulation:1.0'
+        }
 
         modSource project.sourceSets.main
     }
@@ -124,6 +127,12 @@ dependencies {
     implementation 'thedarkcolour:kotlinforforge-neoforge:5.9.0'
     implementation 'com.github.Welbre:CircuitSimulation:1.0'
 
+    jarJar(implementation(group: 'kuse.welbre', name: 'ElectricalSim')) {
+        version {
+            // Version used in your workspace and bundled in mod jar
+            prefer '1.0'
+        }
+    }
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
