@@ -36,6 +36,7 @@ repositories {
         name = 'Kotlin for Forge'
         url = 'https://thedarkcolour.github.io/KotlinForForge/'
     }
+    maven { url 'https://jitpack.io' }
     mavenCentral()
 }
 
@@ -70,9 +71,6 @@ runs {
         systemProperty 'forge.logging.console.level', 'debug'
 
         modSource project.sourceSets.main
-        dependencies {
-            runtime 'kuse.welbre:ElectricalSim'
-        }
     }
 
     client {
@@ -124,8 +122,7 @@ dependencies {
     implementation "curse.maven:sodium-225608:6338613"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation 'thedarkcolour:kotlinforforge-neoforge:5.9.0'
-    implementation "kuse.welbre:ElectricalSim"
-
+    implementation 'com.github.Welbre:CircuitSimulation:1.0'
 
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
