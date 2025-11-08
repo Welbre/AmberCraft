@@ -1,8 +1,6 @@
 package welbre.ambercraft;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -11,20 +9,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.capabilities.*;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.registries.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
@@ -75,7 +65,6 @@ public class AmberCraft {
         Components.REGISTER.register(modBus);
 
         modBus.addListener(PayLoadRegister::registerPayLoads);
-        modBus.addListener(Capabilities::registerCapabilities);
 
         TABS.REGISTER.register(modBus);
     }
@@ -92,9 +81,6 @@ public class AmberCraft {
         public static final DeferredHolder<Block, InductorBlock> INDUCTOR_BLOCK = REGISTER.registerBlock("inductor_block", InductorBlock::new);
         public static final DeferredHolder<Block, GroundBlock> GROUND_BLOCK = REGISTER.registerBlock("ground_block", GroundBlock::new);
         public static final DeferredHolder<Block, InsulatorBlock> INSULATOR_BLOCk = REGISTER.registerBlock("insulator_block", InsulatorBlock::new);
-
-        //todo remove it
-        public static final DeferredHolder<Block, AmberChestBlock> AMBER_CHEST_BLOCK = REGISTER.registerBlock("amber_chest", AmberChestBlock::new);
 
         public static final DeferredHolder<Block, Block> IRON_MACHINE_CASE_BLOCK = REGISTER.registerSimpleBlock("iron_machine_case_block");
 
@@ -176,9 +162,6 @@ public class AmberCraft {
         public static final Supplier<BlockEntityType<HeatPumpBE>> HEAT_PUMP_BE = REGISTER.register("heat_pump", () -> new BlockEntityType<>(HeatPumpBE::new, Blocks.HEAT_PUMP_BLOCK.get()));
         public static final Supplier<BlockEntityType<CreativeHeatFurnaceBE>> CREATIVE_HEAT_FURNACE_BE = REGISTER.register("creative_heat_furnace", () -> new BlockEntityType<>(CreativeHeatFurnaceBE::new,Blocks.CREATIVE_HEAT_FURNACE_BLOCK.get()));
 
-        //todo remoit
-        public static final Supplier<BlockEntityType<AmberChestBE>> AMBER_BE = REGISTER.register("amber_chest_be", () -> new BlockEntityType<>(AmberChestBE::new, Blocks.AMBER_CHEST_BLOCK.get()));
-
         //electrical
         public static final Supplier<BlockEntityType<ElectricalBE>> ELECTRICAL_BE = REGISTER.register("electrical", () -> new BlockEntityType<>(ElectricalBE::new, GET_BLOCKS(Blocks.ELECTRICAL_BE_USERS)));
         public static final Supplier<BlockEntityType<DirectionalElectricalBE>> DIRECTIONAL_ELECTRICAL_BE = REGISTER.register("directional_electrical", () -> new BlockEntityType<>(DirectionalElectricalBE::new, GET_BLOCKS(Blocks.DIRECTIONAl_ELECTRICAL_BE_USERS)));
@@ -230,18 +213,6 @@ public class AmberCraft {
         public static final Supplier<DataComponentType<MultimeterComponent>> MULTIMETER_CACHE_DATA_COMPONENT = REGISTER.registerComponentType(
                 "multimeter_cache",
                 b -> b.persistent(MultimeterComponent.CODEC).networkSynchronized(MultimeterComponent.STREAM_CODEC));
-    }
-
-    public static final class Capabilities
-    {
-        public static void registerCapabilities(RegisterCapabilitiesEvent event)
-        {
-            event.registerBlockEntity(
-                    net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,
-                    BlockEntity.AMBER_BE.get(),
-                    (object, context) -> object.stackHandle
-            );
-        }
     }
 
     public static final class TABS {
