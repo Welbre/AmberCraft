@@ -11,8 +11,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -20,52 +18,41 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.electrical.InsulatorBE;
-import welbre.ambercraft.module.ModuleFactory;
-import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.electrical.ElectricalCableModule;
+import welbre.ambercraft.module.electrical.ElectricalModule;
 
 import java.util.HashMap;
+import java.util.Stack;
 import java.util.UUID;
 
 public class InsulatorBlock extends Block implements EntityBlock
 {
-    public ModuleFactory<ElectricalCableModule, InsulatorBE> factory = new ModuleFactory<>(
-            InsulatorBE.class,
-            AmberCraft.ModuleTypes.ELECTRICAL_CABLE_MODULE_TYPE,
-            ElectricalCableModule::alloc,
-            ElectricalCableModule::free,
-            InsulatorBE::setCableModule,
-            InsulatorBE::getCableModule
-    );
+    public Stack<Module.Consumer<InsulatorBE, ElectricalCableModule>> elementConstructor = new Stack<>();
+    public Stack<Module.Consumer<InsulatorBE, ElectricalCableModule>> elementDestructor = new Stack<>();
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new InsulatorBE(pos,state);
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return ModulesHolder::TICK_HELPER;
     }
 
     public InsulatorBlock(Properties p_49795_) {
         super(p_49795_);
-        factory.setConstructor((module, entity, factory, level, pos) -> {
-            module.setResistence(0.5);
-        });
+        elementConstructor.push(ElectricalModule::ALLOC_MODULE_CONSUMER);
+        elementConstructor.push((module, entity, level, pos) -> module.setResistence(0.5));
+        elementDestructor.push(ElectricalModule::FREE_MODULE_CONSUMER);
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    protected void onPlace(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        factory.create(level, pos);
+        Module.executeInLevel(InsulatorBE.class, level, pos, InsulatorBE::getCableModule, elementConstructor);
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        factory.destroy(level, pos);
+    protected void onRemove(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean movedByPiston) {
+        Module.executeInLevel(InsulatorBE.class, level, pos, InsulatorBE::getCableModule, elementDestructor);
         if (level.getBlockEntity(pos) instanceof InsulatorBE insulator)
         {
             //if this insulator is connected, then for each cable on it, go to the other insulator and remove "this" position from the cable list

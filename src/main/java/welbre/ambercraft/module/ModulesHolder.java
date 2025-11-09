@@ -94,6 +94,8 @@ public abstract class ModulesHolder extends BlockEntity {
         for (int i = 0; i < modules.length; i++)
         {
             Module module = modules[i];
+            if (module == null)
+                continue;
             var _tag = new CompoundTag();
             module.writeUpdateTag(_tag, registries);
             modules_tag.put(Integer.toString(i), _tag);

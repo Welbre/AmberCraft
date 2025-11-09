@@ -1,6 +1,7 @@
 package welbre.ambercraft;
 
 import com.mojang.logging.LogUtils;
+import kuse.welbre.sim.electrical.abstractt.Element;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -32,11 +33,11 @@ import welbre.ambercraft.commands.Event;
 import welbre.ambercraft.item.*;
 import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.item.components.MultimeterComponent;
-import welbre.ambercraft.module.ModuleType;
-import welbre.ambercraft.module.electrical.ElectricalCableModuleType;
-import welbre.ambercraft.module.electrical.ElectricalModuleType;
-import welbre.ambercraft.module.electrical.ElectricalTerminalModuleType;
-import welbre.ambercraft.module.heat.HeatModuleType;
+import welbre.ambercraft.module.Module;
+import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.electrical.*;
+import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.network.PayLoadRegister;
 
 import java.lang.annotation.Retention;
@@ -56,7 +57,7 @@ public class AmberCraft {
         Event.register();
 
 
-        ModuleTypes.REGISTER.register(modBus);
+        Modules.REGISTER.register(modBus);
         CableTypes.REGISTER.register(modBus);
 
         Blocks.REGISTER.register(modBus);
@@ -174,10 +175,10 @@ public class AmberCraft {
 
     public static final class AmberRegisters {
         private static final ResourceKey<Registry<CableType>> CABLE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "cable_type"));
-        private static final ResourceKey<Registry<ModuleType<?>>> MODULE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "module_type"));
+        private static final ResourceKey<Registry<Module>> MODULE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "module"));
 
         public static final Registry<CableType>  CABLE_TYPE_REGISTRY = new RegistryBuilder<>(CABLE_TYPE_REGISTER_KEY).create();
-        public static final Registry<ModuleType<?>>  MODULE_TYPE_REGISTRY = new RegistryBuilder<>(MODULE_TYPE_REGISTER_KEY).create();
+        public static final Registry<Module>  MODULE_TYPE_REGISTRY = new RegistryBuilder<>(MODULE_TYPE_REGISTER_KEY).create();
 
         public static void registerRegistries(NewRegistryEvent event) {
             event.register(CABLE_TYPE_REGISTRY);
@@ -192,15 +193,15 @@ public class AmberCraft {
         public static final Supplier<ElectricalCableType> ELECTRICAL_CABLE_TYPE = REGISTER.register("electrical", ElectricalCableType::new);
     }
 
-    public static final class ModuleTypes {
-        public static final DeferredRegister<ModuleType<?>> REGISTER = DeferredRegister.create(AmberRegisters.MODULE_TYPE_REGISTRY, "module_type");
+    public static final class Modules {
+        public static final DeferredRegister<Module> REGISTER = DeferredRegister.create(AmberRegisters.MODULE_TYPE_REGISTRY, "module_type");
 
-        public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat", HeatModuleType::new);
+        public static final DeferredHolder<Module, HeatModule> HEAT_MODULE_TYPE = REGISTER.register("heat", HeatModule::new);
 
         //electrical
-        public static final DeferredHolder<ModuleType<?>, ElectricalModuleType> ELECTRICAL_MODULE_TYPE = REGISTER.register("electrical", ElectricalModuleType::new);
-        public static final DeferredHolder<ModuleType<?>, ElectricalTerminalModuleType> ELECTRICAL_TERMINAL_MODULE_TYPE = REGISTER.register("electrical_terminal", ElectricalTerminalModuleType::new);
-        public static final DeferredHolder<ModuleType<?>, ElectricalCableModuleType> ELECTRICAL_CABLE_MODULE_TYPE = REGISTER.register("electrical_cable", ElectricalCableModuleType::new);
+        public static final DeferredHolder<Module, ElectricalTerminalModule> ELECTRICAL_TERMINAL_MODULE_TYPE = REGISTER.register("electrical_terminal", () -> new ElectricalTerminalModule());
+        public static final DeferredHolder<Module, ElectricalElementModule> ELECTRICAL_ELEMENT_MODULE = REGISTER.register("electrical_element", () -> new ElectricalElementModule());
+        public static final DeferredHolder<Module, ElectricalCableModule> ELECTRICAL_CABLE_MODULE_TYPE = REGISTER.register("electrical_cable", () -> new ElectricalCableModule());
     }
 
     public static final class Components {

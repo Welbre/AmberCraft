@@ -4,12 +4,24 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.Profiler;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.blockentity.heat.HeatBE;
+import welbre.ambercraft.item.ThermometerItem;
 import welbre.ambercraft.module.DebugToolInfo;
-import welbre.ambercraft.module.ModuleType;
+import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
@@ -24,7 +36,7 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
     HeatNode node;
 
     public HeatModule() {
-
+        super();
     }
 
     public HeatNode getHeatNode(){
@@ -70,11 +82,9 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
 
     /**
      * Allocates father new instance of father {@link HeatNode} and registers it within the network,
-     * @return the newly created and registered {@link HeatNode} instance.
      */
-    public HeatNode alloc() {
+    public void alloc() {
         node = new HeatNode();
-        return node;
     }
 
     /**
@@ -106,8 +116,23 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
     }
 
     @Override
-    public ModuleType<?> getType() {
-        return AmberCraft.ModuleTypes.HEAT_MODULE_TYPE.get();
+    public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.getItem() == AmberCraft.Items.THERMOMETER.get())
+        {
+            if (!level.isClientSide)
+                ThermometerItem.sendTemperature((ServerPlayer) player, this);
+
+            return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.PASS;
+    }
+
+    @Override
+    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
+        if (level.isClientSide())
+            return;
+        if (this.getHeatNode().getTemperature() > 100)
+            entity.hurtServer((ServerLevel) level, level.damageSources().inFire(), (float) (this.getHeatNode().getTemperature() / 100f));
     }
 
     @Override
@@ -123,5 +148,10 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
         } else
             list.add(Component.literal("Heat not is null!").withColor(DyeColor.RED.getTextColor()));
         return list;
+    }
+
+    public static <T extends HeatBE> Module.Consumer<T, HeatModule> SET_THERMAL_CONDUCTIVITY_CONSUMER(double value)
+    {
+        return (module, entity, level, pos) -> module.getHeatNode().setThermalConductivity(value);
     }
 }

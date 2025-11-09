@@ -17,11 +17,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
 import welbre.ambercraft.client.screen.VoltageSourceScreen;
+import welbre.ambercraft.module.electrical.ElectricalElementModule;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 
 public class VoltageSourceBlock extends ElectricalBlock {
@@ -30,13 +32,11 @@ public class VoltageSourceBlock extends ElectricalBlock {
     public VoltageSourceBlock(Properties p) {
         super(p);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
-        factory.setConstructor((module, entity, factory, level, pos) -> {
-            module.setElement(new VoltageSource(0));
-        });
+        elementConstructor.push(ElectricalElementModule.SET_ELEMENT_IN_THE_WORLD(new VoltageSource(0)));
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
         var result = super.useWithoutItem(state, level, pos, player, hitResult);
         if (result.consumesAction())
             return result;
@@ -58,7 +58,7 @@ public class VoltageSourceBlock extends ElectricalBlock {
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new DirectionalElectricalBE(pos,state);
     }
 

@@ -29,82 +29,98 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.heat.HeatPumpBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
 import welbre.ambercraft.client.screen.ModifyFieldsScreen;
-import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 
+import java.util.Stack;
+
 public class HeatPumpBlock extends Block implements EntityBlock {
-    public final ModuleFactory<HeatModule, HeatPumpBE> COLD_FACTORY = new ModuleFactory<>(HeatPumpBE.class,
-            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
-            module -> {module.alloc(); module.getHeatNode().setThermalConductivity(100.0); module.getHeatNode().setThermalMass(30.0);},
-            HeatModule::free,
-            HeatPumpBE::setColdModule,
-            HeatPumpBE::getColdModule
-            ).setConstructor((module, entity, factory, level, pos) -> module.init(entity, level, pos));
-    public final ModuleFactory<HeatModule, HeatPumpBE> HOT_FACTORY = COLD_FACTORY.copy().setGetter(HeatPumpBE::getHotModule).setSetter(HeatPumpBE::setHotModule);
+    public Stack<Module.Consumer<HeatPumpBE, HeatModule>> moduleConstructor = new Stack<>();
+    public Stack<Module.Consumer<HeatPumpBE, HeatModule>> moduleDestructor = new Stack<>();
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
     public HeatPumpBlock(Properties p_49795_) {
         super(p_49795_);
         registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH));
+        moduleConstructor.push(HeatModule::ALLOC_MODULE_CONSUMER);
+        moduleConstructor.push(HeatModule::init);
+        moduleConstructor.push((module, holder, level, pos) -> {
+            module.getHeatNode().setThermalConductivity(100.0);
+            module.getHeatNode().setThermalMass(30.0);
+        });
+        moduleDestructor.push(HeatModule::FREE_MODULE_CONSUMER);
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    protected void onPlace(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!state.is(oldState.getBlock()))
         {
-            COLD_FACTORY.create(level, pos);
-            HOT_FACTORY.create(level, pos);
+            Module.executeInLevel(HeatPumpBE.class, level, pos, HeatPumpBE::getHotModule, moduleConstructor);
+            Module.executeInLevel(HeatPumpBE.class, level, pos, HeatPumpBE::getColdModule, moduleConstructor);
         }
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+    protected void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock()))
         {
-            COLD_FACTORY.destroy(level, pos);
-            HOT_FACTORY.destroy(level, pos);
+            Module.executeInLevel(HeatPumpBE.class, level, pos, HeatPumpBE::getHotModule, moduleDestructor);
+            Module.executeInLevel(HeatPumpBE.class, level, pos, HeatPumpBE::getColdModule, moduleDestructor);
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
-    protected @NotNull InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        //in the case that a lever is used to check the temperature, concat the string as one.
+    protected @NotNull InteractionResult useItemOn(
+            ItemStack stack,
+            @NotNull BlockState state,
+            @NotNull Level level,
+            @NotNull BlockPos pos,
+            @NotNull Player player,
+            @NotNull InteractionHand hand,
+            @NotNull BlockHitResult hitResult)
+    {
+        //the HeatModule already checks for thermometer used in the block, but in this case
+        //we have 2 modules in on block, and I want that only one single mensagem to be sent.
         if (stack.getItem() == AmberCraft.Items.THERMOMETER.get())
         {
             if (!level.isClientSide)
             {
-                var cold = COLD_FACTORY.getModuleOn(level, pos).orElseThrow();
-                var hot = HOT_FACTORY.getModuleOn(level, pos).orElseThrow();
+                HeatModule cold = Module.getInLevel(HeatPumpBE.class, level, pos, HeatPumpBE::getColdModule);
+                HeatModule hot = Module.getInLevel(HeatPumpBE.class, level, pos, HeatPumpBE::getHotModule);
+                if (hot == null || cold == null)
+                    return InteractionResult.PASS;
                 player.displayClientMessage(Component.literal(hot.getMultimeterString()).withColor(DyeColor.ORANGE.getTextColor()).append(" ").append(Component.literal(cold.getMultimeterString()).withColor(DyeColor.LIGHT_BLUE.getTextColor())), false);
             }
             return InteractionResult.SUCCESS;
         }
-        var result = COLD_FACTORY.getType().useItemOn(COLD_FACTORY.getModuleOn(level,pos).orElse(null),stack,state,level,pos,player,hand,hitResult);
-        if (result.consumesAction())
-            return result;
-        result = HOT_FACTORY.getType().useItemOn(HOT_FACTORY.getModuleOn(level,pos).orElse(null),stack,state,level,pos,player,hand,hitResult);
-        if (result.consumesAction())
-            return result;
+
+        InteractionResult coldResult = Module.HANDLE_USE_ITEM_ON(HeatPumpBE.class, HeatPumpBE::getColdModule, stack, state, level, pos, player, hand, hitResult);
+        if (coldResult != null && coldResult.consumesAction())
+            return coldResult;
+        InteractionResult hotResult = Module.HANDLE_USE_ITEM_ON(HeatPumpBE.class, HeatPumpBE::getHotModule, stack, state, level, pos, player, hand, hitResult);
+        if (hotResult != null && hotResult.consumesAction())
+            return hotResult;
+
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
-    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
+    public void stepOn(@NotNull Level level, BlockPos pos, BlockState state, Entity entity) {
         var dir = Direction.getApproximateNearest(entity.position().subtract(pos.getX(),pos.getY(),pos.getZ()));
         if (state.getValue(FACING) == dir)
-            HOT_FACTORY.getType().stepOn(HOT_FACTORY.getModuleOn(level,pos).orElse(null),level,pos,state,entity);
+            Module.HANDLE_STEP_ON(HeatPumpBE.class, HeatPumpBE::getHotModule, level, pos, state, entity);
         else if (state.getValue(FACING) == dir.getOpposite())
-            COLD_FACTORY.getType().stepOn(COLD_FACTORY.getModuleOn(level,pos).orElse(null),level,pos,state,entity);
+            Module.HANDLE_STEP_ON(HeatPumpBE.class, HeatPumpBE::getColdModule, level, pos, state, entity);
         super.stepOn(level, pos, state, entity);
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Player player, @NotNull BlockHitResult hitResult) {
         if (!player.isCreative())
             return InteractionResult.PASS;
 
@@ -124,17 +140,17 @@ public class HeatPumpBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
         return ModulesHolder::TICK_HELPER;
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new HeatPumpBE(pos,state);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }

@@ -183,7 +183,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
             {
                 for (Module module : brain.modules())
                 {
-                    var resultLocal = module.getType().useItemOn(module, stack, bstate, level, pos, player, hand, hitResult);
+                    var resultLocal = module.useItemOn(stack, bstate, level, pos, player, hand, hitResult);
                     if (resultLocal.consumesAction())
                         result = resultLocal;
                 }
@@ -212,7 +212,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
             {
                 for (Module module : brain.modules())
                 {
-                    var resultLocal = module.getType().useWithoutItem(module, state, level, pos, player, hitResult);
+                    var resultLocal = module.useWithoutItem(state, level, pos, player, hitResult);
                     if (resultLocal.consumesAction())
                         result = resultLocal;
                 }

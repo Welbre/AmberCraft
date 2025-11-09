@@ -3,7 +3,7 @@ package welbre.ambercraft.blockentity.heat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
-import welbre.ambercraft.blocks.FreeRotationBlock;
+import welbre.ambercraft.blocks.FreeRotationBlockHelper;
 import welbre.ambercraft.module.Module;
 
 import static welbre.ambercraft.AmberCraft.BlockEntity.CREATIVE_HEAT_FURNACE_BE;
@@ -16,7 +16,7 @@ public class CreativeHeatFurnaceBE extends HeatBE {
     @Override
     public Module[] getModule(Direction direction) {
         BlockState state = this.getLevel().getBlockState(this.getBlockPos());
-        Direction local = FreeRotationBlock.APPLY_STATE_ROTATION_IN_GLOBAL_DIRECTION(state, direction);
+        Direction local = FreeRotationBlockHelper.APPLY_STATE_ROTATION_IN_GLOBAL_DIRECTION(state, direction);
 
         if (local == Direction.SOUTH)
             return new Module[]{this.getHeatModule()};

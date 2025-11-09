@@ -35,7 +35,7 @@ public class HeatSinkBlock extends Block implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
     public ModuleFactory<HeatModule,HeatSinkBE> factory = new ModuleFactory<>(
             HeatSinkBE.class,
-            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
+            AmberCraft.Modules.HEAT_MODULE_TYPE,
             HeatSinkBlock::MODULE_INIT,
             HeatModule::free,
             HeatSinkBE::setHeatModule,
@@ -50,12 +50,12 @@ public class HeatSinkBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new HeatSinkBE(pos, state);
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof HeatSinkBE sink)
         {
             if (stack.getItem() == Items.WATER_BUCKET)
@@ -74,7 +74,7 @@ public class HeatSinkBlock extends Block implements EntityBlock {
                 return InteractionResult.CONSUME;
             }
 
-            var result = factory.getType().useItemOn(sink.getHeatModule(), stack, state, level, pos, player, hand, hitResult);
+            var result = factory.get().useItemOn(stack, state, level, pos, player, hand, hitResult);
             if (result.consumesAction())
                 return result;
         }
@@ -85,7 +85,7 @@ public class HeatSinkBlock extends Block implements EntityBlock {
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
         super.stepOn(level, pos, state, entity);
         if (level.getBlockEntity(pos) instanceof HeatSinkBE sink)
-            factory.getType().stepOn(sink.getHeatModule(), level, pos, state, entity);
+            factory.get().stepOn(level, pos, state, entity);
     }
 
     @Override

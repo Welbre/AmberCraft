@@ -3,16 +3,17 @@ package welbre.ambercraft.module.electrical;
 import kuse.welbre.sim.electrical.Circuit;
 import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.tools.Tools;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.Level;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.module.DebugToolInfo;
 import welbre.ambercraft.module.Module;
-import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
@@ -236,8 +237,10 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
                     .append(Component.literal("%.2fv, %.2fA, %.2fW".formatted(element.getVoltageDifference(),element.getCurrent(),element.getPower())).withColor(DyeColor.LIME.getTextColor()));// electrical quantity
     }
 
-    @Override
-    public <T extends Module> ModuleType<T> getType() {
-        return (ModuleType<T>) AmberCraft.ModuleTypes.ELECTRICAL_MODULE_TYPE.get();
+    public static Consumer<ElectricalBE, ElectricalElementModule> SET_ELEMENT_IN_THE_WORLD(final Element element)
+    {
+        return (ElectricalElementModule module, ElectricalBE holder, Level level, BlockPos pos) -> {
+            module.setElement(element);
+        };
     }
 }

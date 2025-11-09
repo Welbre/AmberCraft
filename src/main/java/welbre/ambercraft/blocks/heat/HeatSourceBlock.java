@@ -13,25 +13,28 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.blockentity.heat.HeatBE;
 import welbre.ambercraft.blockentity.heat.HeatSourceBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
+import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.heat.HeatModule;
 
 public class HeatSourceBlock extends HeatBlock {
     public HeatSourceBlock(Properties p_49795_) {
         super(p_49795_);
-        factory.setConstructor(
-                (module, entity, factory, level, pos) -> {
-                    module.init(entity, level, pos);
-                    if (entity instanceof HeatSourceBE source)
+        moduleConstructor.push(
+                (module, holder, level, pos) -> {
+                    if (holder instanceof HeatSourceBE source)
                         source.temperature = module.getHeatNode().getTemperature();
                 }
         );
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new HeatSourceBE(pos, state);
     }
 
@@ -41,7 +44,7 @@ public class HeatSourceBlock extends HeatBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof HeatSourceBE source)
         {
             if (level.isClientSide)

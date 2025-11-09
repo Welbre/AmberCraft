@@ -9,25 +9,23 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
 import welbre.ambercraft.client.screen.AmberValueModifierScreen;
+import welbre.ambercraft.module.electrical.ElectricalElementModule;
 import welbre.ambercraft.network.AmberValueModifierPayload;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 
 public class CapacitorBlock extends DirectionalElectricalBlock {
     public CapacitorBlock(Properties p) {
         super(p);
-        factory.setConstructor(
-                (module, entity, factory, level, pos) -> {
-                    module.setElement(new Capacitor(10e-6));//1uF
-                }
-        );
+        elementConstructor.push(ElectricalElementModule.SET_ELEMENT_IN_THE_WORLD(new Capacitor(10e-6)));//1uF
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
         var result = super.useWithoutItem(state, level, pos, player, hitResult);
         if (result.consumesAction())
             return result;

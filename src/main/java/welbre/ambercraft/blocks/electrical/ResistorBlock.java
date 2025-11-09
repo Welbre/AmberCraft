@@ -15,17 +15,14 @@ import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 import welbre.ambercraft.blockentity.electrical.ElectricalBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
 import welbre.ambercraft.client.screen.AmberValueModifierScreen;
+import welbre.ambercraft.module.electrical.ElectricalElementModule;
 import welbre.ambercraft.network.AmberValueModifierPayload.Type;
 import welbre.ambercraft.network.UpdateAmberSecureKeyPayload;
 
 public class ResistorBlock extends DirectionalElectricalBlock {
     public ResistorBlock(Properties p) {
         super(p);
-        factory.setConstructor(
-                (module, entity, factory, level, pos) -> {
-                    module.setElement(new Resistor(1));
-                }
-        );
+        elementConstructor.push(ElectricalElementModule.SET_ELEMENT_IN_THE_WORLD(new Resistor(1)));
     }
 
     @Override

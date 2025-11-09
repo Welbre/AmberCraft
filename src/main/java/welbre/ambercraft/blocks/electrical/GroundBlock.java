@@ -89,7 +89,7 @@ public class GroundBlock extends Block implements EntityBlock {
     @Override
     public void stepOn(Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Entity entity) {
         if (level.getBlockEntity(pos) instanceof GroundBE groundBE)
-            groundBE.groundModule.getType().stepOn(groundBE.groundModule,level,pos,state,entity);
+            groundBE.groundModule.stepOn(level,pos,state,entity);
         super.stepOn(level, pos, state, entity);
     }
 
@@ -97,7 +97,7 @@ public class GroundBlock extends Block implements EntityBlock {
     protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof GroundBE gnd)
         {
-            InteractionResult result = gnd.groundModule.getType().useWithoutItem(gnd.groundModule, state, level, pos, player, hitResult);
+            InteractionResult result = gnd.groundModule.useWithoutItem(state, level, pos, player, hitResult);
             if (result.consumesAction())
                 return result;
         }
@@ -108,7 +108,7 @@ public class GroundBlock extends Block implements EntityBlock {
     protected @NotNull InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
         if (level.getBlockEntity(pos) instanceof GroundBE gnd)
         {
-            InteractionResult result = gnd.groundModule.getType().useItemOn(gnd.groundModule, stack, state, level, pos, player, hand, hitResult);
+            InteractionResult result = gnd.groundModule.useItemOn(stack, state, level, pos, player, hand, hitResult);
             if (result.consumesAction())
                 return result;
         }
@@ -118,14 +118,14 @@ public class GroundBlock extends Block implements EntityBlock {
     @Override
     protected void neighborChanged(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
         if (level.getBlockEntity(pos) instanceof GroundBE gnd)
-            gnd.groundModule.getType().neighborChanged(gnd.groundModule,state,level,pos,neighborBlock, orientation, movedByPiston);
+            gnd.groundModule.neighborChanged(state,level,pos,neighborBlock, orientation, movedByPiston);
         super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
     }
 
     @Override
     public void onNeighborChange(@NotNull BlockState state, LevelReader level, @NotNull BlockPos pos, @NotNull BlockPos neighbor) {
         if (level.getBlockEntity(pos) instanceof GroundBE gnd)
-            gnd.groundModule.getType().onNeighborChange(gnd.groundModule,state,level,pos,neighbor);
+            gnd.groundModule.onNeighborChange(state,level,pos,neighbor);
         super.onNeighborChange(state, level, pos, neighbor);
     }
 }

@@ -6,69 +6,122 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.heat.CreativeHeatFurnaceBE;
 import welbre.ambercraft.blockentity.heat.HeatBE;
-import welbre.ambercraft.blocks.FreeRotationBlock;
-import welbre.ambercraft.module.ModuleFactory;
+import welbre.ambercraft.blocks.FreeRotationBlockHelper;
+import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.heat.HeatModule;
+import welbre.ambercraft.module.network.NetworkModule;
 
-public class CreativeHeatFurnaceBlock extends FreeRotationBlock implements EntityBlock {
-    public ModuleFactory<HeatModule, CreativeHeatFurnaceBE> factory = new ModuleFactory<>(
-            CreativeHeatFurnaceBE.class,
-            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
-            HeatModule::alloc,
-            HeatModule::free,
-            HeatBE::setHeatModule,
-            HeatBE::getHeatModule
-    ).setConstructor((module, entity, factory1, level, pos) -> module.init(entity, level, pos));
+import java.util.Stack;
 
-    public CreativeHeatFurnaceBlock(Properties p_49795_) {
+public class CreativeHeatFurnaceBlock extends HeatBlock implements EntityBlock
+{
+
+    public Stack<Module.Consumer<HeatBE, HeatModule>> moduleConstructor = new Stack<>();
+    public Stack<Module.Consumer<HeatBE, HeatModule>> moduleDestructor = new Stack<>();
+
+    public CreativeHeatFurnaceBlock(Properties p_49795_)
+    {
         super(p_49795_);
+        FreeRotationBlockHelper.REGISTER_DEFAULT_STATE(this);
+        moduleConstructor.push(NetworkModule::ALLOC_MODULE_CONSUMER);
+        moduleConstructor.push(HeatModule::init);
+        moduleDestructor.push(NetworkModule::FREE_MODULE_CONSUMER);
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        factory.destroy(level, pos);
+    protected void neighborChanged(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
+        Module.HANDLE_NEIGHBOR_CHANGED(HeatBE.class, HeatBE::getHeatModule, state, level, pos, neighborBlock, orientation, movedByPiston);
+    }
+
+    @Override
+    public void onNeighborChange(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockPos neighbor) {
+        super.onNeighborChange(state, level, pos, neighbor);
+        Module.HANDLE_ON_NEIGHBOR_CHANGE(HeatBE.class, HeatBE::getHeatModule, state, level, pos, neighbor);
+    }
+
+    @Override
+    protected void onPlace(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        //when a heatConductor is placed on the side, the block state updates the property and calls this function, so only if the block it-self changes, call the create function.
+        if (!state.is(oldState.getBlock()))
+            Module.executeInLevel(HeatBE.class, level, pos, HeatBE::getHeatModule, moduleConstructor);
+    }
+
+    @Override
+    protected void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean movedByPiston) {
+        //when a heatConductor is removed on the side, the block state updates the property and calls this function, so only if the block it-self changes, call the create function.
+        if (!state.is(newState.getBlock()))
+            Module.executeInLevel(HeatBE.class, level, pos, HeatBE::getHeatModule, moduleDestructor);
+
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        factory.create(level, pos);
+    public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext context) {
+        return FreeRotationBlockHelper.GET_STATE_FOR_PLACEMENT(this, context);
     }
 
     @Override
-    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        super.stepOn(level, pos, state, entity);
-        factory.getModuleOn(level, pos).ifPresent(m -> factory.getType().stepOn(m, level, pos, state, entity));
+    protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        FreeRotationBlockHelper.CREATE_BLOCK_STATE_DEFINITION(builder);
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        var result = factory.getType().useWithoutItem(factory.getModuleOn(level,pos).orElse(null), state, level, pos, player, hitResult);
+    protected @NotNull InteractionResult useItemOn(
+            @NotNull ItemStack stack,
+            @NotNull BlockState state,
+            @NotNull Level level,
+            @NotNull BlockPos pos,
+            @NotNull Player player,
+            @NotNull InteractionHand hand,
+            @NotNull BlockHitResult hitResult)
+    {
+        InteractionResult result = FreeRotationBlockHelper.USE_ITEM_ON(stack, state, level, pos, player, hand, hitResult);
         if (result.consumesAction())
             return result;
-        return super.useWithoutItem(state, level, pos, player, hitResult);
-    }
 
-    @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        var result = factory.getType().useItemOn(factory.getModuleOn(level,pos).orElse(null),stack,state,level,pos,player,hand,hitResult);
-        if (result.consumesAction())
+        result = Module.HANDLE_USE_ITEM_ON(HeatBE.class, HeatBE::getHeatModule, stack, state, level, pos, player, hand, hitResult);
+        if (result != null && result.consumesAction())
             return result;
+
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
+        var result = Module.HANDLE_USE_WITHOUT_ITEM(HeatBE.class, HeatBE::getHeatModule, state, level, pos, player, hitResult);
+        if (result != null && result.consumesAction())
+            return result;
+
+        return super.useWithoutItem(state, level, pos, player, hitResult);
+    }
+
+    @Override
+    public void stepOn(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Entity entity) {
+        Module.HANDLE_STEP_ON(HeatBE.class, HeatBE::getHeatModule, level, pos, state, entity);
+
+        super.stepOn(level,pos,state,entity);
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state)
+    {
         return new CreativeHeatFurnaceBE(pos, state);
     }
 }

@@ -7,7 +7,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -23,41 +22,35 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.heat.HeatFurnaceBE;
-import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
-public class HeatFurnaceBlock extends HeatBlock {
+public class HeatFurnaceBlock extends HeatBlock
+{
     public static final EnumProperty<Direction> FACING = HORIZONTAL_FACING;
 
-    public ModuleFactory<HeatModule, HeatFurnaceBE> factory = new ModuleFactory<>(
-            HeatFurnaceBE.class,
-            AmberCraft.ModuleTypes.HEAT_MODULE_TYPE,
-            HeatModule::alloc,
-            HeatModule::free,
-            HeatFurnaceBE::setHeatModule,
-            HeatFurnaceBE::getHeatModule
-    ).setConstructor((module, entity, factory, level, pos) -> {
-        module.init(entity, level, pos);
-        module.getHeatNode().setThermalConductivity(100.0);
-    });
-
-    public HeatFurnaceBlock(Properties p) {
+    public HeatFurnaceBlock(Properties p)
+    {
         super(p);
         registerDefaultState(getStateDefinition().any().setValue(FurnaceBlock.LIT, false).setValue(FACING, Direction.NORTH));
+        moduleConstructor.push(HeatModule.SET_THERMAL_CONDUCTIVITY_CONSUMER(100.0));
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        var result = factory.getType().useItemOn(factory.getModuleOn(level,pos).orElse(null),stack,state,level,pos,player,hand,hitResult);
-        if (result.consumesAction())
-            return result;
-
+    protected @NotNull InteractionResult useItemOn(
+            @NotNull ItemStack stack,
+            @NotNull BlockState state,
+            @NotNull Level level,
+            @NotNull BlockPos pos,
+            @NotNull Player player,
+            @NotNull InteractionHand hand,
+            @NotNull BlockHitResult hitResult)
+    {
         if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
         {
             if (stack.getItem() == Items.COAL)
@@ -83,34 +76,17 @@ public class HeatFurnaceBlock extends HeatBlock {
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        super.onRemove(state, level, pos, newState, movedByPiston);
-    }
-
-    @Override
-    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        super.stepOn(level, pos, state, entity);
-        if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)
-            factory.getType().stepOn(furnace.getHeatModule(),level,pos,state,entity);
-    }
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new HeatFurnaceBE(pos, state);
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
         return ModulesHolder::TICK_HELPER;
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FurnaceBlock.LIT);
         builder.add(HeatFurnaceBlock.FACING);
@@ -122,7 +98,7 @@ public class HeatFurnaceBlock extends HeatBlock {
     }
 
     @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    public void animateTick(BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         if (state.getValue(FurnaceBlock.LIT))
         {
             if (level.getBlockEntity(pos) instanceof HeatFurnaceBE furnace)

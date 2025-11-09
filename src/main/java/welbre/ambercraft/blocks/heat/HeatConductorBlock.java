@@ -120,7 +120,7 @@ public abstract class HeatConductorBlock extends HeatBlock {
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    protected @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
         return super.getRenderShape(state);
     }
 }

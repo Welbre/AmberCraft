@@ -9,8 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.DebugToolInfo;
-import welbre.ambercraft.module.Module;
-import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.Master;
 import welbre.ambercraft.module.network.NetworkModule;
@@ -197,11 +195,6 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
             list.add(ElectricalElementModule.GET_ELEMENT_INFO(r));
 
         return list;
-    }
-
-    @Override
-    public <T extends Module> ModuleType<T> getType() {
-        return (ModuleType<T>) AmberCraft.ModuleTypes.ELECTRICAL_CABLE_MODULE_TYPE.get();
     }
 
     public double getResistence() {

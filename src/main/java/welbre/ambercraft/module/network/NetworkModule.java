@@ -1,12 +1,15 @@
 package welbre.ambercraft.module.network;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
+import welbre.ambercraft.module.electrical.ElectricalModule;
 
 import java.io.Serializable;
 import java.util.*;
@@ -333,4 +336,21 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
     /// The master factory, you must create you own {@link Master} and instantiate where.
     public abstract Master createMaster();
+
+    /// Used to allocate resources before the usage of the module.
+    public abstract void alloc();
+    /// Used to free resource after break/disconnect the module.
+    public abstract void free();
+
+    /// A module consumer that runs the alloc operation of any network module.
+    public static <T extends ModulesHolder> void ALLOC_MODULE_CONSUMER(NetworkModule networkModule, T entity, Level level, BlockPos pos)
+    {
+        networkModule.alloc();
+    }
+
+    /// A module consumer that runs the free operation of any network module.
+    public static <T extends ModulesHolder> void FREE_MODULE_CONSUMER(NetworkModule networkModule, T entity, Level level, BlockPos pos)
+    {
+        networkModule.free();
+    }
 }
