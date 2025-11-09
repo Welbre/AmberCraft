@@ -23,7 +23,12 @@ import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.Stack;
 
-//todo documentate it, isso é uma classe que é muito generica é a base para qualquer outro bloco de calor, deixe isso bem claro na documentação, para que fique fácil de lembrar mais tarde.
+/**
+ * Created to deal with inheritance in the singleton register of the minecraft block/blockEntity system.<br>
+ * This class is the main class used in all ambercraft thermal blocks.<br>
+ *
+ * <i><b>This is similar to {@link welbre.ambercraft.blocks.electrical.ElectricalBlock ElectricalBlock} but to thermal elements.</b></i>
+ */
 public abstract class HeatBlock<T extends HeatBE> extends Block implements EntityBlock {
     public final Class<T> beClass;
     public Stack<Module.Consumer<T, HeatModule>> moduleConstructor = new Stack<>();

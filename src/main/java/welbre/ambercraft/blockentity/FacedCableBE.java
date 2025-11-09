@@ -155,19 +155,26 @@ public class FacedCableBE extends ModulesHolder {
                 //diagonal connection
                 BlockPos diagonal = neighbor.relative(face);
                 BlockState n_state = level.getBlockState(neighbor);
-                if ((n_state.isAir() || n_state.getBlock() == AmberCraft.Blocks.FACED_CABLE_BLOCK.get()) && level.getBlockEntity(diagonal) instanceof FacedCableBE other)
+                if ((n_state.isAir() || n_state.getBlock() == AmberCraft.Blocks.FACED_CABLE_BLOCK.get()) && level.getBlockEntity(diagonal) instanceof ModulesHolder holder)
                 {
                     BlockPos dia_face_vec = anchor.subtract(diagonal);
                     Direction dia_face = Direction.getApproximateNearest(dia_face_vec.getX(), dia_face_vec.getY(), dia_face_vec.getZ());
 
-                    FaceState face_state = other.state.getFaceStatus(dia_face);
-                    if (face_state != null)
+                    if (holder instanceof FacedCableBE other)
                     {
-                        this.state.rawConnectionSet(face, dir, faceState.canConnect(face_state) ? FaceState.Connection.DIAGONAL : FaceState.Connection.EMPTY);
-                        diagonals.add(diagonal);
+                        FaceState face_state = other.state.getFaceStatus(dia_face);
+                        if (face_state != null)
+                        {
+                            this.state.rawConnectionSet(face, dir, faceState.canConnect(face_state) ? FaceState.Connection.DIAGONAL : FaceState.Connection.EMPTY);
+                            diagonals.add(diagonal);
+                        } else
+                            this.state.rawConnectionSet(face, dir, FaceState.Connection.EMPTY);
                     }
                     else
-                        this.state.rawConnectionSet(face, dir, FaceState.Connection.EMPTY);
+                    {
+                        @NotNull NetworkModule[] modules = holder.getModule(NetworkModule.class, dir.getOpposite());
+                        this.state.rawConnectionSet(face, dir, modules.length > 0 ? FaceState.Connection.EXTERNAl : FaceState.Connection.EMPTY);
+                    }
                 }
             }
             if (!Arrays.equals(old, state.getFaceStatus(face).connection))

@@ -58,11 +58,6 @@ public class FacedCableBlock extends Block implements EntityBlock {
         p.noOcclusion().sound(SoundType.METAL).strength(1f).destroyTime(0.5f);
     }
 
-    @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
-        return state;
-    }
-
     /// server only
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
@@ -119,7 +114,15 @@ public class FacedCableBlock extends Block implements EntityBlock {
     ///Server only, Is trigger only if the block it-self is removed, remove a face from the FacedCableBlockEntity don't call this.<br>
     ///Don't call this from other methods, is used by the Minecraft level.
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+    protected void onRemove(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean movedByPiston) {
+        if (level.getBlockEntity(pos) instanceof FacedCableBE cable)
+        {
+            //update diagonal
+            //todo implement diagonal removing
+            for (Direction face : cable.getState().getCenterDirections())
+                for (Direction dir : CableState.GET_FACE_DIRECTIONS(face))
+                    level.neighborChanged(cable.getBlockPos().relative(dir).relative(face), AmberCraft.Blocks.FACED_CABLE_BLOCK.get(), null);
+        }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 

@@ -6,6 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
@@ -247,10 +248,23 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
         for (Direction dir : Direction.values())//check all faces in the BlockEntity
             if (List.of(entity.getModule(dir)).contains(this))//if dir face contains "this" module
+            {
                 if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)//check if the block in the face direction is a ModulesHolder
                     for (Module module : modular.getModule(dir.getOpposite()))//get all modules in the opposite face of dir.
                         if (module instanceof NetworkModule networkModule)
                             this.connect(networkModule);
+
+                //connect diagonal block
+                for (Direction axilDirection : Direction.values())
+                    if (axilDirection.getAxis() != dir.getAxis())//check all direction non-linear with the dir axil
+                        if (level.getBlockEntity(pos.relative(dir).relative(axilDirection)) instanceof ModulesHolder modular)
+                            for (Module module : modular.getModule(axilDirection.getOpposite()))
+                                if (module instanceof NetworkModule networkModule)
+                                {
+                                    this.connect(networkModule);
+                                    level.neighborChanged(modular.getBlockPos(), modular.getBlockState().getBlock(), null);
+                                }
+            }
 
         isFresh = true;
     }
