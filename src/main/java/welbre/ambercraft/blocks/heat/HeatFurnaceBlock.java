@@ -30,7 +30,7 @@ import welbre.ambercraft.module.heat.HeatModule;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
-public class HeatFurnaceBlock extends HeatBlock
+public class HeatFurnaceBlock extends HeatBlock<HeatFurnaceBE>
 {
     public static final EnumProperty<Direction> FACING = HORIZONTAL_FACING;
 

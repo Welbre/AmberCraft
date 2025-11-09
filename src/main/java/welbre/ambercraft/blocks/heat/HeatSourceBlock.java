@@ -15,14 +15,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.blockentity.heat.HeatBE;
 import welbre.ambercraft.blockentity.heat.HeatSourceBE;
 import welbre.ambercraft.client.AmberCraftScreenHelper;
-import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.heat.HeatModule;
 
-public class HeatSourceBlock extends HeatBlock {
+public class HeatSourceBlock extends HeatBlock<HeatSourceBE> {
     public HeatSourceBlock(Properties p_49795_) {
         super(p_49795_);
         moduleConstructor.push(
@@ -39,7 +36,7 @@ public class HeatSourceBlock extends HeatBlock {
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
         return ModulesHolder::TICK_HELPER;
     }
 

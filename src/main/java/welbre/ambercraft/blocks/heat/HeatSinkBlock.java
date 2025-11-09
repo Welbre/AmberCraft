@@ -6,13 +6,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -24,29 +22,19 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.heat.HeatSinkBE;
-import welbre.ambercraft.module.ModuleFactory;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 import welbre.ambercraft.sim.heat.HeatNode;
 
-public class HeatSinkBlock extends Block implements EntityBlock {
+public class HeatSinkBlock extends HeatBlock<HeatSinkBE> implements EntityBlock {
     public static final VoxelShape shape = Shapes.box(0,0,0,1,13.0/16.0, 1);
-    public ModuleFactory<HeatModule,HeatSinkBE> factory = new ModuleFactory<>(
-            HeatSinkBE.class,
-            AmberCraft.Modules.HEAT_MODULE_TYPE,
-            HeatSinkBlock::MODULE_INIT,
-            HeatModule::free,
-            HeatSinkBE::setHeatModule,
-            HeatSinkBE::getHeatModule
-    ).setConstructor((a,b,c,d,e) -> {
-        a.init(b, d,e);
-        a.getHeatNode().setEnvConditions(HeatNode.GET_AMBIENT_TEMPERATURE(d,e),0.01);
-    });
+
 
     public HeatSinkBlock(Properties p) {
         super(p);
+        moduleConstructor.push(
+                HeatSinkBlock::SETUP_HEAT_SINK);
     }
 
     @Override
@@ -55,7 +43,8 @@ public class HeatSinkBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected @NotNull InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
+    protected @NotNull InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
+        //use a water bucket in the heat sink if the temperature is above of 100 then trade heat and play a sound
         if (level.getBlockEntity(pos) instanceof HeatSinkBE sink)
         {
             if (stack.getItem() == Items.WATER_BUCKET)
@@ -73,49 +62,25 @@ public class HeatSinkBlock extends Block implements EntityBlock {
 
                 return InteractionResult.CONSUME;
             }
-
-            var result = factory.get().useItemOn(stack, state, level, pos, player, hand, hitResult);
-            if (result.consumesAction())
-                return result;
         }
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
-    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        super.stepOn(level, pos, state, entity);
-        if (level.getBlockEntity(pos) instanceof HeatSinkBE sink)
-            factory.get().stepOn(level, pos, state, entity);
-    }
-
-    @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        factory.create(level,pos);
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        factory.destroy(level, pos);
-        super.onRemove(state, level, pos, newState, movedByPiston);
-    }
-
-    @Override
-    protected @NotNull VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    protected @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return shape;
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
         return ModulesHolder::TICK_HELPER;
     }
 
-    private static void MODULE_INIT(HeatModule module)
-    {
-        module.alloc();
-        var node = module.getHeatNode();
+    private static void SETUP_HEAT_SINK(HeatModule module, HeatSinkBE holder, Level level, BlockPos pos) {
+        HeatNode node = module.getHeatNode();
         node.setEnvThermalConductivity(2.0);
         node.setThermalMass(10.0);
         node.setThermalConductivity(100.0);
+        node.setEnvConditions(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos), 0.01);
     }
 }

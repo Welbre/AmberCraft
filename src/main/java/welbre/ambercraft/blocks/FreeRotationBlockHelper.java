@@ -46,20 +46,26 @@ public final class FreeRotationBlockHelper
      *         public MyBlock(Properties p)
      *         {
      *             super(p);
-     *             FreeRotationBlockHelper.REGISTER_DEFAULT_STATE(this);
+     *             FreeRotationBlockHelper.REGISTER_DEFAULT_STATE(this, defaultBlockState());
      *             ...
      *         }
      *     }
      * </pre>
      * @param block you block singleton.
      */
-    public static void REGISTER_DEFAULT_STATE(@NotNull Block block)
+    public static void REGISTER_DEFAULT_STATE(@NotNull Block block, BlockState state)
     {
+        if (!state.is(block))
+            throw new IllegalArgumentException("The block state must be the same as the block!");
+
         try
         {
-            Method createBlockStateDefinition = block.getClass().getDeclaredMethod("registerDefaultState", BlockState.class);
-            BlockState state = block.getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(ROTATION, Rotation.NONE);
+            Method createBlockStateDefinition = Block.class.getDeclaredMethod("registerDefaultState", BlockState.class);
+            state = state.setValue(FACING, Direction.NORTH).setValue(ROTATION, Rotation.NONE);
+
+            createBlockStateDefinition.setAccessible(true);
             createBlockStateDefinition.invoke(block, state);
+            createBlockStateDefinition.setAccessible(false);
 
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
         {

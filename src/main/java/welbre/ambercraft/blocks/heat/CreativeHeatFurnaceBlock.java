@@ -27,48 +27,13 @@ import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.Stack;
 
-public class CreativeHeatFurnaceBlock extends HeatBlock implements EntityBlock
+public class CreativeHeatFurnaceBlock extends HeatBlock<CreativeHeatFurnaceBE> implements EntityBlock
 {
-
-    public Stack<Module.Consumer<HeatBE, HeatModule>> moduleConstructor = new Stack<>();
-    public Stack<Module.Consumer<HeatBE, HeatModule>> moduleDestructor = new Stack<>();
 
     public CreativeHeatFurnaceBlock(Properties p_49795_)
     {
         super(p_49795_);
-        FreeRotationBlockHelper.REGISTER_DEFAULT_STATE(this);
-        moduleConstructor.push(NetworkModule::ALLOC_MODULE_CONSUMER);
-        moduleConstructor.push(HeatModule::init);
-        moduleDestructor.push(NetworkModule::FREE_MODULE_CONSUMER);
-    }
-
-    @Override
-    protected void neighborChanged(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
-        super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
-        Module.HANDLE_NEIGHBOR_CHANGED(HeatBE.class, HeatBE::getHeatModule, state, level, pos, neighborBlock, orientation, movedByPiston);
-    }
-
-    @Override
-    public void onNeighborChange(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos, @NotNull BlockPos neighbor) {
-        super.onNeighborChange(state, level, pos, neighbor);
-        Module.HANDLE_ON_NEIGHBOR_CHANGE(HeatBE.class, HeatBE::getHeatModule, state, level, pos, neighbor);
-    }
-
-    @Override
-    protected void onPlace(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState oldState, boolean movedByPiston) {
-        super.onPlace(state, level, pos, oldState, movedByPiston);
-        //when a heatConductor is placed on the side, the block state updates the property and calls this function, so only if the block it-self changes, call the create function.
-        if (!state.is(oldState.getBlock()))
-            Module.executeInLevel(HeatBE.class, level, pos, HeatBE::getHeatModule, moduleConstructor);
-    }
-
-    @Override
-    protected void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean movedByPiston) {
-        //when a heatConductor is removed on the side, the block state updates the property and calls this function, so only if the block it-self changes, call the create function.
-        if (!state.is(newState.getBlock()))
-            Module.executeInLevel(HeatBE.class, level, pos, HeatBE::getHeatModule, moduleDestructor);
-
-        super.onRemove(state, level, pos, newState, movedByPiston);
+        FreeRotationBlockHelper.REGISTER_DEFAULT_STATE(this, defaultBlockState());
     }
 
     @Override
@@ -96,27 +61,7 @@ public class CreativeHeatFurnaceBlock extends HeatBlock implements EntityBlock
         if (result.consumesAction())
             return result;
 
-        result = Module.HANDLE_USE_ITEM_ON(HeatBE.class, HeatBE::getHeatModule, stack, state, level, pos, player, hand, hitResult);
-        if (result != null && result.consumesAction())
-            return result;
-
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
-    }
-
-    @Override
-    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
-        var result = Module.HANDLE_USE_WITHOUT_ITEM(HeatBE.class, HeatBE::getHeatModule, state, level, pos, player, hitResult);
-        if (result != null && result.consumesAction())
-            return result;
-
-        return super.useWithoutItem(state, level, pos, player, hitResult);
-    }
-
-    @Override
-    public void stepOn(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Entity entity) {
-        Module.HANDLE_STEP_ON(HeatBE.class, HeatBE::getHeatModule, level, pos, state, entity);
-
-        super.stepOn(level,pos,state,entity);
     }
 
     @Override

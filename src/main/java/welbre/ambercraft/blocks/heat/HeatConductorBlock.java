@@ -26,10 +26,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.blockentity.heat.HeatBE;
 import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.heat.HeatModule;
 
-public abstract class HeatConductorBlock extends HeatBlock {
+public abstract class HeatConductorBlock extends HeatBlock<HeatBE> {
     public final float model_radius;
     public static final ModelProperty<Float> RADIUS_PROPERTY = new ModelProperty<>();
 
@@ -56,12 +57,12 @@ public abstract class HeatConductorBlock extends HeatBlock {
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
         return ModulesHolder::TICK_HELPER;
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.@NotNull Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(UP,DOWN,NORTH,SOUTH,WEST,EAST);
     }
@@ -73,7 +74,16 @@ public abstract class HeatConductorBlock extends HeatBlock {
 
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+    protected @NotNull BlockState updateShape(
+            @NotNull BlockState state,
+            @NotNull LevelReader level,
+            @NotNull ScheduledTickAccess scheduledTickAccess,
+            @NotNull BlockPos pos,
+            @NotNull Direction direction,
+            @NotNull BlockPos neighborPos,
+            @NotNull BlockState neighborState,
+            @NotNull RandomSource random)
+    {
         return calculateState((Level) level,pos);
     }
 
