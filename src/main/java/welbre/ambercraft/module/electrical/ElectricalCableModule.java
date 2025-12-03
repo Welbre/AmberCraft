@@ -107,7 +107,7 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
 
     @Override
     public void free() {
-
+        disconnectAll();
     }
 
     @Override
@@ -124,7 +124,7 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
 
     @Override
     public Master createMaster() {
-        return new ElectricalModulesMaster(this);
+        return new ElectricalMaster(this);
     }
 
     @Override

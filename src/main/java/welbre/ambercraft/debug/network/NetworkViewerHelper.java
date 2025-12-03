@@ -87,8 +87,15 @@ public class NetworkViewerHelper {
 
             //search
             for (var dir : Direction.values())
+            {
                 if (level.getBlockEntity(nextPos.relative(dir)) instanceof ModulesHolder holder && !visited.contains(holder))
                     queue.add(holder);
+
+                for (Direction axilDirection : Direction.values())
+                    if (axilDirection.getAxis() != dir.getAxis())//check all direction non-linear with the dir axil
+                        if (level.getBlockEntity(nextPos.relative(dir).relative(axilDirection)) instanceof ModulesHolder modular && !visited.contains(modular))
+                                queue.add(modular);
+            }
             // diagonal search in the case that next is a FacedCable
             if (next instanceof FacedCableBE cable)
                 for (Direction face : cable.getState().getCenterDirections())

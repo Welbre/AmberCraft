@@ -44,7 +44,7 @@ import java.util.Stack;
  * 
  * @see ElectricalElementModule#SET_ELEMENT_IN_THE_WORLD(Element)
  * @see ElectricalModule#ALLOC_MODULE_CONSUMER
- * @see ElectricalModule#FREE_MODULE_CONSUMER
+ * @see ElectricalModule#PRE_FREE_MODULE_CONSUMER
  */
 public class ElectricalBlock extends Block implements EntityBlock {
 
@@ -64,7 +64,7 @@ public class ElectricalBlock extends Block implements EntityBlock {
     public ElectricalBlock(Properties p_49795_) {
         super(p_49795_);
         elementConstructor.push(ElectricalModule::ALLOC_MODULE_CONSUMER);
-        elementDestructor.push(ElectricalModule::FREE_MODULE_CONSUMER);
+        elementDestructor.push(ElectricalModule::PRE_FREE_MODULE_CONSUMER);
     }
 
 

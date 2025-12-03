@@ -9,12 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.electrical.ElectricalCableModule;
+import welbre.ambercraft.module.electrical.ElectricalAerialCableModule;
 
 public class InsulatorBE extends ModulesHolder
 {
     protected BlockPos[] cablePos = new BlockPos[0];
-    protected ElectricalCableModule cableModule = new ElectricalCableModule(0.5);
+    protected ElectricalAerialCableModule cableModule = new ElectricalAerialCableModule(0.01, 0.05, this.getBlockPos());
 
     public InsulatorBE(BlockPos pos, BlockState blockState) {
         super(AmberCraft.BlockEntity.INSULATOR_BE.get(), pos, blockState);
@@ -25,11 +25,11 @@ public class InsulatorBE extends ModulesHolder
         return new Module[]{cableModule};
     }
 
-    public ElectricalCableModule getCableModule() {
+    public ElectricalAerialCableModule getCableModule() {
         return cableModule;
     }
 
-    public void setCableModule(ElectricalCableModule cableModule) {
+    public void setCableModule(ElectricalAerialCableModule cableModule) {
         this.cableModule = cableModule;
     }
 
@@ -66,7 +66,7 @@ public class InsulatorBE extends ModulesHolder
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         var tag =super.getUpdateTag(registries);
         saveAdditional(tag, registries);
         return tag;

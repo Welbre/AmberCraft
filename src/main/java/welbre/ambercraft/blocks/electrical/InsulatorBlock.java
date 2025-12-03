@@ -19,8 +19,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.electrical.InsulatorBE;
+import welbre.ambercraft.blocks.FacedCableBlock;
 import welbre.ambercraft.module.Module;
-import welbre.ambercraft.module.electrical.ElectricalCableModule;
+import welbre.ambercraft.module.electrical.ElectricalAerialCableModule;
 import welbre.ambercraft.module.electrical.ElectricalModule;
 
 import java.util.HashMap;
@@ -29,8 +30,8 @@ import java.util.UUID;
 
 public class InsulatorBlock extends Block implements EntityBlock
 {
-    public Stack<Module.Consumer<InsulatorBE, ElectricalCableModule>> elementConstructor = new Stack<>();
-    public Stack<Module.Consumer<InsulatorBE, ElectricalCableModule>> elementDestructor = new Stack<>();
+    public Stack<Module.Consumer<InsulatorBE, ElectricalAerialCableModule>> elementConstructor = new Stack<>();
+    public Stack<Module.Consumer<InsulatorBE, ElectricalAerialCableModule>> elementDestructor = new Stack<>();
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
@@ -41,7 +42,7 @@ public class InsulatorBlock extends Block implements EntityBlock
         super(p_49795_);
         elementConstructor.push(ElectricalModule::ALLOC_MODULE_CONSUMER);
         elementConstructor.push((module, entity, level, pos) -> module.setResistence(0.5));
-        elementDestructor.push(ElectricalModule::FREE_MODULE_CONSUMER);
+        elementDestructor.push(ElectricalModule::PRE_FREE_MODULE_CONSUMER);
     }
 
     @Override
@@ -71,6 +72,7 @@ public class InsulatorBlock extends Block implements EntityBlock
 
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
+        FacedCableBlock.UPDATE_DIAGONAL_NEIGHBORS(level, pos);
     }
 
     public static final HashMap<UUID, BlockPos> clicked = new HashMap<>();

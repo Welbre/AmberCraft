@@ -6,11 +6,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.electrical.ElectricalModule;
 
 import java.io.Serializable;
 import java.util.*;
@@ -246,8 +244,9 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
         var pos = entity.getBlockPos();
 
+        //looks in all 6 neighbors of the block, and in the diagonal too looking for other modules holder
         for (Direction dir : Direction.values())//check all faces in the BlockEntity
-            if (List.of(entity.getModule(dir)).contains(this))//if dir face contains "this" module
+            if (List.of(entity.getModule(dir)).contains(this))//check on which face this module can be founded
             {
                 if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)//check if the block in the face direction is a ModulesHolder
                     for (Module module : modular.getModule(dir.getOpposite()))//get all modules in the opposite face of dir.
@@ -353,7 +352,7 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
     /// Used to allocate resources before the usage of the module.
     public abstract void alloc();
-    /// Used to free resource after break/disconnect the module.
+    /// Used to run code before break the module. mostly used to free resources/disconnect the network.
     public abstract void free();
 
     /// A module consumer that runs the alloc operation of any network module.
@@ -363,7 +362,7 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
     }
 
     /// A module consumer that runs the free operation of any network module.
-    public static <T extends ModulesHolder> void FREE_MODULE_CONSUMER(NetworkModule networkModule, T entity, Level level, BlockPos pos)
+    public static <T extends ModulesHolder> void PRE_FREE_MODULE_CONSUMER(NetworkModule networkModule, T entity, Level level, BlockPos pos)
     {
         networkModule.free();
     }

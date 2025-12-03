@@ -11,7 +11,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.module.ModulesHolder;
 import welbre.ambercraft.module.network.NetworkModule;
 
 public abstract class ElectricalModule extends NetworkModule {

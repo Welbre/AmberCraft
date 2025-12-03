@@ -177,11 +177,17 @@ public class Serialization
         if (header.c.isArray())
             return Array.newInstance(header.c.getComponentType(), READ_INT(stream));//alloc the array
 
-        ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
-        var constructor = rf.newConstructorForSerialization(header.c);
-        constructor.setAccessible(true);
-
-        return constructor.newInstance();
+        try
+        {
+            ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
+            var constructor = rf.newConstructorForSerialization(header.c);
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e)
+        {
+            new RuntimeException("Fail to create object of type " + header.c.getName() + "!", e).printStackTrace();
+            throw e;
+        }
     }
 
     private static Header READ_OBJECT_HEADER(InputStream stream) throws IOException, ClassNotFoundException {

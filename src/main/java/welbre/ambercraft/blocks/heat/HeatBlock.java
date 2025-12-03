@@ -44,7 +44,7 @@ public abstract class HeatBlock<T extends HeatBE> extends Block implements Entit
         this.beClass = beClass;
         moduleConstructor.push(NetworkModule::ALLOC_MODULE_CONSUMER);
         moduleConstructor.push(HeatModule::init);
-        moduleDestructor.push(NetworkModule::FREE_MODULE_CONSUMER);
+        moduleDestructor.push(NetworkModule::PRE_FREE_MODULE_CONSUMER);
     }
 
     @Override

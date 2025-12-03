@@ -15,13 +15,13 @@ import welbre.ambercraft.module.network.NetworkModule;
 
 import java.util.*;
 
-public class ElectricalModulesMaster extends Master {
+public class ElectricalMaster extends Master {
     /// Runs each tick after the circuit tick, useful to attack watchers.
     public transient Scheduler scheduler = new Scheduler();
     public transient AutoGroundingCircuit circuit;
     public boolean isCrashed = false;
 
-    public ElectricalModulesMaster(NetworkModule master) {
+    public ElectricalMaster(NetworkModule master) {
         super(master);
     }
 

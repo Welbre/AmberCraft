@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -15,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -250,34 +248,6 @@ public class FacedCableBlock extends Block implements EntityBlock {
         return super.getCloneItemStack(level, pos, state, includeData, player);
     }
 
-    public static Optional<Direction> GET_FACE_DIRECTION_USING_RAY_CAST(FacedCableBE cable, BlockPos pos, Entity entity)
-    {
-        Vec3 start = entity.getEyePosition(0);
-        Vec3 temp = entity.getViewVector(0);
-        Vec3 end = start.add(temp.x * 5, temp.y * 5, temp.z * 5);
-
-        CableState center = cable.getState();
-        if (center.getFaceStatus(Direction.DOWN) != null)
-            if (Shapes.box(0, 0, 0, 1, .2, 1).clip(start,end,pos) != null)
-                return Optional.of(Direction.DOWN);
-        if (center.getFaceStatus(Direction.UP) != null)
-            if (Shapes.box(0, 0.8, 0, 1, 1, 1).clip(start,end,pos) != null)
-                return Optional.of(Direction.UP);
-        if (center.getFaceStatus(Direction.NORTH) != null)
-            if (Shapes.box(0, 0, 0, 1, 1, .2).clip(start,end,pos) != null)
-                return Optional.of(Direction.NORTH);
-        if (center.getFaceStatus(Direction.SOUTH) != null)
-            if (Shapes.box(0, 0, 0.8, 1, 1, 1).clip(start,end,pos) != null)
-                return Optional.of(Direction.SOUTH);
-        if (center.getFaceStatus(Direction.WEST) != null)
-            if (Shapes.box(0, 0, 0, .2, 1, 1).clip(start,end,pos) != null)
-                return Optional.of(Direction.WEST);
-        if (center.getFaceStatus(Direction.EAST) != null)
-            if (Shapes.box(0.8, 0, 0, 1, 1, 1).clip(start,end,pos) != null)
-                return Optional.of(Direction.EAST);
-        return Optional.empty();
-    }
-
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new FacedCableBE(pos, state);
@@ -308,5 +278,55 @@ public class FacedCableBlock extends Block implements EntityBlock {
                 shape = Shapes.join(shape, Shapes.box(1-0.25/2f, 0, 0, 1, 1, 1), BooleanOp.OR);
         }
         return shape;
+    }
+
+    public static Optional<Direction> GET_FACE_DIRECTION_USING_RAY_CAST(FacedCableBE cable, BlockPos pos, Entity entity)
+    {
+        Vec3 start = entity.getEyePosition(0);
+        Vec3 temp = entity.getViewVector(0);
+        Vec3 end = start.add(temp.x * 5, temp.y * 5, temp.z * 5);
+
+        CableState center = cable.getState();
+        if (center.getFaceStatus(Direction.DOWN) != null)
+            if (Shapes.box(0, 0, 0, 1, .2, 1).clip(start,end,pos) != null)
+                return Optional.of(Direction.DOWN);
+        if (center.getFaceStatus(Direction.UP) != null)
+            if (Shapes.box(0, 0.8, 0, 1, 1, 1).clip(start,end,pos) != null)
+                return Optional.of(Direction.UP);
+        if (center.getFaceStatus(Direction.NORTH) != null)
+            if (Shapes.box(0, 0, 0, 1, 1, .2).clip(start,end,pos) != null)
+                return Optional.of(Direction.NORTH);
+        if (center.getFaceStatus(Direction.SOUTH) != null)
+            if (Shapes.box(0, 0, 0.8, 1, 1, 1).clip(start,end,pos) != null)
+                return Optional.of(Direction.SOUTH);
+        if (center.getFaceStatus(Direction.WEST) != null)
+            if (Shapes.box(0, 0, 0, .2, 1, 1).clip(start,end,pos) != null)
+                return Optional.of(Direction.WEST);
+        if (center.getFaceStatus(Direction.EAST) != null)
+            if (Shapes.box(0.8, 0, 0, 1, 1, 1).clip(start,end,pos) != null)
+                return Optional.of(Direction.EAST);
+        return Optional.empty();
+    }
+
+    /**
+     * The FacedCableBlock is very strange compared to other minecraft blocks,
+     * like redstone they should connect to block diagonally,
+     * so this method is a helper to update all neighbors (6 faces, and the diagonals)
+     * that Block that can connect to cables like machines or block that have a ModulesHolder as BlockEntity.<br><br>
+     * I recommend using this method in the {@link #onRemove} after the super.onRemove call!
+     * @param level the level
+     * @param pos your block position
+     */
+    public static void UPDATE_DIAGONAL_NEIGHBORS(Level level, BlockPos pos)
+    {
+        //store diagonal neighbors before the disconnection happen to send a changed after the module remotion
+
+        for (Direction dir : Direction.values())
+        {
+            for (Direction axilDirection : Direction.values())
+                if (axilDirection.getAxis() != dir.getAxis())//check all direction non-linear with the dir axil
+                    if (level.getBlockEntity(pos.relative(dir).relative(axilDirection)) instanceof ModulesHolder modular)
+                        level.neighborChanged(modular.getBlockPos(), modular.getBlockState().getBlock(), null);
+        }
     }
 }

@@ -3,7 +3,6 @@ package welbre.ambercraft.module.electrical;
 import kuse.welbre.sim.electrical.Circuit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -85,7 +84,7 @@ public class ElectricalTerminalModule extends NetworkModule {
 
     @Override
     public Master createMaster() {
-        return new ElectricalModulesMaster(this);//used only to avoid to crash
+        return new ElectricalMaster(this);//used only to avoid to crash
     }
 
     @Override

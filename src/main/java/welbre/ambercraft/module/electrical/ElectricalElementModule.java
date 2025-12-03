@@ -191,7 +191,7 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
 
     @Override
     public Master createMaster() {
-        return new ElectricalModulesMaster(this);
+        return new ElectricalMaster(this);
     }
 
     @Override

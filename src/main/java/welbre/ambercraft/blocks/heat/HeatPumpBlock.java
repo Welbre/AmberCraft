@@ -51,7 +51,7 @@ public class HeatPumpBlock extends Block implements EntityBlock {
             module.getHeatNode().setThermalConductivity(100.0);
             module.getHeatNode().setThermalMass(30.0);
         });
-        moduleDestructor.push(HeatModule::FREE_MODULE_CONSUMER);
+        moduleDestructor.push(HeatModule::PRE_FREE_MODULE_CONSUMER);
     }
 
     @Override
