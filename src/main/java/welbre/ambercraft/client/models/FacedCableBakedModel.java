@@ -13,7 +13,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -23,13 +22,11 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.CableState;
 import welbre.ambercraft.cables.FaceState;
-import welbre.ambercraft.cables.FaceState.Connection;
 import welbre.ambercraft.client.RenderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static welbre.ambercraft.client.RenderHelper.FROM_AABB;
 
 public class FacedCableBakedModel implements IDynamicBakedModel {
     private final ItemTransforms transforms;

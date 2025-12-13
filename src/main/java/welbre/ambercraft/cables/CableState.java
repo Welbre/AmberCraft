@@ -1,24 +1,13 @@
 package welbre.ambercraft.cables;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
-import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.cables.FaceState.Connection;
-import welbre.ambercraft.module.Module;
-import welbre.ambercraft.module.ModulesHolder;
-import welbre.ambercraft.module.heat.HeatModule;
-import welbre.ambercraft.module.network.NetworkModule;
 
 import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 

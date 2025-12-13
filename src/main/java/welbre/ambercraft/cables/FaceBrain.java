@@ -7,9 +7,6 @@ import welbre.ambercraft.blockentity.FacedCableBE;
 import welbre.ambercraft.module.Module;
 import welbre.ambercraft.module.network.NetworkModule;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-
 public record FaceBrain(Module[] modules) {
 
     public FaceBrain(CableType type, FacedCableBE cable) {

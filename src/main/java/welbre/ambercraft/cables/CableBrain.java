@@ -9,7 +9,6 @@ import welbre.ambercraft.module.network.NetworkModule;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Function;
 
 public class CableBrain {
     /// array with length 6 contains the brains in Down, Up, North, South, West, East order.

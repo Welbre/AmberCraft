@@ -1,17 +1,12 @@
 package welbre.ambercraft.client.screen;
 
-import com.mojang.serialization.codecs.KeyDispatchCodec;
-import com.sun.jna.platform.KeyboardUtils;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -20,8 +15,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforgespi.Environment;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.network.ModifyFieldsPayLoad;
