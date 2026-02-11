@@ -16,10 +16,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.*;
 import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.*;
-import welbre.ambercraft.blocks.FacedCableBlock;
-import welbre.ambercraft.blocks.Ground;
-import welbre.ambercraft.blocks.ResistorBlock;
-import welbre.ambercraft.blocks.VoltageSourceBlock;
+import welbre.ambercraft.blocks.*;
 import welbre.ambercraft.blocks.heat.*;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.FacedCableComponent;
@@ -29,6 +26,10 @@ import welbre.ambercraft.item.FacedCableBlockItem;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.network.PayLoadRegister;
+import welbre.ambercraft.subblock.SubBlock;
+import welbre.ambercraft.subblock.SubBlockBE;
+import welbre.ambercraft.subblock.TinyBlock;
+import welbre.ambercraft.subblock.TinyBlockRegister;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,6 +48,8 @@ public class AmberCraft {
         modBus.addListener(AmberRegisters::registerRegistries);
         Event.register();
 
+        //SubBlock
+        TinyBlockRegister.REGISTER.register(modBus);
 
         Modules.REGISTER.register(modBus);
         CableTypes.REGISTER.register(modBus);
@@ -63,6 +66,8 @@ public class AmberCraft {
 
     public static final class Blocks {
         public static final DeferredRegister.Blocks REGISTER = DeferredRegister.createBlocks(MOD_ID);
+
+        public static final DeferredHolder<Block, SubBlock> SUB_BLOCK = REGISTER.registerBlock("sub_block", SubBlock::new);
 
         public static final DeferredHolder<Block, Block> IRON_MACHINE_CASE_BLOCK = REGISTER.registerSimpleBlock("iron_machine_case_block");
         public static final DeferredHolder<Block, VoltageSourceBlock> VOLTAGE_SOURCE_BLOCK = REGISTER.registerBlock("voltage_source_block", VoltageSourceBlock::new);
@@ -115,6 +120,8 @@ public class AmberCraft {
     public static final class BlockEntity {
         public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
 
+        public static final Supplier<BlockEntityType<SubBlockBE>> SUB_BLOCK_BE = REGISTER.register("sub_block", () -> new BlockEntityType<>(SubBlockBE::new, Blocks.SUB_BLOCK.get()));
+
         public static final Supplier<BlockEntityType<HeatFurnaceBE>> HEAT_FURNACE_BE = REGISTER.register("heat_furnace_tile",() -> new BlockEntityType<>(HeatFurnaceBE::new, Blocks.HEAT_FURNACE_BLOCK.get()));
         public static final Supplier<BlockEntityType<HeatBE>> HEAT_CONDUCTOR_BE = REGISTER.register("heat_conductor", () -> new BlockEntityType<>(HeatBE::new, Blocks.HEAT_BE_USES.stream().map(DeferredHolder::get).toArray(Block[]::new)));
         public static final Supplier<BlockEntityType<HeatSourceBE>> HEAT_SOURCE_BE = REGISTER.register("heat_source", () -> new BlockEntityType<>(HeatSourceBE::new,Blocks.HEAT_SOURCE_BLOCK.get()));
@@ -128,13 +135,16 @@ public class AmberCraft {
     public static final class AmberRegisters {
         private static final ResourceKey<Registry<CableType>> CABLE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "cable_type"));
         private static final ResourceKey<Registry<ModuleType<?>>> MODULE_TYPE_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "module_type"));
+        private static final ResourceKey<Registry<TinyBlock>> TINY_BLOCK_REGISTER_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "tiny_block"));
 
         public static final Registry<CableType>  CABLE_TYPE_REGISTRY = new RegistryBuilder<>(CABLE_TYPE_REGISTER_KEY).create();
         public static final Registry<ModuleType<?>>  MODULE_TYPE_REGISTRY = new RegistryBuilder<>(MODULE_TYPE_REGISTER_KEY).create();
+        public static final Registry<TinyBlock>  TINY_BLOCK_REGISTRY = new RegistryBuilder<>(TINY_BLOCK_REGISTER_KEY).defaultKey(ResourceLocation.parse("tinyblock")).create();
 
         public static void registerRegistries(NewRegistryEvent event) {
             event.register(CABLE_TYPE_REGISTRY);
             event.register(MODULE_TYPE_REGISTRY);
+            event.register(TINY_BLOCK_REGISTRY);
         }
     }
 
