@@ -3,6 +3,10 @@ package welbre.ambercraft.subblock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -33,6 +37,11 @@ public class SubBlockBE extends BlockEntity
         super(AmberCraft.BlockEntity.SUB_BLOCK_BE.get(), pos, blockState);
     }
 
+    //region TinyBlockState management
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------TinyBlockState-------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     /// Reset to the default state
     protected void reset()
     {
@@ -48,22 +57,49 @@ public class SubBlockBE extends BlockEntity
             shape = Shapes.or(shape, state.definition.shape);
     }
 
-    /// Update the internal storage of models.
+    /// Update the internal model of <b>one specific</b> state
+    /// @param state The state to be updated
     public void requireStaticRenderUpdate(TinyBlockState state)
+    {
+        //todo implement it
+    }
+    /// Update all the internal models.
+    public void requireStaticRenderUpdate()
     {
         //todo implement it
     }
 
     /**
      * Checks if a tinyBlock can be placed at the x,y,z position in the SubBlock.
+     * @param x spects a coordinate between 0 and 16, related to the subSpace
+     * @param y spects a coordinate between 0 and 16, related to the subSpace
+     * @param z spects a coordinate between 0 and 16, related to the subSpace
      */
     public boolean canPlace(@NotNull TinyBlock tinyBlock, final int x, final int y, final int z)
     {
-        AABB moved = tinyBlock.shape.bounds().move(x, y, z);
+        //todo re implement it, check internal conflicts for space
+        AABB moved = tinyBlock.shape.bounds().move(x / 16f, y / 16f, z / 16f);
         return  moved.maxX <= 1 && moved.maxY <= 1 && moved.maxZ <= 1 && moved.minX >= 0 && moved.minY >= 0 && moved.minZ >= 0;
     }
 
-    //region *** Data ***
+    /// Drops a tiny block from the subBlock, notice that the dropped item is defined by the {@link TinyBlock#getDroppedItem()} not by this method.
+    public void dropTinyState(TinyBlockState state)
+    {
+        if (level == null)
+            return;
+
+        if (tinyBS.remove(state))
+        {
+            ItemStack droppedItem = state.definition.getDroppedItem();
+            if (droppedItem != null)
+            {
+                var itemEntity = new ItemEntity(level, state.x / 16f + getBlockPos().getX(), state.y / 16f + getBlockPos().getY(), state.z / 16f + getBlockPos().getZ(), droppedItem);
+                level.addFreshEntity(itemEntity);
+            }
+        }
+    }
+    //endregion
+    //region Data
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------Data-----------------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -83,6 +119,10 @@ public class SubBlockBE extends BlockEntity
                 var state = new TinyBlockState();
                 tinyBS.add(state);
                 state.deserializeNBT(registries, tbs.getCompound(String.valueOf(i)));
+
+                //checks if the added new state can be placed in the SubBlock
+                if (!canPlace(state.definition, state.x, state.y, state.z))
+                    dropTinyState(state);//first add and before check, because dropTinyState hopes that the state should be in the tinyBS
             }
             //add all, and re math the shape
             for (TinyBlockState state : tinyBS)
@@ -108,7 +148,7 @@ public class SubBlockBE extends BlockEntity
 
     @Override
     public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
-        //info send by the sever to the client update the block entity
+        //info send by the sever to the client updates the block entity
         var x = new CompoundTag();
         saveAdditional(x, registries);
         return x;

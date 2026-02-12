@@ -5,6 +5,8 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +16,7 @@ import java.util.List;
 
 /**
  * Definition that creates the parts that can be used in the SubBlock.<br>
- * This class is responsible for define logic, rendering, shape, external output and more.
+ * This class is responsible for define logic, rendering, shape, external output, and more.
  * <h6 color="yellow">Must be registered in you TinyBlockRegister!</h>
  */
 public abstract class TinyBlock
@@ -54,4 +56,9 @@ public abstract class TinyBlock
     public abstract List<BakedQuad> staticRender(TinyBlockState state, Direction cull, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType);
 
     public abstract void dynamicRender(TinyBlockState state);
+
+    /// Return an itemStack or null based on the parameters.<br>
+    /// Use it for drop itemStack when breaks, exploded, broken with wrong tool, or others situations.
+    //  todo implement all the parameters need to decide the item
+    public abstract @Nullable ItemStack getDroppedItem();
 }

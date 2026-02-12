@@ -46,7 +46,10 @@ public class SubBlockBakedModel implements IDynamicBakedModel
         ArrayList<BakedQuad> quads = new ArrayList<>();
 
         if (dat == null) return quads;
-
+        //todo, o valo que está sendo passado é baseado no subBlock, então, se um bloco há um bloco a direita
+        //o jogo não requer o lado direito dos tinyBLock, o que causa umas das faces ficar invisível
+        //precisar ser calculado dentro do próprio bloco, se há faces obstruídas pelos blocos vizinhos, OU
+        //se os diferentes tinyBlockState estão se tocando, fazendo assim não necessário renderizar uma das suas faces
         for (TinyBlockState blockState : dat)
             quads.addAll(blockState.definition.staticRender(blockState, side, rand, extraData, renderType));
 

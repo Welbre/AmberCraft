@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -60,6 +61,12 @@ public class SimpleTinyBlock extends TinyBlock
     public void dynamicRender(TinyBlockState state)
     {
 
+    }
+
+    @Override
+    public @Nullable ItemStack getDroppedItem() {
+        //todo check the current Item to be dropped
+        return block.asItem().getDefaultInstance();
     }
 
     private static List<BakedQuad> SCALE_AND_MOVE(Collection<BakedQuad> quads, float x, float y, float z, float scale)
