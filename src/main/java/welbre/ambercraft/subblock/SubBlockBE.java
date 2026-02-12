@@ -48,6 +48,12 @@ public class SubBlockBE extends BlockEntity
             shape = Shapes.or(shape, state.definition.shape);
     }
 
+    /// Update the internal storage of models.
+    public void requireStaticRenderUpdate(TinyBlockState state)
+    {
+        //todo implement it
+    }
+
     /**
      * Checks if a tinyBlock can be placed at the x,y,z position in the SubBlock.
      */
@@ -57,6 +63,7 @@ public class SubBlockBE extends BlockEntity
         return  moved.maxX <= 1 && moved.maxY <= 1 && moved.maxZ <= 1 && moved.minX >= 0 && moved.minY >= 0 && moved.minZ >= 0;
     }
 
+    //region *** Data ***
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------Data-----------------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -112,6 +119,8 @@ public class SubBlockBE extends BlockEntity
         //the update process from the getUpdateTag
         super.handleUpdateTag(tag, lookupProvider);
     }
+
+    //endregion
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------Getters--------------------------------------------------------------------------

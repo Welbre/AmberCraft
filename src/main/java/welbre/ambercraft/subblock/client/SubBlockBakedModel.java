@@ -24,6 +24,7 @@ import welbre.ambercraft.subblock.SubBlockBE;
 import welbre.ambercraft.subblock.TinyBlockRegister;
 import welbre.ambercraft.subblock.TinyBlockState;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SubBlockBakedModel implements IDynamicBakedModel
@@ -42,17 +43,14 @@ public class SubBlockBakedModel implements IDynamicBakedModel
             @Nullable RenderType renderType)
     {
         List<TinyBlockState> dat = extraData.get(SubBlockBE.TINY_BLOCK_STATE_MODEL_PROPERTY);
+        ArrayList<BakedQuad> quads = new ArrayList<>();
 
-        if (dat == null || dat.isEmpty())
-            return List.of();
+        if (dat == null) return quads;
 
-        QuadBakingVertexConsumer consumer = new QuadBakingVertexConsumer();
-        var sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("minecraft:block/stone"));
-        consumer.setSprite(sprite);
-        return RenderHelper.FROM_AABB(
-                consumer,
-                sprite,
-                (dat.get(0)).definition.shape.bounds().move(dat.get(0).x/16f, dat.get(0).y/16f, dat.get(0).z/16f));
+        for (TinyBlockState blockState : dat)
+            quads.addAll(blockState.definition.staticRender(blockState, side, rand, extraData, renderType));
+
+        return quads;
     }
 
     @Override

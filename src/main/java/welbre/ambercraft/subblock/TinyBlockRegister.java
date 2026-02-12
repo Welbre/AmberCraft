@@ -1,13 +1,23 @@
 package welbre.ambercraft.subblock;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.client.RenderHelper;
+import welbre.ambercraft.subblock.layz.SimpleTinyBlock;
 
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -17,7 +27,10 @@ import java.util.function.Function;
 public enum TinyBlockRegister
 {
 
-    TEST((r) -> new TinyBlock(r, Shapes.box(0,0,0,0.2,0.2,0.2)));
+    TEST((r) -> new SimpleTinyBlock(r, 5, Blocks.STONE)),
+    IRON((r) -> new SimpleTinyBlock(r, 5, Blocks.IRON_BLOCK)),
+    BLACK_WOOL((r) -> new SimpleTinyBlock(r, 5, Blocks.BLACK_WOOL)),
+    COPPER((r) -> new SimpleTinyBlock(r, 6, Blocks.COPPER_BLOCK));
 
     private DeferredHolder<TinyBlock, TinyBlock> tinyBlock;
     private Function<ResourceLocation, TinyBlock> factory;
