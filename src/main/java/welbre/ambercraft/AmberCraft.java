@@ -30,6 +30,7 @@ import welbre.ambercraft.subblock.SubBlock;
 import welbre.ambercraft.subblock.SubBlockBE;
 import welbre.ambercraft.subblock.TinyBlock;
 import welbre.ambercraft.subblock.TinyBlockRegister;
+import welbre.ambercraft.subblock.TinyItem;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -96,6 +97,10 @@ public class AmberCraft {
 
     public static final class Items{
         public static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(MOD_ID);
+
+        //Tiny blocks
+        public static final DeferredItem<TinyItem> SIMPLE_TINY_ITEM = REGISTER.registerItem("tiny_block", TinyItem::new);
+
         public static final DeferredItem<BlockItem> IRON_MACHINE_CASE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_MACHINE_CASE_BLOCK);
         public static final DeferredItem<BlockItem> VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.VOLTAGE_SOURCE_BLOCK);
         public static final DeferredItem<BlockItem> RESISTOR_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.RESISTOR_BLOCK);
