@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -61,6 +62,12 @@ public class SimpleTinyBlock extends TinyBlock
     public void dynamicRender(TinyBlockState state)
     {
 
+    }
+
+    @Override
+    public @NotNull Component getTinyItemName()
+    {
+        return Component.literal("%dx%dx%d Tiny %s".formatted(size, size, size, block.asItem().getName().getString()));
     }
 
     @Override

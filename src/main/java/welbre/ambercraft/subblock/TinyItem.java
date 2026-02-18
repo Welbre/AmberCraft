@@ -1,6 +1,9 @@
 package welbre.ambercraft.subblock;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +39,7 @@ public class TinyItem extends Item
         }
 
         Level level = context.getLevel();
-        SubBlockBE sub = null;
+        SubBlockBE sub;
 
         //check if the clicked block is a tiny block
         if (level.getBlockEntity(context.getClickedPos()) instanceof SubBlockBE subBlockBE)
@@ -78,5 +81,14 @@ public class TinyItem extends Item
 
         sub.addTinyBlock(component.get(), x, y, z);
         return super.useOn(context);
+    }
+
+    @Override
+    public @NotNull Component getName(@NotNull ItemStack stack) {
+        TinyItemDataComponent component = stack.get(AmberCraft.DataComponents.TINY_BLOCK_DATA_COMPONENT);
+        if (component == null)
+            return Component.literal("invalid tiny block");
+        else
+            return component.get().getTinyItemName();
     }
 }
