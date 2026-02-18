@@ -40,7 +40,7 @@ public class FacedCableBlockItem extends BlockItem {
         BlockEntity be = level.getBlockEntity(pos);
         Direction clickedFace = context.getClickedFace();
 
-        FacedCableComponent component = context.getItemInHand().getComponents().get(AmberCraft.Components.CABLE_DATA_COMPONENT.get());
+        FacedCableComponent component = context.getItemInHand().getComponents().get(AmberCraft.DataComponents.CABLE_DATA_COMPONENT.get());
         if (component == null)
             return InteractionResult.FAIL;
 

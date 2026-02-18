@@ -211,7 +211,7 @@ public class FacedCableBlock extends Block implements EntityBlock {
                 data.ignoreColor = false;
                 var comp = new FacedCableComponent(faceState.type.cable_type_index, data);
 
-                stack.set(AmberCraft.Components.CABLE_DATA_COMPONENT.get(), comp);
+                stack.set(AmberCraft.DataComponents.CABLE_DATA_COMPONENT.get(), comp);
                 return stack;
             }
         }

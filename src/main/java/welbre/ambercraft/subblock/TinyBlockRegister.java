@@ -47,6 +47,8 @@ public enum TinyBlockRegister
         return tinyBlock;
     }
 
+    public @NotNull TinyBlock get(){ return tinyBlock.get();}
+
     public static final DeferredRegister<TinyBlock> REGISTER = DeferredRegister.create(AmberCraft.AmberRegisters.TINY_BLOCK_REGISTRY, AmberCraft.MOD_ID);
     static
     {

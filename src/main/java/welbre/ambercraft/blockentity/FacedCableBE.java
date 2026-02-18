@@ -256,7 +256,7 @@ public class FacedCableBE extends ModulesHolder {
             return;
 
         ItemStack stack = new ItemStack(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM.get(), 1);
-        stack.set(AmberCraft.Components.CABLE_DATA_COMPONENT.get(), new FacedCableComponent(faceState.type, faceState.data.color));
+        stack.set(AmberCraft.DataComponents.CABLE_DATA_COMPONENT.get(), new FacedCableComponent(faceState.type, faceState.data.color));
         BlockPos pos = getBlockPos();
         ItemEntity item = new ItemEntity(level, pos.getX(), pos.getY(), pos.getZ(), stack);
         level.addFreshEntity(item);

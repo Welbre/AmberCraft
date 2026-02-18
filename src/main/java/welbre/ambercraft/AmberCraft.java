@@ -3,6 +3,7 @@ package welbre.ambercraft;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -26,11 +27,7 @@ import welbre.ambercraft.item.FacedCableBlockItem;
 import welbre.ambercraft.module.ModuleType;
 import welbre.ambercraft.module.heat.HeatModuleType;
 import welbre.ambercraft.network.PayLoadRegister;
-import welbre.ambercraft.subblock.SubBlock;
-import welbre.ambercraft.subblock.SubBlockBE;
-import welbre.ambercraft.subblock.TinyBlock;
-import welbre.ambercraft.subblock.TinyBlockRegister;
-import welbre.ambercraft.subblock.TinyItem;
+import welbre.ambercraft.subblock.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -38,6 +35,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Supplier;
 
 @Mod(AmberCraft.MOD_ID)
@@ -58,7 +56,7 @@ public class AmberCraft {
         Blocks.REGISTER.register(modBus);
         Items.REGISTER.register(modBus);
         BlockEntity.REGISTER.register(modBus);
-        Components.REGISTER.register(modBus);
+        DataComponents.REGISTER.register(modBus);
 
         modBus.addListener(PayLoadRegister::registerPayLoads);
 
@@ -165,19 +163,22 @@ public class AmberCraft {
         public static final DeferredHolder<ModuleType<?>, HeatModuleType> HEAT_MODULE_TYPE = REGISTER.register("heat_module_type", HeatModuleType::new);
     }
 
-    public static final class Components {
+    public static final class DataComponents {
         public static final DeferredRegister.DataComponents REGISTER = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE,MOD_ID);
 
         public static final Supplier<DataComponentType<FacedCableComponent>> CABLE_DATA_COMPONENT = REGISTER.registerComponentType(
                 "cable_data",
                 builder -> builder.persistent(FacedCableComponent.CODEC).networkSynchronized(FacedCableComponent.STREAM_CODEC)
         );
+
+        public static final Supplier<DataComponentType<TinyItemDataComponent>> TINY_BLOCK_DATA_COMPONENT = REGISTER.registerComponentType(
+                "tiny_block",
+                b -> b.persistent(TinyItemDataComponent.CODEC).networkSynchronized(TinyItemDataComponent.STREAM_CODEC)
+        );
     }
 
     public static final class TABS {
-        /**
-         * Skips the automatic tab insertion.
-         */
+        /// Skips the automatic tab insertion.
         @Retention(RetentionPolicy.RUNTIME)
         public @interface SKIP {}
 
@@ -209,12 +210,33 @@ public class AmberCraft {
                 .build()
         );
 
+        public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TINY_BLOCK_TAB = REGISTER.register("tinyblock_tab", () -> CreativeModeTab.builder()
+                .title(Component.literal("Amber Tiny Blocks"))
+                .icon(net.minecraft.world.item.Items.DIAMOND::getDefaultInstance)
+                .displayItems((parameters, output) -> {
+                    List<ItemStack> itemList = new ArrayList<>();
+
+                    //add all tiny block in the register to the tiny blocks tab.
+                    for (TinyBlockRegister tiny : TinyBlockRegister.values())
+                    {
+                        TinyBlock tinyBlock = tiny.get();
+                        var stack = new ItemStack(Items.SIMPLE_TINY_ITEM.get());
+                        stack.set(DataComponents.TINY_BLOCK_DATA_COMPONENT, new TinyItemDataComponent(tinyBlock.registerName.toString()));
+                        itemList.add(stack);
+                    }
+
+                    itemList.sort((a, b) -> a.getDisplayName().getString().compareTo(b.getDisplayName().toString()));//sort by name
+
+                    itemList.forEach(output::accept);
+                })
+                .build());
+
         public static List<ItemStack> FACED_CABLES(){
             var list = new ArrayList<ItemStack>();
             for (DyeColor color : DyeColor.values())
             {
                 var stack = new ItemStack(Items.FACED_CABLE_BLOCK_ITEM.get());
-                stack.set(Components.CABLE_DATA_COMPONENT.get(),
+                stack.set(DataComponents.CABLE_DATA_COMPONENT.get(),
                         new FacedCableComponent(CableTypes.TEST_CABLE_TYPE.get(), color.getTextureDiffuseColor()));
                 list.add(stack);
             }

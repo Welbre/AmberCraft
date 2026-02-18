@@ -40,7 +40,7 @@ public record CableSpecialRender() implements SpecialModelRenderer<FacedCableCom
 
     @Override
     public @NotNull FacedCableComponent extractArgument(ItemStack stack) {
-        return stack.getComponents().get(AmberCraft.Components.CABLE_DATA_COMPONENT.get());
+        return stack.getComponents().get(AmberCraft.DataComponents.CABLE_DATA_COMPONENT.get());
     }
 
     public record UnBacked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {

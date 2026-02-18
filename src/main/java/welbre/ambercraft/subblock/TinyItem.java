@@ -4,11 +4,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 
 /**
@@ -26,7 +26,14 @@ public class TinyItem extends Item
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context)
     {
         ItemStack stack = context.getItemInHand();
-        stack.get
+        TinyItemDataComponent component = stack.get(AmberCraft.DataComponents.TINY_BLOCK_DATA_COMPONENT);
+        if (component == null)
+        {
+            if (context.getPlayer() != null)
+                //if the stack hasn't a tiny block component, the stack is in a broken state, so remove it from the player.
+                context.getPlayer().setItemInHand(context.getHand(), new ItemStack(Items.AIR));
+            return InteractionResult.FAIL;
+        }
 
         Level level = context.getLevel();
         SubBlockBE sub = null;
@@ -69,9 +76,7 @@ public class TinyItem extends Item
 
         x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
 
-        //fixme, adding a black wool instead of the current tiny block in the TinyItem data
-
-        sub.addTinyBlock(TinyBlockRegister.BLACK_WOOL.getHolder().get(), x, y, z);
+        sub.addTinyBlock(component.get(), x, y, z);
         return super.useOn(context);
     }
 }
