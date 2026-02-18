@@ -3,9 +3,12 @@ package welbre.ambercraft.subblock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 import welbre.ambercraft.AmberCraft;
 
 /**
@@ -22,6 +25,9 @@ public class TinyItem extends Item
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context)
     {
+        ItemStack stack = context.getItemInHand();
+        stack.get
+
         Level level = context.getLevel();
         SubBlockBE sub = null;
 
@@ -53,12 +59,19 @@ public class TinyItem extends Item
             return InteractionResult.FAIL;
         }
 
+        //value between 0 and 1
+        Vec3 r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()).add(context.getClickedFace().getUnitVec3()));
 
-        //fixme, adding a black wool instead of the currect tiny block in the TinyItem data
-        //sub.addTinyBlock(TinyBlockRegister.BLACK_WOOL.getHolder().get(), 0, 0, 0);
-        System.out.println(context.getClickedPos().toShortString());
-        System.out.println(context.getClickLocation().toString());//this method returns the world location that the player clicked!
-        context.getClickedPos()
+        final int x,y,z;
+        //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
+        if (context.getClickedFace().getUnitVec3().x < 0 || context.getClickedFace().getUnitVec3().y < 0 || context.getClickedFace().getUnitVec3().z < 0)
+            r = r.multiply(0.999f, 0.999f, 0.999f);
+
+        x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
+
+        //fixme, adding a black wool instead of the current tiny block in the TinyItem data
+
+        sub.addTinyBlock(TinyBlockRegister.BLACK_WOOL.getHolder().get(), x, y, z);
         return super.useOn(context);
     }
 }

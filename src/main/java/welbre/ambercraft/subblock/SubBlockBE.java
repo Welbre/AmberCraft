@@ -54,7 +54,10 @@ public class SubBlockBE extends BlockEntity
         tinyBS.add(new TinyBlockState(tinyBlock, x, y, z));
         shape = Shapes.empty();
         for (TinyBlockState state : tinyBS)
-            shape = Shapes.or(shape, state.definition.shape);
+            shape = Shapes.or(shape, state.definition.shape.move(state.x / 16.0, state.y/16.0, state.z/16.0));
+
+        setChanged();
+        requestModelDataUpdate();
     }
 
     /// Update the internal model of <b>one specific</b> state
@@ -97,6 +100,9 @@ public class SubBlockBE extends BlockEntity
                 level.addFreshEntity(itemEntity);
             }
         }
+
+        setChanged();
+        requestModelDataUpdate();
     }
     //endregion
     //region Data
@@ -124,9 +130,13 @@ public class SubBlockBE extends BlockEntity
                 if (!canPlace(state.definition, state.x, state.y, state.z))
                     dropTinyState(state);//first add and before check, because dropTinyState hopes that the state should be in the tinyBS
             }
+
+            shape = Shapes.empty();
             //add all, and re math the shape
             for (TinyBlockState state : tinyBS)
                 shape = Shapes.or(shape, state.definition.shape.move(state.x / 16.0, state.y/16.0, state.z/16.0));
+
+            requestModelDataUpdate();
         }
     }
 
