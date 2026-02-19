@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -36,7 +37,7 @@ public class SubBlockBakedModel implements IDynamicBakedModel
 
     @Override
     public @NotNull List<BakedQuad> getQuads(
-            @Nullable BlockState state,//todo re-document static render
+            @Nullable BlockState state,
             @Nullable Direction side,
             @NotNull RandomSource rand,
             @NotNull ModelData extraData,
@@ -50,8 +51,13 @@ public class SubBlockBakedModel implements IDynamicBakedModel
         //o jogo não requer o lado direito dos tinyBLock, o que causa umas das faces ficar invisível
         //precisar ser calculado dentro do próprio bloco, se há faces obstruídas pelos blocos vizinhos, OU
         //se os diferentes tinyBlockState estão se tocando, fazendo assim não necessário renderizar uma das suas faces
+
         for (TinyBlockState blockState : dat)
-            quads.addAll(blockState.definition.staticRender(blockState, side, rand, extraData, renderType));
+            //quads.addAll(blockState.definition.staticRender(blockState, side, rand, extraData, renderType));
+        {
+            BakedModel model = blockState.definition.staticModel(blockState);
+            quads.addAll(model.getQuads(state,side,rand,extraData,renderType));
+        }
 
         return quads;
     }

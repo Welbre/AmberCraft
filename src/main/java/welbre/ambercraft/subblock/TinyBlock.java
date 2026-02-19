@@ -2,6 +2,7 @@ package welbre.ambercraft.subblock;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,24 +38,18 @@ public abstract class TinyBlock
     }
 
     /**
-     * Get a list of squads used in the <b>static</b> render process.
-     * <p>
-     * The <b>static</b> rendering is similar of {@link net.minecraft.client.resources.model.BakedModel BakedModel},
-     * they are required to pass a model to the SubBlock, and to minecraft render pipeline in the end.
-     * </p>
-     * <p color = "yellow">
-     * Notice that the result of this function is stored in the SubBlock, if you TinyBlockState change,
-     * and you want to update the model,you must call {@link SubBlockBE#requireStaticRenderUpdate(TinyBlockState)}
-     * </p>
+     * Gets a model for <b>static</b> rendering the item or in sub block.<br>
      *
-     * @param state      the state that will be created a model by this TinyBlock.
-     * @param cull       The direction that requires a modeling.
-     * @param rand
-     * @param extraData
-     * @param renderType
-     * @return All squads used in the model
+     * <p>
+     *     Static rendering is a concept used in AmberCraft subBlocks created to be similar to Minecraft's model pipe-line for blocks.<br>
+     *     The result of this method is stored in an internal cache <i>in SubBlockBE</i>, and reused many times, to force the update of the model use {@link SubBlockBE#requireStaticRenderUpdate(TinyBlockState)}.<br>
+     *     You don't need to call this my hand in most cases, the SubBlock do by him self when player interact with the SubBlock.
+     * </p>
+     *<p>
+     *     The TinyBlockState state parameter is the block state that need a model to be updated. <b>The state can be null!</b> and this only happen if and only if the method is called to get an <b>ITEM!</b> model.
+     *</p>
      */
-    public abstract List<BakedQuad> staticRender(TinyBlockState state, Direction cull, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType);
+    public abstract BakedModel staticModel(@Nullable TinyBlockState state);
 
     public abstract void dynamicRender(TinyBlockState state);
 

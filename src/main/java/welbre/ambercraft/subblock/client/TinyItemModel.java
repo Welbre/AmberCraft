@@ -25,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.subblock.TinyItemDataComponent;
 
-import java.util.List;
 
 public class TinyItemModel implements ItemModel
 {
@@ -42,42 +41,10 @@ public class TinyItemModel implements ItemModel
         TinyItemDataComponent component = stack.get(AmberCraft.DataComponents.TINY_BLOCK_DATA_COMPONENT.get());
         if (component == null)
             return;
-        List<BakedQuad> bakedQuads = component.get().staticRender(null, null, RandomSource.create(), ModelData.EMPTY, RenderType.SOLID);
+        var model = component.get().staticModel(null);
 
         renderState.clear();
         ItemStackRenderState.LayerRenderState layer = renderState.newLayer();
-        var model = new BakedModel() {
-            @Override
-            public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, RandomSource random) {
-                return bakedQuads;
-            }
-
-            @Override
-            public boolean useAmbientOcclusion() {
-                return true;
-            }
-
-            @Override
-            public boolean isGui3d() {
-                return true;
-            }
-
-            @Override
-            public boolean usesBlockLight() {
-                return true;
-            }
-
-            @Override
-            public TextureAtlasSprite getParticleIcon() {
-                return bakedQuads.get(0).getSprite();
-            }
-
-            @Override
-            public ItemTransforms getTransforms() {
-                return ItemTransforms.NO_TRANSFORMS;
-            }
-        };
-
         layer.setupBlockModel(model, Sheets.solidBlockSheet());
     }
 
