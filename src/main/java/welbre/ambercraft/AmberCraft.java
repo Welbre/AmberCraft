@@ -3,7 +3,6 @@ package welbre.ambercraft;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -35,7 +34,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Supplier;
 
 @Mod(AmberCraft.MOD_ID)
@@ -97,7 +95,7 @@ public class AmberCraft {
         public static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(MOD_ID);
 
         //Tiny blocks
-        public static final DeferredItem<TinyItem> SIMPLE_TINY_ITEM = REGISTER.registerItem("tiny_block", TinyItem::new);
+        public static final DeferredItem<TinyItem> TINY_ITEM = REGISTER.registerItem("tiny_item", TinyItem::new);
 
         public static final DeferredItem<BlockItem> IRON_MACHINE_CASE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_MACHINE_CASE_BLOCK);
         public static final DeferredItem<BlockItem> VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.VOLTAGE_SOURCE_BLOCK);
@@ -220,7 +218,7 @@ public class AmberCraft {
                     for (TinyBlockRegister tiny : TinyBlockRegister.values())
                     {
                         TinyBlock tinyBlock = tiny.get();
-                        var stack = new ItemStack(Items.SIMPLE_TINY_ITEM.get());
+                        var stack = new ItemStack(Items.TINY_ITEM.get());
                         stack.set(DataComponents.TINY_BLOCK_DATA_COMPONENT, new TinyItemDataComponent(tinyBlock.registerName.toString()));
                         itemList.add(stack);
                     }

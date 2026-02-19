@@ -36,7 +36,7 @@ public class SubBlockBakedModel implements IDynamicBakedModel
 
     @Override
     public @NotNull List<BakedQuad> getQuads(
-            @Nullable BlockState state,
+            @Nullable BlockState state,//todo re-document static render
             @Nullable Direction side,
             @NotNull RandomSource rand,
             @NotNull ModelData extraData,

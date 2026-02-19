@@ -13,6 +13,7 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.renderer.item.SpecialModelWrapper;
+import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.core.Direction;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +24,8 @@ import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.blocks.heat.HeatPumpBlock;
 import welbre.ambercraft.client.item.CableSpecialRender;
 import welbre.ambercraft.datagen.template.AmberModelTemplate;
+import welbre.ambercraft.subblock.client.TinyItemModel;
+import welbre.ambercraft.subblock.client.TinySpecialRenderer;
 
 import java.util.HashMap;
 
@@ -78,7 +81,8 @@ public class AmberModelProvider extends ModelProvider {
 
     private static void registerItems(@NotNull ItemModelGenerators itemModels) {
         itemModels.generateFlatItem(AmberCraft.Items.NETWORK_TOOL.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.itemModelOutput.accept(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM.get(),new SpecialModelWrapper.Unbaked(ResourceLocation.parse("minecraft:block/white_wool"),new CableSpecialRender.UnBacked(
+        itemModels.itemModelOutput.accept(AmberCraft.Items.TINY_ITEM.get(), new TinyItemModel.Unbaked());
+        itemModels.itemModelOutput.accept(AmberCraft.Items.FACED_CABLE_BLOCK_ITEM.get(),new SpecialModelWrapper.Unbaked(ResourceLocation.parse("minecraft:block/white_wool"), new CableSpecialRender.UnBacked(
                 ResourceLocation.withDefaultNamespace("block/blue_wool"))
         ));
     }

@@ -54,8 +54,19 @@ public class SimpleTinyBlock extends TinyBlock
         var model = Minecraft.getInstance().getBlockRenderer().getBlockModel(block.defaultBlockState());
         List<BakedQuad> quads = model.getQuads(block.defaultBlockState(), cull, rand, extraData, renderType);
 
-        //each 1 unity is a 1/16 of a block, so we need to convert de 16 scale in the subBlock to the 1 scale in the block
-        return SCALE_AND_MOVE(quads, state.x / 16f, state.y / 16f, state.z / 16f, size / 16f);
+        if (state != null)
+            //each 1 unity is a 1/16 of a block, so we need to convert de 16 scale in the subBlock to the 1 scale in the block
+            return SCALE_AND_MOVE(quads, state.x / 16f, state.y / 16f, state.z / 16f, size / 16f);
+        else
+        {
+            quads = new ArrayList<>();
+            if (cull == null)
+            {
+                for (Direction d : Direction.values())
+                    quads.addAll(model.getQuads(block.defaultBlockState(), d, rand, extraData, renderType));
+            }
+            return SCALE_AND_MOVE(quads, 0, 0, 0, size / 16f);
+        }
     }
 
     @Override
