@@ -1,7 +1,6 @@
 package welbre.ambercraft.subblock.layz;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Transformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -19,7 +18,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
 import welbre.ambercraft.subblock.TinyBlock;
 import welbre.ambercraft.subblock.TinyBlockState;
 
@@ -78,7 +76,7 @@ public class SimpleTinyBlock extends TinyBlock
      */
     public static final class SimpleTinyBlockBakedModel extends DelegateBakedModel
     {
-        private final float x,y,z,scale;
+        private final float x,y,z, scale;
 
         public SimpleTinyBlockBakedModel(BakedModel parent, float x, float y, float z, float scale)
         {
@@ -90,8 +88,16 @@ public class SimpleTinyBlock extends TinyBlock
         }
 
         @Override
+        public @NotNull List<BakedQuad> getQuads(@Nullable BlockState p_371320_, @Nullable Direction p_371369_, @NotNull RandomSource p_371947_) {
+            //called by the item render
+            List<BakedQuad> quads = super.getQuads(p_371320_, p_371369_, p_371947_);
+            return SCALE_AND_MOVE(quads, x, y, z, scale);
+        }
+
+        @Override
         public @NotNull List<BakedQuad> getQuads(@Nullable BlockState p_371320_, @Nullable Direction p_371369_, @NotNull RandomSource p_371947_, @NotNull ModelData modelData, @Nullable RenderType renderType)
         {
+            //called by block render
             List<BakedQuad> quads = super.getQuads(p_371320_, p_371369_, p_371947_, modelData, renderType);
             return SCALE_AND_MOVE(quads, x, y, z, scale);
         }
@@ -99,7 +105,13 @@ public class SimpleTinyBlock extends TinyBlock
         @Override
         public void applyTransform(@NotNull ItemDisplayContext transformType, @NotNull PoseStack poseStack, boolean applyLeftHandTransform)
         {
-            //super.applyTransform(transformType, poseStack, applyLeftHandTransform);
+            if (transformType == ItemDisplayContext.GUI)
+            {
+                super.applyTransform(transformType, poseStack, applyLeftHandTransform);
+                poseStack.translate(0.5 - scale / 2f, 0.5 - scale / 2f, 0.5 - scale / 2f);
+            }
+            else
+                super.applyTransform(transformType, poseStack, applyLeftHandTransform);
         }
 
         public static List<BakedQuad> SCALE_AND_MOVE(Collection<BakedQuad> quads, float x, float y, float z, float scale)

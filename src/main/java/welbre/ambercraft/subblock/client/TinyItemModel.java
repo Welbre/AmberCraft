@@ -43,7 +43,6 @@ public class TinyItemModel implements ItemModel
             return;
         var model = component.get().staticModel(null);
 
-        renderState.clear();
         ItemStackRenderState.LayerRenderState layer = renderState.newLayer();
         layer.setupBlockModel(model, Sheets.solidBlockSheet());
     }

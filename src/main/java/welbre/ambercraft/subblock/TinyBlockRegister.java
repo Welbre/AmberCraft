@@ -27,10 +27,12 @@ import java.util.function.Function;
 public enum TinyBlockRegister
 {
 
-    TEST((r) -> new SimpleTinyBlock(r, 5, Blocks.STONE)),
+    GOLD((r) -> new SimpleTinyBlock(r, 5, Blocks.GOLD_BLOCK)),
     IRON((r) -> new SimpleTinyBlock(r, 5, Blocks.IRON_BLOCK)),
-    BLACK_WOOL((r) -> new SimpleTinyBlock(r, 5, Blocks.BLACK_WOOL)),
-    COPPER((r) -> new SimpleTinyBlock(r, 6, Blocks.COPPER_BLOCK));
+    COPPER((r) -> new SimpleTinyBlock(r, 6, Blocks.COPPER_BLOCK)),
+    COAL((r) -> new SimpleTinyBlock(r, 6, Blocks.COAL_BLOCK)),
+    EMERALD((r) -> new SimpleTinyBlock(r, 6, Blocks.EMERALD_BLOCK)),
+    BLACK_WOOL((r) -> new SimpleTinyBlock(r, 5, Blocks.BLACK_WOOL));
 
     private DeferredHolder<TinyBlock, TinyBlock> tinyBlock;
     private Function<ResourceLocation, TinyBlock> factory;
