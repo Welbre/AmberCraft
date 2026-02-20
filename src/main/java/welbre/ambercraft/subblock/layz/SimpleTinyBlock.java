@@ -105,13 +105,8 @@ public class SimpleTinyBlock extends TinyBlock
         @Override
         public void applyTransform(@NotNull ItemDisplayContext transformType, @NotNull PoseStack poseStack, boolean applyLeftHandTransform)
         {
-            if (transformType == ItemDisplayContext.GUI)
-            {
-                super.applyTransform(transformType, poseStack, applyLeftHandTransform);
-                poseStack.translate(0.5 - scale / 2f, 0.5 - scale / 2f, 0.5 - scale / 2f);
-            }
-            else
-                super.applyTransform(transformType, poseStack, applyLeftHandTransform);
+            super.applyTransform(transformType, poseStack, applyLeftHandTransform);
+            poseStack.translate(0.5 - scale / 2f, 0.5 - scale / 2f, 0.5 - scale / 2f);
         }
 
         public static List<BakedQuad> SCALE_AND_MOVE(Collection<BakedQuad> quads, float x, float y, float z, float scale)
