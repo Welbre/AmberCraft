@@ -43,7 +43,7 @@ public class TinyItem extends Item
         if (level.getBlockEntity(context.getClickedPos()) instanceof SubBlockBE subBlockBE)
         {
             //fixme, Se o jogador clicar em um tiny block dentro do sub block que esteja na borda do bloco, então haverá problemas, pois o correto será criar outro tiny block na direção da face clicada
-            //fixme porem como está implementado agora o proprio bloco clicado será retornado!
+            //porem como está implementado agora o proprio bloco clicado será retornado!
             sub = subBlockBE;
         }
         else

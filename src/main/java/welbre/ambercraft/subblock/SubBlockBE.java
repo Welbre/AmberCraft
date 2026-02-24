@@ -1,6 +1,9 @@
 package welbre.ambercraft.subblock;
 
+import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -50,7 +53,89 @@ public class SubBlockBE extends BlockEntity
         shape = Shapes.empty();
     }
 
-    public void addTinyBlock(@NotNull TinyBlock tinyBlock, final int x, final int y, final int z)
+    /**
+     * Update the neighbor / external contact from the last state in the tinyBs. <br>
+     * Call this only after add a new a fresh state in the subBlock,
+     * this method is sensitive to multiple calls and can set the SubBlockBE to an invalid state!!!
+     */
+    protected void updateAround()
+    {
+        TinyBlockState last = tinyBS.getLast();//don't check for null; We know what we are doing.
+        final var newest = last.definition.shape.bounds().move(last.x / 16.0, last.y / 16.0, last.z / 16.0);
+
+        final int size = tinyBS.size() - 1;
+        {
+            for (int i = 0; i < size; i++)
+            {
+                AABB state = tinyBS.get(i).definition.shape.bounds().move(tinyBS.get(i).x / 16.0, tinyBS.get(i).y / 16.0, tinyBS.get(i).z / 16.0);
+
+                //check computes the minimal distance between the min and a max for each axe.
+                Direction dpx = Direction.EAST;
+                double touchX = -1;
+                if ( (state.minX >= newest.minX && state.minX <= newest.maxX))
+                    touchX = newest.maxX - state.minX;
+                else if ((state.maxX >= newest.minX && state.maxX <= newest.maxX))
+                {
+                    touchX = state.maxX - newest.minX;
+                    dpx = Direction.WEST;
+                }
+
+                Direction dpy = Direction.UP;
+                double touchY = -1;
+                if ( (state.minY >= newest.minY && state.minY <= newest.maxY))
+                    touchY = newest.maxY - state.minY;
+                else if ((state.maxY >= newest.minY && state.maxY <= newest.maxY))
+                {
+                    touchY = state.maxY - newest.minY;
+                    dpy = Direction.DOWN;
+                }
+
+                Direction dpz = Direction.SOUTH;
+                double touchZ = -1;
+                if ( (state.minZ >= newest.minZ && state.minZ <= newest.maxZ))
+                    touchZ = newest.maxZ - state.minZ;
+                else if ((state.maxZ >= newest.minZ && state.maxZ <= newest.maxZ))
+                {
+                    touchZ = state.maxZ - newest.minZ;
+                    dpz = Direction.NORTH;
+                }
+
+                boolean touch = false;
+                Direction touchDir = null;
+                //very hard to understand
+                //if x and y have collision in the axes, and the z distance is zero, then is side by side in the Z axes.
+                //if x and z have collision in the axes, and the y distance is zero, then is side by side in the Y axes.
+                //if y and z have collision in the axes, and the x distance is zero, then is side by side in the X axes.
+                if (touchX != 0 && touchY != 0 && touchZ == 0) {//z
+                    touchDir = dpz;
+                    touch = true;
+                }
+                else if(touchX != 0 && touchY == 0 && touchZ != 0){//y
+                    touchDir = dpy;
+                    touch = true;
+                }
+                else if (touchX == 0 && touchY != 0 && touchZ != 0){//x
+                    touchDir = dpx;
+                    touch = true;
+                }
+
+                if (!touch)
+                    System.out.println("Isn't side by side dist");
+                else
+                    System.out.println("Is side by side collude at: " + touchDir.getName());
+            }
+        }
+    }
+
+    /**
+     * Adds a new {@link TinyBlockState} in the SubBlock using the tinyBlock
+     * @param tinyBlock The TinyBlock type
+     * @param x the x coordinate in a 0 to 15 scale
+     * @param y the y coordinate in a 0 to 15 scale
+     * @param z the z coordinate in a 0 to 15 scale
+     * @return if the tiny state has been placed.
+     */
+    public boolean addTinyBlock(@NotNull TinyBlock tinyBlock, final int x, final int y, final int z)
     {
         tinyBS.add(new TinyBlockState(tinyBlock, x, y, z));
         shape = Shapes.empty();
@@ -62,6 +147,10 @@ public class SubBlockBE extends BlockEntity
         if (level != null)
             //todo check if is working in the multiplayer.
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL_IMMEDIATE);//forces the re-rendering of the block, requiring a new BakedModel
+
+        updateAround();
+
+        return true;
     }
 
     /// Update the internal model of <b>one specific</b> state
