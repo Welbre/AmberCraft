@@ -1,16 +1,12 @@
 package welbre.ambercraft.subblock;
 
-import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -60,69 +56,68 @@ public class SubBlockBE extends BlockEntity
      */
     protected void updateAround()
     {
-        TinyBlockState last = tinyBS.getLast();//don't check for null; We know what we are doing.
-        final var newest = last.definition.shape.bounds().move(last.x / 16.0, last.y / 16.0, last.z / 16.0);
+        final TinyBlockState last = tinyBS.getLast();//don't check for null; We know what we are doing.
+        final var model = last.getTranslatedBounds();
 
-        final int size = tinyBS.size() - 1;
+        List<TinyBlockState> candidates = new ArrayList<>();
+        //filter for only states that is inside or side by side with the last.
         {
-            for (int i = 0; i < size; i++)
+            //inflate in block( 1/16) in all distances, and check for clip
+            final AABB inflated = model.inflate(1 / 16.0, 1 / 16.0, 1 / 16.0);
+
+            //external contact check
+            if (inflated.minX < 0)
+                last.externalContact.add(Direction.WEST);
+            if (inflated.maxX > 1)
+                last.externalContact.add(Direction.EAST);
+            if (inflated.minY < 0)
+                last.externalContact.add(Direction.DOWN);
+            if (inflated.maxY > 1)
+                last.externalContact.add(Direction.UP);
+            if (inflated.minZ < 0)
+                last.externalContact.add(Direction.NORTH);
+            if (inflated.maxZ > 1)
+                last.externalContact.add(Direction.SOUTH);
+
+            for (int i = 0; i < tinyBS.size() - 1; i++)
             {
-                AABB state = tinyBS.get(i).definition.shape.bounds().move(tinyBS.get(i).x / 16.0, tinyBS.get(i).y / 16.0, tinyBS.get(i).z / 16.0);
+                AABB other = tinyBS.get(i).getTranslatedBounds();
+                if (inflated.intersects(other))
+                    candidates.add(tinyBS.get(i));
+            }
+        }
 
-                //check computes the minimal distance between the min and a max for each axe.
-                Direction dpx = Direction.EAST;
-                double touchX = -1;
-                if ( (state.minX >= newest.minX && state.minX <= newest.maxX))
-                    touchX = newest.maxX - state.minX;
-                else if ((state.maxX >= newest.minX && state.maxX <= newest.maxX))
+        if (candidates.isEmpty())
+            return;
+
+        for (Direction dir : Direction.values())
+        {
+            if (last.externalContact.contains(dir))//if the face is external, skip.
+                continue;
+
+            AABB faceBox = switch (dir)
+            {
+                case DOWN -> new AABB(model.minX, model.minY - 1/16.0, model.minZ, model.maxX, model.minY, model.maxZ);
+                case UP -> new AABB(model.minX, model.maxY, model.minZ, model.maxX, model.maxY + 1/16.0, model.maxZ);
+                case WEST -> new AABB(model.minX - 1/16.0, model.minY, model.minZ, model.minX, model.maxY, model.maxZ);
+                case EAST -> new AABB(model.maxX, model.minY, model.minZ, model.maxX + 1/16.0, model.maxY, model.maxZ);
+                case NORTH -> new AABB(model.minX, model.minY, model.minZ - 1/16.0, model.maxX, model.maxY, model.minZ);
+                case SOUTH -> new AABB(model.minX, model.minY, model.maxZ, model.maxX, model.maxY, model.maxZ + 1/16.0);
+            };
+            for (TinyBlockState state : candidates)//we already know that this is side by side.
+            {
+                AABB box = state.getTranslatedBounds();
+                if (box.intersects(faceBox))//checks if the face and the box are interacting
                 {
-                    touchX = state.maxX - newest.minX;
-                    dpx = Direction.WEST;
-                }
+                    if (box.intersect(faceBox).equals(faceBox))//full occlusion check
+                    {
+                        last.fullOccluded.put(Direction.WEST, state);
+                        state.fullOccluded.put(Direction.WEST, last);
+                    }
 
-                Direction dpy = Direction.UP;
-                double touchY = -1;
-                if ( (state.minY >= newest.minY && state.minY <= newest.maxY))
-                    touchY = newest.maxY - state.minY;
-                else if ((state.maxY >= newest.minY && state.maxY <= newest.maxY))
-                {
-                    touchY = state.maxY - newest.minY;
-                    dpy = Direction.DOWN;
+                    last.addNeighbor(Direction.WEST, state);
+                    state.addNeighbor(Direction.WEST, last);
                 }
-
-                Direction dpz = Direction.SOUTH;
-                double touchZ = -1;
-                if ( (state.minZ >= newest.minZ && state.minZ <= newest.maxZ))
-                    touchZ = newest.maxZ - state.minZ;
-                else if ((state.maxZ >= newest.minZ && state.maxZ <= newest.maxZ))
-                {
-                    touchZ = state.maxZ - newest.minZ;
-                    dpz = Direction.NORTH;
-                }
-
-                boolean touch = false;
-                Direction touchDir = null;
-                //very hard to understand
-                //if x and y have collision in the axes, and the z distance is zero, then is side by side in the Z axes.
-                //if x and z have collision in the axes, and the y distance is zero, then is side by side in the Y axes.
-                //if y and z have collision in the axes, and the x distance is zero, then is side by side in the X axes.
-                if (touchX != 0 && touchY != 0 && touchZ == 0) {//z
-                    touchDir = dpz;
-                    touch = true;
-                }
-                else if(touchX != 0 && touchY == 0 && touchZ != 0){//y
-                    touchDir = dpy;
-                    touch = true;
-                }
-                else if (touchX == 0 && touchY != 0 && touchZ != 0){//x
-                    touchDir = dpx;
-                    touch = true;
-                }
-
-                if (!touch)
-                    System.out.println("Isn't side by side dist");
-                else
-                    System.out.println("Is side by side collude at: " + touchDir.getName());
             }
         }
     }

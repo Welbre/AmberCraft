@@ -1,9 +1,16 @@
 package welbre.ambercraft.subblock;
 
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Is the representation of {@link TinyBlock} in the SubBlock.<br>
@@ -14,6 +21,11 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
 {
     public @NotNull TinyBlock definition;
     public short x,y,z;
+    public List<Direction> externalContact = new ArrayList<>();
+    /// stores all full occluded faces
+    public Map<Direction, TinyBlockState> fullOccluded = new EnumMap<>(Direction.class);
+    /// Neighbors in each direction
+    public Map<Direction, List<TinyBlockState>> neighbors = new EnumMap<>(Direction.class);
 
     /// <a color="red">USE ONLY FOR SERIALIZATION, AND INITIALIZE THE DEFINITION FIELD WITH A NOTNULL VALUE!</a>
     protected TinyBlockState()
@@ -51,5 +63,18 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
         x = nbt.getShort("x");
         y = nbt.getShort("y");
         z = nbt.getShort("z");
+    }
+
+    /// returns the AABB with the bounds translated
+    protected AABB getTranslatedBounds()
+    {
+        return definition.shape.bounds().move(x / 16.0, y / 16.0, z / 16.0);
+    }
+
+    /// A helper to add state in the map
+    protected void addNeighbor(final Direction direction, TinyBlockState state)
+    {
+        List<TinyBlockState> states = neighbors.computeIfAbsent(direction, k -> new ArrayList<>());
+        states.add(state);
     }
 }
