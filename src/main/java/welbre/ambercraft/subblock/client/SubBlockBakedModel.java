@@ -11,22 +11,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.model.IDynamicBakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
-import net.neoforged.neoforge.client.model.pipeline.QuadBakingVertexConsumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import welbre.ambercraft.client.RenderHelper;
-import welbre.ambercraft.client.models.FacedCableModelHelper;
 import welbre.ambercraft.subblock.SubBlockBE;
-import welbre.ambercraft.subblock.TinyBlockRegister;
 import welbre.ambercraft.subblock.TinyBlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SubBlockBakedModel implements IDynamicBakedModel
 {
@@ -47,16 +41,22 @@ public class SubBlockBakedModel implements IDynamicBakedModel
         ArrayList<BakedQuad> quads = new ArrayList<>();
 
         if (dat == null) return quads;
-        //todo, o valo que está sendo passado é baseado no subBlock, então, se um bloco há um bloco a direita
-        //o jogo não requer o lado direito dos tinyBLock, o que causa umas das faces ficar invisível
-        //precisar ser calculado dentro do próprio bloco, se há faces obstruídas pelos blocos vizinhos, OU
-        //se os diferentes tinyBlockState estão se tocando, fazendo assim não necessário renderizar uma das suas faces
+
 
         for (TinyBlockState blockState : dat)
-            //quads.addAll(blockState.definition.staticRender(blockState, side, rand, extraData, renderType));
         {
             BakedModel model = blockState.definition.staticModel(blockState);
-            quads.addAll(model.getQuads(state,side,rand,extraData,renderType));
+
+            if (side != null)//requiring non-occluded facing
+                quads.addAll(model.getQuads(state, side, rand, extraData, renderType));
+            else //minecraft requiring all faces outside the occlusion, so we should return faces occluded by the block, but that should be render
+            {
+                //if is occluded by the block and isn't in contact with the external world.
+                //
+                for (Map.Entry<Direction, @Nullable TinyBlockState> set : blockState.fullOccluded.entrySet())
+                    if (set.getValue() == null && !blockState.externalContact.contains(set.getKey()))
+                        quads.addAll(model.getQuads(state, set.getKey(), rand, extraData, renderType));
+            }
         }
 
         return quads;

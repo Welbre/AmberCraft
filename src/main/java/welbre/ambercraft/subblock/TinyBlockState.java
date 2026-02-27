@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -22,8 +23,10 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
     public @NotNull TinyBlock definition;
     public short x,y,z;
     public List<Direction> externalContact = new ArrayList<>();
-    /// stores all full occluded faces
-    public Map<Direction, TinyBlockState> fullOccluded = new EnumMap<>(Direction.class);
+    /**
+     * stores all full occluded faces.<br>If it has the key, then value is the state that occlude at this direction or null if is occluded by block.
+     */
+    public Map<Direction, @Nullable TinyBlockState> fullOccluded = new EnumMap<>(Direction.class);
     /// Neighbors in each direction
     public Map<Direction, List<TinyBlockState>> neighbors = new EnumMap<>(Direction.class);
 

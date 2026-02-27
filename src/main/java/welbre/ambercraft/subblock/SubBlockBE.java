@@ -79,6 +79,11 @@ public class SubBlockBE extends BlockEntity
             if (inflated.maxZ > 1)
                 last.externalContact.add(Direction.SOUTH);
 
+            //block occlusion check
+            for (Direction dir : Direction.values())
+                if (getLevel() != null && !Block.shouldRenderFace(getLevel(), getBlockPos(), getBlockState(), getLevel().getBlockState(getBlockPos().relative(dir)), dir))
+                    last.fullOccluded.put(dir, null);
+
             for (int i = 0; i < tinyBS.size() - 1; i++)
             {
                 AABB other = tinyBS.get(i).getTranslatedBounds();
@@ -137,13 +142,13 @@ public class SubBlockBE extends BlockEntity
         for (TinyBlockState state : tinyBS)
             shape = Shapes.or(shape, state.definition.shape.move(state.x / 16.0, state.y/16.0, state.z/16.0));
 
+        updateAround();
+
         setChanged();
         requestModelDataUpdate();
         if (level != null)
             //todo check if is working in the multiplayer.
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL_IMMEDIATE);//forces the re-rendering of the block, requiring a new BakedModel
-
-        updateAround();
 
         return true;
     }
