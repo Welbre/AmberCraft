@@ -1,6 +1,7 @@
 package welbre.ambercraft.subblock;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
@@ -8,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
@@ -42,7 +44,7 @@ public class TinyItem extends Item
         //check if the clicked block is a tiny block
         if (level.getBlockEntity(context.getClickedPos()) instanceof SubBlockBE subBlockBE)
         {
-            //fixme, Se o jogador clicar em um tiny block dentro do sub block que esteja na borda do bloco, então haverá problemas, pois o correto será criar outro tiny block na direção da face clicada
+            //todo fixme, Se o jogador clicar em um tiny block dentro do sub block que esteja na borda do bloco, então haverá problemas, pois o correto será criar outro tiny block na direção da face clicada
             //porem como está implementado agora o proprio bloco clicado será retornado!
             sub = subBlockBE;
         }
@@ -67,17 +69,9 @@ public class TinyItem extends Item
             return InteractionResult.FAIL;
         }
 
-        //value between 0 and 1
-        Vec3 r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()).add(context.getClickedFace().getUnitVec3()));
+        var pos = CONTEXT_TO_16_GRID(context);
 
-        final int x,y,z;
-        //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
-        if (context.getClickedFace().getUnitVec3().x < 0 || context.getClickedFace().getUnitVec3().y < 0 || context.getClickedFace().getUnitVec3().z < 0)
-            r = r.multiply(0.999f, 0.999f, 0.999f);
-
-        x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
-
-        sub.addTinyBlock(component.get(), x, y, z);
+        sub.addTinyBlock(component.get(), pos.getX(), pos.getY(), pos.getZ());
         return super.useOn(context);
     }
 
@@ -88,5 +82,31 @@ public class TinyItem extends Item
             return Component.literal("invalid tiny block");
         else
             return component.get().getTinyItemName();
+    }
+
+    public static Vec3i CONTEXT_TO_16_GRID(UseOnContext context)
+    {
+        //value between 0 and 1
+        Vec3 r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()).add(context.getClickedFace().getUnitVec3()));
+        final int x,y,z;
+        //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
+        if (context.getClickedFace().getUnitVec3().x < 0 || context.getClickedFace().getUnitVec3().y < 0 || context.getClickedFace().getUnitVec3().z < 0)
+            r = r.multiply(0.999f, 0.999f, 0.999f);
+
+        x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
+        return new Vec3i(x,y,z);
+    }
+
+    public static Vec3i CONTEXT_TO_16_GRID(BlockHitResult result)
+    {
+        //value between 0 and 1
+        Vec3 r = result.getLocation().subtract(new Vec3(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()).add(result.getDirection().getUnitVec3()));
+        final int x,y,z;
+        //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
+        if (result.getDirection().getUnitVec3().x < 0 || result.getDirection().getUnitVec3().y < 0 || result.getDirection().getUnitVec3().z < 0)
+            r = r.multiply(0.999f, 0.999f, 0.999f);
+
+        x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
+        return new Vec3i(x,y,z);
     }
 }

@@ -22,6 +22,7 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
 {
     public @NotNull TinyBlock definition;
     public short x,y,z;
+    /// List with all directions that the state have external access (is in the edge of the subblock)
     public List<Direction> externalContact = new ArrayList<>();
     /**
      * stores all full occluded faces.<br>If it has the key, then value is the state that occlude at this direction or null if is occluded by block.
@@ -37,7 +38,8 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
         definition = null;//used only for serialization!
     }
 
-    protected TinyBlockState(@NotNull TinyBlock tinyBlock, int x, int y, int z)
+    /// Default constructor initialized with a tiny block type and the position in the SubBlock
+    public TinyBlockState(@NotNull TinyBlock tinyBlock, int x, int y, int z)
     {
         this.definition = tinyBlock;
         this.x = (short) x;
@@ -53,7 +55,7 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
         t.putShort("x", x);
         t.putShort("y", y);
         t.putShort("z", z);
-
+        //todo serialize the maps too
         return t;
     }
 
@@ -66,6 +68,7 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
         x = nbt.getShort("x");
         y = nbt.getShort("y");
         z = nbt.getShort("z");
+        //todo serialize the maps too
     }
 
     /// returns the AABB with the bounds translated

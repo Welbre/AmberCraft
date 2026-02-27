@@ -1,16 +1,41 @@
 package welbre.ambercraft.subblock.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.ClientTooltipFlag;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
+import net.neoforged.neoforge.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.subblock.*;
+
+import java.util.ArrayList;
 
 import static welbre.ambercraft.AmberCraft.MOD_ID;
 
@@ -21,6 +46,58 @@ public final class SubBlockClientEventListener
     private SubBlockClientEventListener() {
     }
 
+    @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MOD_ID, value = Dist.CLIENT)
+    public static final class ForgeBus
+    {
+        /**
+         * Renders a transparent version of the model in the world "a preview".<br>
+         */
+        @SubscribeEvent
+        public static void onRenderHighLight(RenderHighlightEvent.Block event)
+        {
+            if (event.getCamera().getEntity() instanceof Player player)
+            {
+                ClientLevel level = Minecraft.getInstance().level;
+                if (level == null)
+                    return;
+
+                ItemStack stack = player.getMainHandItem();
+                if (stack.getItem() != AmberCraft.Items.TINY_ITEM.get())
+                    stack = player.getOffhandItem();
+                if (stack.getItem() != AmberCraft.Items.TINY_ITEM.get())
+                    return;
+
+                TinyItemDataComponent component = stack.get(AmberCraft.DataComponents.TINY_BLOCK_DATA_COMPONENT);
+                if (component == null)
+                    return;
+
+                //todo fix it, the actual code only works when clicked outside the sub be, if i click internally it's work
+                BlockEntity entity = level.getBlockEntity(event.getTarget().getBlockPos().relative(event.getTarget().getDirection()));
+                //if (entity instanceof SubBlockBE be)
+                {
+                    BlockPos blockPos = event.getTarget().getBlockPos().relative(event.getTarget().getDirection());
+                    BlockState state = level.getBlockState(blockPos);
+                    Vec3i vec = TinyItem.CONTEXT_TO_16_GRID(event.getTarget());
+                    TinyBlock tinyBlock = component.get();
+                    BakedModel bakedModel = tinyBlock.staticModel(new TinyBlockState(tinyBlock, vec.getX(), vec.getY(), vec.getZ()));
+
+                    VertexConsumer buffer = event.getMultiBufferSource().getBuffer(RenderType.translucent());
+                    RandomSource randomSource = level.getRandom();
+                    ArrayList<BakedQuad> list = new ArrayList<>();
+
+                    for (RenderType type : bakedModel.getRenderTypes(state, randomSource, ModelData.EMPTY))
+                        for (Direction direction : Direction.values())
+                            list.addAll(bakedModel.getQuads(state, direction, randomSource, ModelData.EMPTY, type));
+
+                    PoseStack poseStack = new PoseStack();
+                    poseStack.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+                    poseStack.translate(new Vec3(0,0,0).subtract(event.getCamera().getPosition()));
+                    for (BakedQuad quad : list)
+                        buffer.putBulkData(poseStack.last(), quad, 1f, 1f, 1f, 0.25f, LevelRenderer.getLightColor(level, blockPos), OverlayTexture.NO_OVERLAY);
+                }
+            }
+        }
+    }
 
     /**
      * Used to overwrite a data-generated model to simply use the {@link SubBlockBakedModel} .

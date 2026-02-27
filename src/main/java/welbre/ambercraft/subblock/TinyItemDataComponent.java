@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Holds a reference to a Tiny block in {@link TinyBlockRegister}.<br>
@@ -29,5 +30,5 @@ public record TinyItemDataComponent(String tinyBlockKey)
             throw new IllegalArgumentException("Invalid tiny block key (%s) for Tiny item data component".formatted(tinyBlockKey));
     }
 
-    public TinyBlock get(){return TinyBlockRegister.FROM_STRING(tinyBlockKey);}
+    public @NotNull TinyBlock get(){return TinyBlockRegister.FROM_STRING(tinyBlockKey);}
 }
