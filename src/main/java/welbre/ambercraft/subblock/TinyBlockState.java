@@ -74,7 +74,13 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
     /// returns the AABB with the bounds translated
     protected AABB getTranslatedBounds()
     {
-        return definition.shape.bounds().move(x / 16.0, y / 16.0, z / 16.0);
+        return definition.getTranslatedBounds(this);
+    }
+
+    /// Solves the shape ande return a translated list of AABB
+    protected List<AABB> getTranslatedAABB()
+    {
+        return definition.getTranslatedAABB(this);
     }
 
     /// A helper to add state in the map

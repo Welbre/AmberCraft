@@ -1,6 +1,7 @@
 package welbre.ambercraft.subblock;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -9,10 +10,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
+
+import java.util.List;
 
 /**
  * A class with methods to help any item to beable to place TinyBlock in the world.
@@ -39,40 +47,20 @@ public class TinyItem extends Item
         }
 
         Level level = context.getLevel();
-        SubBlockBE sub;
+        var pos = CONTEXT_TO_16_GRID(context);
+        SubBlockBE sub = GET_SUB_BLOCK_BE_IF_CAN_PLACE(component.get(), level, context);
 
-        //check if the clicked block is a tiny block
-        if (level.getBlockEntity(context.getClickedPos()) instanceof SubBlockBE subBlockBE)
-        {
-            //todo fixme, Se o jogador clicar em um tiny block dentro do sub block que esteja na borda do bloco, então haverá problemas, pois o correto será criar outro tiny block na direção da face clicada
-            //porem como está implementado agora o proprio bloco clicado será retornado!
-            sub = subBlockBE;
-        }
-        else
-        {
-            final BlockPos relative = context.getClickedPos().relative(context.getClickedFace());
-            //if isn't, check if the block facing the clicked direction is a sub block
-            if (level.getBlockEntity(relative) instanceof SubBlockBE subBlockBE)
-            {
-                //if the block in the clicked direction is a sub block, then get the BE
-                sub = subBlockBE;
-            }
-            else
-            {
-                //if isn't create one
-                level.setBlockAndUpdate(relative, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
-                sub = (SubBlockBE) level.getBlockEntity(relative);
-            }
-        }
         if (sub == null) {
-            AmberCraft.LOGGER.warn("TinyItem can't find or create the sub block!");
             return InteractionResult.FAIL;
         }
 
-        var pos = CONTEXT_TO_16_GRID(context);
+        if (!sub.canPlace(component.get(), pos.getX(), pos.getY(), pos.getZ()))
+        {
+            return InteractionResult.FAIL;
+        }
 
         sub.addTinyBlock(component.get(), pos.getX(), pos.getY(), pos.getZ());
-        return super.useOn(context);
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -108,5 +96,127 @@ public class TinyItem extends Item
 
         x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
         return new Vec3i(x,y,z);
+    }
+
+    /**
+     * Used to check if a TinyBlock can be placed in this position in the world.<br>
+     * @return Null if can't place, otherwise, the subblock.
+     */
+    public static @Nullable SubBlockBE GET_SUB_BLOCK_BE_IF_CAN_PLACE(@NotNull TinyBlock block, @NotNull Level level, @NotNull UseOnContext context)
+    {
+        Vec3i vec = CONTEXT_TO_16_GRID(context);
+        BlockPos pos = context.getClickedPos();
+
+        //check if the clicked block is a tiny block
+        if (level.getBlockEntity(pos) instanceof SubBlockBE subBlockBE)
+        {
+            if (subBlockBE.canPlace(block, vec.getX(), vec.getY(), vec.getZ()))
+                return subBlockBE;
+        }
+        else
+        {
+            final BlockPos relative = pos.relative(context.getClickedFace());
+            //if isn't, check if the block facing the clicked direction is a sub block
+            if (level.getBlockEntity(relative) instanceof SubBlockBE subBlockBE)
+            {
+                //if the block in the clicked direction is a sub block, then get the BE
+                if (subBlockBE.canPlace(block, vec.getX(), vec.getY(), vec.getZ()))
+                    return subBlockBE;
+            }
+            else
+            {
+                //check in the surrounds if was collision
+                var translatedAABB = block.getTranslatedAABB(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
+
+                for (Direction face : Direction.values())
+                {
+                    BlockState state = level.getBlockState(relative.relative(face));
+                    if (state.isAir())
+                        continue;
+
+                    VoxelShape shape = state.getShape(level, relative.relative(face));
+                    List<AABB> aabbList = shape.toAabbs().stream().map(a -> a.move(face.getStepX(), face.getStepY(), face.getStepZ())).toList();
+                    for (AABB aabb : aabbList)
+                        for (AABB aabb1 : translatedAABB)
+                            if (aabb.intersects(aabb1))
+                                return null;
+                }
+
+                //todo implement multiples-BlockEntity states
+                //create the BE only if the placement is in one block
+                var translatedBounds = block.getTranslatedBounds(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
+                if (Shapes.block().bounds().intersects(translatedBounds))
+                    if (Shapes.block().bounds().intersect(translatedBounds).equals(translatedBounds))
+                    {
+                        level.setBlockAndUpdate(relative, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
+                        return (SubBlockBE) level.getBlockEntity(relative);
+                    }
+                    else
+                    {
+                        AmberCraft.LOGGER.warn("Non implemented branch!!!, TinyItem.GET_SUB_BLOCK_BE_IF_CAN_PLACE:Multiples-BlockEntity");
+                        return null;
+                    }
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean CAN_PLACE(@NotNull TinyBlock block, @NotNull Level level, @NotNull BlockHitResult context)
+    {
+        Vec3i vec = CONTEXT_TO_16_GRID(context);
+        BlockPos pos = context.getBlockPos();
+
+        //check if the clicked block is a tiny block
+        if (level.getBlockEntity(pos) instanceof SubBlockBE subBlockBE)
+        {
+            return subBlockBE.canPlace(block, vec.getX(), vec.getY(), vec.getZ());
+        }
+        else
+        {
+            final BlockPos relative = pos.relative(context.getDirection());
+            //if isn't, check if the block facing the clicked direction is a sub block
+            if (level.getBlockEntity(relative) instanceof SubBlockBE subBlockBE)
+            {
+                //if the block in the clicked direction is a sub block, then get the BE
+                return subBlockBE.canPlace(block, vec.getX(), vec.getY(), vec.getZ());
+            }
+            else
+            {
+                //check in the surrounds if was collision
+                var translatedAABB = block.getTranslatedAABB(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
+
+                for (Direction face : Direction.values())
+                {
+                    BlockState state = level.getBlockState(relative.relative(face));
+                    if (state.isAir())
+                        continue;
+
+                    VoxelShape shape = state.getShape(level, relative.relative(face));
+                    List<AABB> aabbList = shape.toAabbs().stream().map(a -> a.move(face.getStepX(), face.getStepY(), face.getStepZ())).toList();
+                    for (AABB aabb : aabbList)
+                        for (AABB aabb1 : translatedAABB)
+                            if (aabb.intersects(aabb1))
+                                return false;
+                }
+
+                //todo implement multiples-BlockEntity states
+                //create the BE only if the placement is in one block
+                var translatedBounds = block.getTranslatedBounds(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
+                if (Shapes.block().bounds().intersects(translatedBounds))
+                    if (Shapes.block().bounds().intersect(translatedBounds).equals(translatedBounds))
+                    {
+                        level.setBlockAndUpdate(relative, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
+                        return true;
+                    }
+                    else
+                    {
+                        AmberCraft.LOGGER.warn("Non implemented branch!!!, TinyItem.CAN_PLACE:Multiples-BlockEntity");
+                        return false;
+                    }
+            }
+        }
+
+        return false;
     }
 }

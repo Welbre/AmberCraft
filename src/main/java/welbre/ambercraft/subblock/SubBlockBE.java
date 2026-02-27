@@ -175,7 +175,28 @@ public class SubBlockBE extends BlockEntity
     {
         //todo re implement it, check internal conflicts for space
         AABB moved = tinyBlock.shape.bounds().move(x / 16f, y / 16f, z / 16f);
-        return  moved.maxX <= 1 && moved.maxY <= 1 && moved.maxZ <= 1 && moved.minX >= 0 && moved.minY >= 0 && moved.minZ >= 0;
+        if (moved.maxX > 1 || moved.maxY > 1 || moved.maxZ > 1 || moved.minX < 0 || moved.minY < 0 || moved.minZ < 0)
+            return false;
+
+        List<TinyBlockState> states = new ArrayList<>(List.of(new TinyBlockState(tinyBlock, x, y, z)));
+        states.addAll(tinyBS);
+
+        //collision chck
+        final int size = states.size();
+        for (int i = 0; i < size - 1; i++)
+        {
+            final var shape_a = states.get(i).getTranslatedAABB();
+            for (int j = i + 1; j < size; j++)
+            {
+                final var shape_b = states.get(j).getTranslatedAABB();
+                for (AABB aabb_a : shape_a)
+                    for (AABB aabb_b : shape_b)
+                        if (aabb_a.intersects(aabb_b))
+                            return false;
+            }
+        }
+
+        return true;
     }
 
     /// Drops a tiny block from the subBlock, notice that the dropped item is defined by the {@link TinyBlock#getDroppedItem()} not by this method.

@@ -73,11 +73,19 @@ public final class SubBlockClientEventListener
 
                 //todo fix it, the actual code only works when clicked outside the sub be, if i click internally it's work
                 BlockEntity entity = level.getBlockEntity(event.getTarget().getBlockPos().relative(event.getTarget().getDirection()));
-                //if (entity instanceof SubBlockBE be)
+                Vec3i vec = TinyItem.CONTEXT_TO_16_GRID(event.getTarget());
+
+                if (!TinyItem.CAN_PLACE(component.get(), level, event.getTarget()))
+                    return;
+
+                if (entity instanceof SubBlockBE be)
+                    if (!be.canPlace(component.get(), vec.getX(), vec.getY(), vec.getZ()))
+                        return;
+
                 {
                     BlockPos blockPos = event.getTarget().getBlockPos().relative(event.getTarget().getDirection());
                     BlockState state = level.getBlockState(blockPos);
-                    Vec3i vec = TinyItem.CONTEXT_TO_16_GRID(event.getTarget());
+
                     TinyBlock tinyBlock = component.get();
                     BakedModel bakedModel = tinyBlock.staticModel(new TinyBlockState(tinyBlock, vec.getX(), vec.getY(), vec.getZ()));
 

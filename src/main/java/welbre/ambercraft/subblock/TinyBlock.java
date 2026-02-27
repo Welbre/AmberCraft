@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +36,18 @@ public abstract class TinyBlock
     {
         this.registerName = l;
         this.shape = shape;
+    }
+
+    /// returns the AABB with the bounds translated
+    protected AABB getTranslatedBounds(TinyBlockState state)
+    {
+        return shape.bounds().move(state.x / 16.0, state.y / 16.0, state.z / 16.0);
+    }
+
+    /// Solves the shape ande return a translated list of AABB
+    protected List<AABB> getTranslatedAABB(TinyBlockState state)
+    {
+        return shape.toAabbs().stream().map(aabb -> aabb.move(state.x / 16.0, state.y / 16.0, state.z / 16.0)).toList();
     }
 
     /**
