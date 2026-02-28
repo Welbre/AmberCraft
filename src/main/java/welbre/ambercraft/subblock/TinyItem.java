@@ -75,7 +75,13 @@ public class TinyItem extends Item
     public static Vec3i CONTEXT_TO_16_GRID(UseOnContext context)
     {
         //value between 0 and 1
-        Vec3 r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()).add(context.getClickedFace().getUnitVec3()));
+        Vec3 r;
+
+        if (context.getLevel().getBlockState(context.getClickedPos()).is(AmberCraft.Blocks.SUB_BLOCK.get()))
+            r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()));
+        else
+            r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()).add(context.getClickedFace().getUnitVec3()));
+
         final int x,y,z;
         //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
         if (context.getClickedFace().getUnitVec3().x < 0 || context.getClickedFace().getUnitVec3().y < 0 || context.getClickedFace().getUnitVec3().z < 0)
@@ -85,10 +91,16 @@ public class TinyItem extends Item
         return new Vec3i(x,y,z);
     }
 
-    public static Vec3i CONTEXT_TO_16_GRID(BlockHitResult result)
+    public static Vec3i CONTEXT_TO_16_GRID(Level level, BlockHitResult result)
     {
         //value between 0 and 1
-        Vec3 r = result.getLocation().subtract(new Vec3(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()).add(result.getDirection().getUnitVec3()));
+        Vec3 r;
+
+        if (level.getBlockState(result.getBlockPos()).is(AmberCraft.Blocks.SUB_BLOCK.get()))
+            r = result.getLocation().subtract(new Vec3(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()));
+        else
+            r = result.getLocation().subtract(new Vec3(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()).add(result.getDirection().getUnitVec3()));
+
         final int x,y,z;
         //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
         if (result.getDirection().getUnitVec3().x < 0 || result.getDirection().getUnitVec3().y < 0 || result.getDirection().getUnitVec3().z < 0)
@@ -164,7 +176,7 @@ public class TinyItem extends Item
 
     public static boolean CAN_PLACE(@NotNull TinyBlock block, @NotNull Level level, @NotNull BlockHitResult context)
     {
-        Vec3i vec = CONTEXT_TO_16_GRID(context);
+        Vec3i vec = CONTEXT_TO_16_GRID(level, context);
         BlockPos pos = context.getBlockPos();
 
         //check if the clicked block is a tiny block

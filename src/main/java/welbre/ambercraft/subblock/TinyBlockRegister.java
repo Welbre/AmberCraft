@@ -32,7 +32,8 @@ public enum TinyBlockRegister
     COPPER((r) -> new SimpleTinyBlock(r, 6, Blocks.COPPER_BLOCK)),
     COAL((r) -> new SimpleTinyBlock(r, 6, Blocks.COAL_BLOCK)),
     EMERALD((r) -> new SimpleTinyBlock(r, 6, Blocks.EMERALD_BLOCK)),
-    BLACK_WOOL((r) -> new SimpleTinyBlock(r, 5, Blocks.BLACK_WOOL));
+    BLACK_WOOL((r) -> new SimpleTinyBlock(r, 5, Blocks.BLACK_WOOL)),
+    DEBUG((r) -> new SimpleTinyBlock(r, 1, Blocks.PURPLE_WOOL));
 
     private DeferredHolder<TinyBlock, TinyBlock> tinyBlock;
     private Function<ResourceLocation, TinyBlock> factory;

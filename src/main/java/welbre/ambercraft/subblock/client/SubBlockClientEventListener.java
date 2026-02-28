@@ -71,19 +71,19 @@ public final class SubBlockClientEventListener
                 if (component == null)
                     return;
 
-                //todo fix it, the actual code only works when clicked outside the sub be, if i click internally it's work
-                BlockEntity entity = level.getBlockEntity(event.getTarget().getBlockPos().relative(event.getTarget().getDirection()));
-                Vec3i vec = TinyItem.CONTEXT_TO_16_GRID(event.getTarget());
+                Vec3i vec = TinyItem.CONTEXT_TO_16_GRID(level, event.getTarget());
+                System.out.println(event.getTarget().getLocation() + "\t" + vec.toString());
 
                 if (!TinyItem.CAN_PLACE(component.get(), level, event.getTarget()))
                     return;
 
-                if (entity instanceof SubBlockBE be)
-                    if (!be.canPlace(component.get(), vec.getX(), vec.getY(), vec.getZ()))
-                        return;
-
                 {
-                    BlockPos blockPos = event.getTarget().getBlockPos().relative(event.getTarget().getDirection());
+                    BlockPos blockPos;
+                    if (level.getBlockState(event.getTarget().getBlockPos()).is(AmberCraft.Blocks.SUB_BLOCK.get()))
+                        blockPos = event.getTarget().getBlockPos();
+                    else
+                        blockPos = event.getTarget().getBlockPos().relative(event.getTarget().getDirection());
+
                     BlockState state = level.getBlockState(blockPos);
 
                     TinyBlock tinyBlock = component.get();
