@@ -4,6 +4,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -66,4 +67,6 @@ public abstract class TinyBlock
     public abstract @Nullable ItemStack getDroppedItem();
 
     public abstract @NotNull Component getTinyItemName();
+
+    public abstract @NotNull SoundType getSoundType(TinyBlockState state);
 }

@@ -4,12 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -25,10 +27,10 @@ import java.util.List;
 /**
  * A class with methods to help any item to beable to place TinyBlock in the world.
  */
-public class TinyItem extends Item
+public class TinyBlockItem extends Item
 {
 
-    public TinyItem(Properties properties)
+    public TinyBlockItem(Properties properties)
     {
         super(properties);
     }
@@ -46,20 +48,33 @@ public class TinyItem extends Item
             return InteractionResult.FAIL;
         }
 
+        TinyBlock tinyBlock = component.get();
         Level level = context.getLevel();
         var pos = CONTEXT_TO_16_GRID(context);
-        SubBlockBE sub = GET_SUB_BLOCK_BE_IF_CAN_PLACE(component.get(), level, context);
+        SubBlockBE sub = GET_SUB_BLOCK_BE_IF_CAN_PLACE(tinyBlock, level, context);
 
         if (sub == null) {
             return InteractionResult.FAIL;
         }
 
-        if (!sub.canPlace(component.get(), pos.getX(), pos.getY(), pos.getZ()))
+        if (!sub.canPlace(tinyBlock, pos.getX(), pos.getY(), pos.getZ()))
         {
             return InteractionResult.FAIL;
         }
 
-        sub.addTinyBlock(component.get(), pos.getX(), pos.getY(), pos.getZ());
+        //Place Tiny Item
+        sub.addTinyBlock(tinyBlock, pos.getX(), pos.getY(), pos.getZ());
+        //Play sound
+        SoundType soundtype = tinyBlock.getSoundType(sub.tinyBS.getLast());
+
+        level.playSound(
+                context.getPlayer(),
+                sub.getBlockPos(),
+                soundtype.getPlaceSound(),
+                SoundSource.BLOCKS,
+                (soundtype.getVolume() + 1.0F) / 2.0F,
+                soundtype.getPitch() * 0.8F
+        );
         return InteractionResult.SUCCESS;
     }
 
@@ -71,6 +86,14 @@ public class TinyItem extends Item
         else
             return component.get().getTinyItemName();
     }
+
+
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------Helpers--------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
     public static Vec3i CONTEXT_TO_16_GRID(UseOnContext context)
     {

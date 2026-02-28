@@ -95,7 +95,7 @@ public class AmberCraft {
         public static final DeferredRegister.Items REGISTER = DeferredRegister.createItems(MOD_ID);
 
         //Tiny blocks
-        public static final DeferredItem<TinyItem> TINY_ITEM = REGISTER.registerItem("tiny_item", TinyItem::new);
+        public static final DeferredItem<TinyBlockItem> TINY_ITEM = REGISTER.registerItem("tiny_item", TinyBlockItem::new);
 
         public static final DeferredItem<BlockItem> IRON_MACHINE_CASE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.IRON_MACHINE_CASE_BLOCK);
         public static final DeferredItem<BlockItem> VOLTAGE_SOURCE_BLOCK_ITEM = REGISTER.registerSimpleBlockItem(Blocks.VOLTAGE_SOURCE_BLOCK);

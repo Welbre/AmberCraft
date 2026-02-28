@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -70,6 +71,17 @@ public class SimpleTinyBlock extends TinyBlock
         //todo check the current Item to be dropped
         return block.asItem().getDefaultInstance();
     }
+
+    @Override
+    public @NotNull SoundType getSoundType(TinyBlockState state){
+        //todo check if getSoundType(BlockState .......) can be used where
+        return block.defaultBlockState().getSoundType();
+    }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------Model management---------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------
+
 
     /**
      * Used for create the model of tiny blocks.

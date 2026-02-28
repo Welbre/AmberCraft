@@ -30,7 +30,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.subblock.TinyBlock;
 import welbre.ambercraft.subblock.TinyBlockState;
-import welbre.ambercraft.subblock.TinyItem;
+import welbre.ambercraft.subblock.TinyBlockItem;
 import welbre.ambercraft.subblock.TinyItemDataComponent;
 
 import java.util.ArrayList;
@@ -69,10 +69,10 @@ public final class SubBlockClientEventListener
                 if (component == null)
                     return;
 
-                Vec3i vec = TinyItem.CONTEXT_TO_16_GRID(level, event.getTarget());
+                Vec3i vec = TinyBlockItem.CONTEXT_TO_16_GRID(level, event.getTarget());
                 System.out.println(event.getTarget().getLocation() + "\t" + vec.toString());
 
-                if (!TinyItem.CAN_PLACE(component.get(), level, event.getTarget()))
+                if (!TinyBlockItem.CAN_PLACE(component.get(), level, event.getTarget()))
                     return;
 
                 {
