@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,6 +48,7 @@ public class SimpleTinyBlock extends TinyBlock
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public BakedModel staticModel(@Nullable TinyBlockState state)
     {
         if (state != null)
@@ -55,6 +58,7 @@ public class SimpleTinyBlock extends TinyBlock
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public void dynamicRender(TinyBlockState state)
     {
 
@@ -84,8 +88,9 @@ public class SimpleTinyBlock extends TinyBlock
 
 
     /**
-     * Used for create the model of tiny blocks.
+     * Used to create the model of tiny blocks.
      */
+    @OnlyIn(Dist.CLIENT)
     public static final class SimpleTinyBlockBakedModel extends DelegateBakedModel
     {
         private final float x,y,z, scale;

@@ -57,13 +57,10 @@ public class TinyBlockItem extends Item
             return InteractionResult.FAIL;
         }
 
-        if (!sub.canPlace(tinyBlock, pos.getX(), pos.getY(), pos.getZ()))
-        {
-            return InteractionResult.FAIL;
-        }
-
         //Place Tiny Item
-        sub.addTinyBlock(tinyBlock, pos.getX(), pos.getY(), pos.getZ());
+        if (!sub.addTinyBlock(tinyBlock, pos.getX(), pos.getY(), pos.getZ()))
+            return InteractionResult.FAIL;
+
         //Play sound
         SoundType soundtype = tinyBlock.getSoundType(sub.tinyBS.getLast());
 

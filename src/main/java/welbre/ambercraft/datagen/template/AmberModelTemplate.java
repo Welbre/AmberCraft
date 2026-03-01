@@ -12,14 +12,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 import net.neoforged.neoforge.client.model.generators.template.FaceRotation;
 import org.jetbrains.annotations.NotNull;
+import welbre.ambercraft.blocks.FreeRotationBlock;
 
 import static welbre.ambercraft.AmberCraft.MOD_ID;
 
 public class AmberModelTemplate {
-    public static final EnumProperty<Rotation> ROTATION = EnumProperty.create("rotation", Rotation.class);
+
     public static final TextureSlot connection0 = TextureSlot.create("c0");
     public static final TextureSlot connection1 = TextureSlot.create("c1");
     public static final TextureSlot base = TextureSlot.create("base");
@@ -29,6 +32,7 @@ public class AmberModelTemplate {
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     ///can face to all 6 directions, up, down, east, west, north, south.
+    @OnlyIn(Dist.CLIENT)
     public static final ModelTemplate SIDED_BLOCK_TEMPLATE = ExtendedModelTemplateBuilder.builder() // locate at asserts\ambercraft\models\blocks\sided_block
             .parent(ResourceLocation.parse("minecraft:block/block"))
             .requiredTextureSlot(connection0)
@@ -45,7 +49,7 @@ public class AmberModelTemplate {
                     }
             ).build();
 
-
+    @OnlyIn(Dist.CLIENT)
     public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_Z_270 = ExtendedModelTemplateBuilder.builder()
             .parent(ResourceLocation.parse("ambercraft:block/block"))
             .requiredTextureSlot(TextureSlot.NORTH)
@@ -67,6 +71,7 @@ public class AmberModelTemplate {
             .suffix("_z_270")
             .build();
 
+    @OnlyIn(Dist.CLIENT)
     public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_Z_180 = ExtendedModelTemplateBuilder.builder()
             .parent(ResourceLocation.parse("ambercraft:block/block"))
             .requiredTextureSlot(TextureSlot.NORTH)
@@ -88,6 +93,7 @@ public class AmberModelTemplate {
             .suffix("_z_180")
             .build();
 
+    @OnlyIn(Dist.CLIENT)
     public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_Z_90 = ExtendedModelTemplateBuilder.builder()
             .parent(ResourceLocation.parse("ambercraft:block/block"))
             .requiredTextureSlot(TextureSlot.NORTH)
@@ -109,6 +115,7 @@ public class AmberModelTemplate {
             .suffix("_z_90")
             .build();
 
+    @OnlyIn(Dist.CLIENT)
     public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_FACING_XN = ExtendedModelTemplateBuilder.builder()
             .parent(ResourceLocation.parse("ambercraft:block/block"))
             .requiredTextureSlot(TextureSlot.NORTH)
@@ -130,6 +137,7 @@ public class AmberModelTemplate {
             .suffix("_xn")
             .build();
 
+    @OnlyIn(Dist.CLIENT)
     public static final ModelTemplate FREE_BLOCK_MODEL_TEMPLATE_FACING_XP = ExtendedModelTemplateBuilder.builder()
             .parent(ResourceLocation.parse("ambercraft:block/block"))
             .requiredTextureSlot(TextureSlot.NORTH)
@@ -155,6 +163,7 @@ public class AmberModelTemplate {
     //----------------------------------------------------------------------------------------------------Templates users-----------------------------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    @OnlyIn(Dist.CLIENT)
     public static final ModelTemplate SIDED_BLOCK_USER = ExtendedModelTemplateBuilder.builder()
             .parent(ResourceLocation.fromNamespaceAndPath(MOD_ID,"block/sided_block"))
             .requiredTextureSlot(connection0)
@@ -163,6 +172,7 @@ public class AmberModelTemplate {
             .requiredTextureSlot(TextureSlot.PARTICLE)
             .build();
 
+    @OnlyIn(Dist.CLIENT)
     public static void CREATE_AMBER_FREE_BLOCK_STATE(BlockModelGenerators g, Block block, TextureMapping mapping){
         var model = ModelTemplates.CUBE.create(block, mapping, g.modelOutput);
         var z90 = FREE_BLOCK_MODEL_TEMPLATE_Z_90.create(block, mapping, g.modelOutput);
@@ -174,7 +184,7 @@ public class AmberModelTemplate {
 
         g.blockStateOutput.accept(
                 MultiVariantGenerator.multiVariant(block)
-                        .with(PropertyDispatch.properties(BlockStateProperties.FACING, ROTATION)
+                        .with(PropertyDispatch.properties(BlockStateProperties.FACING, FreeRotationBlock.ROTATION)
                                 .select(Direction.NORTH, Rotation.NONE,Variant.variant().with(VariantProperties.MODEL, model))
                                 .select(Direction.NORTH, Rotation.COUNTERCLOCKWISE_90,Variant.variant().with(VariantProperties.MODEL, z90))
                                 .select(Direction.NORTH, Rotation.CLOCKWISE_180,Variant.variant().with(VariantProperties.MODEL, z180))
@@ -245,6 +255,7 @@ public class AmberModelTemplate {
         );
     }
 
+    @OnlyIn(Dist.CLIENT)
     public static ResourceLocation CREATE_MINECRAFT_CUBE_BLOCK_MODEL(BlockModelGenerators g, Block block, String north, String south, String east, String west, String up, String down, String particle) {
         return ModelTemplates.CUBE.create(block,
                 new TextureMapping()
@@ -270,6 +281,7 @@ public class AmberModelTemplate {
         CREATE_AMBER_SIDED_BLOCK_STATE(g, block, CREATE_AMBER_SIDED_BLOCK_MODEL(g,block,connectionTexture0,connectionTexture1,sides));
     }
 
+    @OnlyIn(Dist.CLIENT)
     public static void CREATE_AMBER_HORIZONTAL_BLOCK(BlockModelGenerators g, Block block, String top, String front, String sides){
         CREATE_AMBER_HORIZONTAL_BLOCK(g, block, ModelTemplates.CUBE_ORIENTABLE.create(block,
                 new TextureMapping()
@@ -279,6 +291,7 @@ public class AmberModelTemplate {
                 g.modelOutput));
     }
 
+    @OnlyIn(Dist.CLIENT)
     public static final class CABLES {
         public static void CREATE_CENTRED(@NotNull BlockModelGenerators g, Block block, ResourceLocation texture){
             g.createTrivialBlock(block, TexturedModel.createDefault(

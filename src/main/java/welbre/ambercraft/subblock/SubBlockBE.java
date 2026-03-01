@@ -138,6 +138,8 @@ public class SubBlockBE extends BlockEntity
      */
     public boolean addTinyBlock(@NotNull TinyBlock tinyBlock, final int x, final int y, final int z)
     {
+        if (!canPlace(tinyBlock, x, y, z))
+            return false;
         tinyBS.add(new TinyBlockState(tinyBlock, x, y, z));
         shape = Shapes.empty();
         for (TinyBlockState state : tinyBS)
@@ -223,10 +225,10 @@ public class SubBlockBE extends BlockEntity
     //---------------------------------------------------------------------------------Data-----------------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    /// A system do deal with memory reference to TinyBlockStates
+    /// A system to deal with memory reference to TinyBlockStates
     protected static final class TBSReference
     {
-        private record REQUEST(int hash, Consumer<@NotNull TinyBlockState> consumer){}
+        private record REQUEST(int hash, Consumer<TinyBlockState> consumer){}
 
         private static final Map<Integer, TinyBlockState> BATCH = new HashMap<>();
         private static final List<REQUEST> REQUESTS = new ArrayList<>();
@@ -234,7 +236,7 @@ public class SubBlockBE extends BlockEntity
         private TBSReference(){}
 
         /// Used to solve memory references to TinyBLockState, the consumer receives a TinyBlockState compatible with the position.
-        public static void SOLVE(int pos, Consumer<@NotNull TinyBlockState> consumer)
+        public static void SOLVE(int pos, Consumer<TinyBlockState> consumer)
         {
             if (pos == -1)
                 consumer.accept(null);
@@ -243,7 +245,7 @@ public class SubBlockBE extends BlockEntity
         }
 
         /// Used to solve memory references to TinyBLockState, the consumer receives all TinyBlockState compatible with the position.
-        public static void SOLVE(int[] pos, Consumer<@NotNull TinyBlockState> consumer)
+        public static void SOLVE(int[] pos, Consumer<TinyBlockState> consumer)
         {
             for (int coordinate : pos)
                 SOLVE(coordinate, consumer);
