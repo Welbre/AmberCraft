@@ -150,7 +150,7 @@ public class SubBlockBE extends BlockEntity
         setChanged();
         requestModelDataUpdate();
         if (level != null)
-            //todo check if is working in the multiplayer.
+            //todo check if is working in the multiplayer. Microsoft sucks a lot.
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL_IMMEDIATE);//forces the re-rendering of the block, requiring a new BakedModel
 
         return true;
