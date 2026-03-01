@@ -17,8 +17,8 @@ import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Used to all internal logic behind the {@link TinyBlock}.<br>
@@ -95,6 +95,7 @@ public class SubBlockBE extends BlockEntity
         if (candidates.isEmpty())
             return;
 
+        //update occlusion and neighbor
         for (Direction dir : Direction.values())
         {
             if (last.externalContact.contains(dir))//if the face is external, skip.
@@ -116,12 +117,12 @@ public class SubBlockBE extends BlockEntity
                 {
                     if (box.intersect(faceBox).equals(faceBox))//full occlusion check
                     {
-                        last.fullOccluded.put(Direction.WEST, state);
-                        state.fullOccluded.put(Direction.WEST, last);
+                        last.fullOccluded.put(dir, state);
+                        state.fullOccluded.put(dir.getOpposite(), last);//todo fix, this should be wrong :(
                     }
 
-                    last.addNeighbor(Direction.WEST, state);
-                    state.addNeighbor(Direction.WEST, last);
+                    last.addNeighbor(dir, state);
+                    state.addNeighbor(dir.getOpposite(), last);
                 }
             }
         }
@@ -173,7 +174,6 @@ public class SubBlockBE extends BlockEntity
      */
     public boolean canPlace(@NotNull TinyBlock tinyBlock, final int x, final int y, final int z)
     {
-        //todo re implement it, check internal conflicts for space
         AABB moved = tinyBlock.shape.bounds().move(x / 16f, y / 16f, z / 16f);
         if (moved.maxX > 1 || moved.maxY > 1 || moved.maxZ > 1 || moved.minX < 0 || moved.minY < 0 || moved.minZ < 0)
             return false;
@@ -181,7 +181,7 @@ public class SubBlockBE extends BlockEntity
         List<TinyBlockState> states = new ArrayList<>(List.of(new TinyBlockState(tinyBlock, x, y, z)));
         states.addAll(tinyBS);
 
-        //collision chck
+        //collision check
         final int size = states.size();
         for (int i = 0; i < size - 1; i++)
         {
@@ -213,16 +213,82 @@ public class SubBlockBE extends BlockEntity
                 var itemEntity = new ItemEntity(level, state.x / 16f + getBlockPos().getX(), state.y / 16f + getBlockPos().getY(), state.z / 16f + getBlockPos().getZ(), droppedItem);
                 level.addFreshEntity(itemEntity);
             }
+            setChanged();
+            requestModelDataUpdate();
         }
-
-        setChanged();
-        requestModelDataUpdate();
     }
     //endregion
     //region Data
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------Data-----------------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /// A system do deal with memory reference to TinyBlockStates
+    protected static final class TBSReference
+    {
+        private record REQUEST(int hash, Consumer<@NotNull TinyBlockState> consumer){}
+
+        private static final Map<Integer, TinyBlockState> BATCH = new HashMap<>();
+        private static final List<REQUEST> REQUESTS = new ArrayList<>();
+
+        private TBSReference(){}
+
+        /// Used to solve memory references to TinyBLockState, the consumer receives a TinyBlockState compatible with the position.
+        public static void SOLVE(int pos, Consumer<@NotNull TinyBlockState> consumer)
+        {
+            if (pos == -1)
+                consumer.accept(null);
+            else
+                REQUESTS.add(new REQUEST(pos, consumer));
+        }
+
+        /// Used to solve memory references to TinyBLockState, the consumer receives all TinyBlockState compatible with the position.
+        public static void SOLVE(int[] pos, Consumer<@NotNull TinyBlockState> consumer)
+        {
+            for (int coordinate : pos)
+                SOLVE(coordinate, consumer);
+        }
+
+        /// Resolve all memory reference requirements
+        public static void SOLVE_REQUESTS(@NotNull List<@NotNull TinyBlockState> states)
+        {
+            for (REQUEST request : REQUESTS)
+            {
+                TinyBlockState state = BATCH.get(request.hash);
+                if (state != null)
+                    request.consumer.accept(state);
+            }
+            REQUESTS.clear();
+        }
+
+        /// Clear up all, check inconsistency and initialize the BATCH.
+        public static void BEGIN_BATCH(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries, List<TinyBlockState> states)
+        {
+            BATCH.clear();
+            states.forEach(state -> BATCH.put(state.getCompactedPosition(), state));
+
+            if (tag.contains("tbs_cache"))
+            {
+                int[] cords = tag.getIntArray("tbs_cache");
+                int match = 0;
+                for (int i : cords)
+                    if (BATCH.containsKey(i))
+                        match++;
+
+                if (match != BATCH.size())
+                {
+                    BATCH.clear();
+                    throw new RuntimeException("The cache is corrupted (BATCH: %d, REQUIRED: %d, MATCH: %d), please report this to the developer.".formatted(BATCH.size(), cords.length, match));
+                }
+            }
+        }
+
+        /// Serialize all tbs hashes
+        public static void SAVE_BATCH(@NotNull CompoundTag tag, HolderLookup.Provider registries, List<TinyBlockState> states)
+        {
+            tag.putIntArray("tbs_cache", states.stream().map(TinyBlockState::getCompactedPosition).toList());
+        }
+    }
 
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries)
@@ -237,18 +303,22 @@ public class SubBlockBE extends BlockEntity
             for (int i = 0; i < size; i++)
             {
                 var state = new TinyBlockState();
-                tinyBS.add(state);
                 state.deserializeNBT(registries, tbs.getCompound(String.valueOf(i)));
 
                 //checks if the added new state can be placed in the SubBlock
-                if (!canPlace(state.definition, state.x, state.y, state.z))
-                    dropTinyState(state);//first add and before check, because dropTinyState hopes that the state should be in the tinyBS
+                if (canPlace(state.definition, state.x, state.y, state.z))
+                    tinyBS.add(state);
+                else
+                    dropTinyState(state);
             }
+            TBSReference.BEGIN_BATCH(tag, registries, this.tinyBS);
+            TBSReference.SOLVE_REQUESTS(tinyBS);
+
 
             shape = Shapes.empty();
             //add all, and re math the shape
             for (TinyBlockState state : tinyBS)
-                shape = Shapes.or(shape, state.definition.shape.move(state.x / 16.0, state.y/16.0, state.z/16.0));
+                shape = Shapes.or(shape, state.getTranslatedShape());
 
             requestModelDataUpdate();
         }
@@ -263,11 +333,10 @@ public class SubBlockBE extends BlockEntity
             tbs.putInt("size", tinyBS.size());
             //serialize all tbs in an array format
             for (int i = 0; i < tinyBS.size(); i++)
-            {
                 tbs.put(String.valueOf(i), tinyBS.get(i).serializeNBT(registries));
-            }
             tag.put("tbs", tbs);//tiny block state
         }
+        TBSReference.SAVE_BATCH(tag, registries, this.tinyBS);
     }
 
     @Override
