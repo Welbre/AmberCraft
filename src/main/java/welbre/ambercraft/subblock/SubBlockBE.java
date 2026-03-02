@@ -222,12 +222,9 @@ public class SubBlockBE extends BlockEntity
                 level.addFreshEntity(itemEntity);
             }
 
-            if (tinyBS.isEmpty())
-            {
-                level.removeBlock(getBlockPos(), false);
+            if (tinyBS.isEmpty())//don't remove it, if the shape is empty a crash will happen!
                 return;
-            }
-
+            
             shape = Shapes.empty();
             for (TinyBlockState a : tinyBS)
                 shape = Shapes.or(shape, a.definition.shape.move(a.x / 16.0, a.y/16.0, a.z/16.0));

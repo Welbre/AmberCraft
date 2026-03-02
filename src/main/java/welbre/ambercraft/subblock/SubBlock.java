@@ -1,11 +1,15 @@
 package welbre.ambercraft.subblock;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -35,5 +39,25 @@ public class SubBlock extends Block implements EntityBlock
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new SubBlockBE(pos, state);
+    }
+
+    @Override
+    public void destroy(@NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockState state) {
+        super.destroy(level, pos, state);
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, boolean willHarvest, @NotNull FluidState fluid)
+    {
+        TinyBlockState tiny;
+        if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
+        {
+            be.dropTinyState(tiny);
+            if (be.tinyBS.isEmpty())
+                super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+            return be.tinyBS.isEmpty();
+        }
+
+        return false;
     }
 }
