@@ -221,8 +221,21 @@ public class SubBlockBE extends BlockEntity
                 var itemEntity = new ItemEntity(level, state.x / 16f + getBlockPos().getX(), state.y / 16f + getBlockPos().getY(), state.z / 16f + getBlockPos().getZ(), droppedItem);
                 level.addFreshEntity(itemEntity);
             }
+
+            if (tinyBS.isEmpty())
+            {
+                level.removeBlock(getBlockPos(), false);
+                return;
+            }
+
+            shape = Shapes.empty();
+            for (TinyBlockState a : tinyBS)
+                shape = Shapes.or(shape, a.definition.shape.move(a.x / 16.0, a.y/16.0, a.z/16.0));
+
             setChanged();
             requestModelDataUpdate();
+            //todo check if is working in the multiplayer. Microsoft sucks a lot.
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL_IMMEDIATE);
         }
     }
     //endregion
