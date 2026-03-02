@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
@@ -14,11 +15,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -28,10 +31,7 @@ import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import welbre.ambercraft.AmberCraft;
-import welbre.ambercraft.subblock.TinyBlock;
-import welbre.ambercraft.subblock.TinyBlockState;
-import welbre.ambercraft.subblock.TinyBlockItem;
-import welbre.ambercraft.subblock.TinyItemDataComponent;
+import welbre.ambercraft.subblock.*;
 
 import java.util.ArrayList;
 
@@ -59,6 +59,43 @@ public final class SubBlockClientEventListener
                 if (level == null)
                     return;
 
+                //renders only tiny block that the player is aiming for
+                if (level.getBlockEntity(event.getTarget().getBlockPos()) instanceof SubBlockBE sub)
+                {
+                    event.setCanceled(true);
+                    TinyBlockState state = sub.getStateByRayCast(player);
+                    if (state != null)
+                    {
+                        Vec3 cam = event.getCamera().getPosition();
+                        Boolean outline = Minecraft.getInstance().options.highContrastBlockOutline().get();
+                        if (outline) {
+                            VertexConsumer consumer = event.getMultiBufferSource().getBuffer(RenderType.secondaryBlockOutline());
+                            ShapeRenderer.renderShape(
+                                    event.getPoseStack(),
+                                    consumer,
+                                    state.definition.shape.move(state.x / 16f, state.y / 16f, state.z / 16f),
+                                    (double)sub.getBlockPos().getX() - cam.x,
+                                    (double)sub.getBlockPos().getY() - cam.y,
+                                    (double)sub.getBlockPos().getZ() - cam.z,
+                                    -16777216
+                            );
+                        }
+
+                        VertexConsumer consumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
+                        int color = outline ? -11010079 : ARGB.color(102, -16777216);
+                        ShapeRenderer.renderShape(
+                                event.getPoseStack(),
+                                consumer,
+                                state.definition.shape.move(state.x / 16f, state.y / 16f, state.z / 16f),
+                                (double)sub.getBlockPos().getX() - cam.x,
+                                (double)sub.getBlockPos().getY() - cam.y,
+                                (double)sub.getBlockPos().getZ() - cam.z,
+                                color
+                        );
+                    }
+                }
+
+                //render the preview of the item in the main hand of the player
                 ItemStack stack = player.getMainHandItem();
                 if (stack.getItem() != AmberCraft.Items.TINY_ITEM.get())
                     stack = player.getOffhandItem();
@@ -70,7 +107,6 @@ public final class SubBlockClientEventListener
                     return;
 
                 Vec3i vec = TinyBlockItem.CONTEXT_TO_16_GRID(level, event.getTarget());
-                System.out.println(event.getTarget().getLocation() + "\t" + vec.toString());
 
                 if (!TinyBlockItem.CAN_PLACE(component.get(), level, event.getTarget()))
                     return;

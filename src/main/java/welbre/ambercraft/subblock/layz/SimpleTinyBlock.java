@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.DelegateBakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -15,14 +16,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.subblock.TinyBlock;
+import welbre.ambercraft.subblock.TinyBlockRegister;
 import welbre.ambercraft.subblock.TinyBlockState;
+import welbre.ambercraft.subblock.TinyItemDataComponent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,9 +76,16 @@ public class SimpleTinyBlock extends TinyBlock
     }
 
     @Override
-    public @Nullable ItemStack getDroppedItem() {
-        //todo check the current Item to be dropped
-        return block.asItem().getDefaultInstance();
+    public @Nullable ItemStack getDroppedItem(TinyBlockState state, LootParams.Builder params)
+    {
+        TinyBlock tinyBlock = TinyBlockRegister.FROM_STRING(registerName);
+        if (tinyBlock == null) return ItemStack.EMPTY;
+
+        return new ItemStack(
+                AmberCraft.Items.TINY_ITEM, 1,
+                DataComponentPatch.builder()
+                        .set(AmberCraft.DataComponents.TINY_BLOCK_DATA_COMPONENT.get(), new TinyItemDataComponent(tinyBlock))
+                        .build());
     }
 
     @Override

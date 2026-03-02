@@ -5,6 +5,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +22,7 @@ import java.util.List;
 public abstract class TinyBlock
 {
     public VoxelShape shape;
+    /// The registry name used in {@link TinyBlockRegister}
     public final ResourceLocation registerName;
 
     public TinyBlock(ResourceLocation registerName)
@@ -69,7 +72,7 @@ public abstract class TinyBlock
     /// Return an itemStack or null based on the parameters.<br>
     /// Use it for drop itemStack when breaks, exploded, broken with wrong tool, or others situations.
     //  todo implement all the parameters need to decide the item
-    public abstract @Nullable ItemStack getDroppedItem();
+    public abstract @Nullable ItemStack getDroppedItem(TinyBlockState state, LootParams.Builder params);
 
     public abstract @NotNull Component getTinyItemName();
 

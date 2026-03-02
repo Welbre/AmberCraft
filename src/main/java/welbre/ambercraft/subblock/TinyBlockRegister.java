@@ -28,12 +28,12 @@ public enum TinyBlockRegister
 
     private DeferredHolder<TinyBlock, TinyBlock> tinyBlock;
     private Function<ResourceLocation, TinyBlock> factory;
-    private final String registerName;
+    private final ResourceLocation registerName;
 
     TinyBlockRegister(Function<ResourceLocation, TinyBlock> factory)
     {
         this.factory = factory;
-        registerName = AmberCraft.MOD_ID + ":" + name().toLowerCase();
+        registerName = ResourceLocation.fromNamespaceAndPath(AmberCraft.MOD_ID , name().toLowerCase());
     }
 
     public DeferredHolder<TinyBlock, TinyBlock> getHolder()
@@ -57,11 +57,15 @@ public enum TinyBlockRegister
     /// Get a new instance of TinyBlock by him name, returns null if don't find it.
     public static @Nullable TinyBlock FROM_STRING(@NotNull String s)
     {
+        return FROM_STRING(ResourceLocation.parse(s));
+    }
+
+    /// Get a new instance of TinyBlock by a resource location, returns null if it don't find one.
+    public static @Nullable TinyBlock FROM_STRING(@NotNull ResourceLocation resource)
+    {
         for (TinyBlockRegister value : TinyBlockRegister.values())
-        {
-            if (value.registerName.equals(s))
+            if (value.registerName.equals(resource))
                 return value.getHolder().value();
-        }
 
         return null;
     }

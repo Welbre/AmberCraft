@@ -5,16 +5,22 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 
 import java.util.*;
@@ -201,7 +207,7 @@ public class SubBlockBE extends BlockEntity
         return true;
     }
 
-    /// Drops a tiny block from the subBlock, notice that the dropped item is defined by the {@link TinyBlock#getDroppedItem()} not by this method.
+    /// Drops a tiny block from the subBlock, notice that the dropped item is defined by the {@link TinyBlock#getDroppedItem(TinyBlockState, LootParams.Builder)} not by this method.
     public void dropTinyState(TinyBlockState state)
     {
         if (level == null)
@@ -209,7 +215,7 @@ public class SubBlockBE extends BlockEntity
 
         if (tinyBS.remove(state))
         {
-            ItemStack droppedItem = state.definition.getDroppedItem();
+            ItemStack droppedItem = state.definition.getDroppedItem(state, null);
             if (droppedItem != null)
             {
                 var itemEntity = new ItemEntity(level, state.x / 16f + getBlockPos().getX(), state.y / 16f + getBlockPos().getY(), state.z / 16f + getBlockPos().getZ(), droppedItem);
@@ -367,5 +373,35 @@ public class SubBlockBE extends BlockEntity
         return ModelData.builder().with(TINY_BLOCK_STATE_MODEL_PROPERTY, tinyBS).build();
     }
 
+    public Collection<TinyBlockState> getTinyStates() {
+        return tinyBS;
+    }
+
     protected @NotNull VoxelShape shape(){return shape;}
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------Helpers/extras-------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Used to get the aiming TinyBlockState in a SubBloc,
+     * This method uses the {@link Player#pick(double, float, boolean)} method to pick a block in the player range;
+     * @param player The player to use to the RayCast.
+     * @return Returns the aimed TinyBlockState or null if don't find one.
+     */
+    public @Nullable TinyBlockState getStateByRayCast(Player player)
+    {
+        HitResult pick = player.pick(Math.pow(player.blockInteractionRange(), 2), 1F, false);
+        if (pick instanceof BlockHitResult result)
+        {
+            //grid location in 0 to 1 scale
+            Vec3 g = pick.getLocation().subtract(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ());
+
+            for (TinyBlockState state : getTinyStates())
+                for (AABB aabb : state.getTranslatedAABB())
+                    if (g.x >= aabb.minX && g.x <= aabb.maxX && g.y >= aabb.minY && g.y <= aabb.maxY && g.z >= aabb.minZ && g.z <= aabb.maxZ)
+                        return state;
+        }
+        return null;
+    }
 }

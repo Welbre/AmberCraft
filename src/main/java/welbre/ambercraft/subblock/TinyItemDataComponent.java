@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -23,6 +24,16 @@ public record TinyItemDataComponent(String tinyBlockKey)
             ByteBufCodecs.STRING_UTF8, TinyItemDataComponent::tinyBlockKey,
             TinyItemDataComponent::new
     );
+
+    public TinyItemDataComponent(@NotNull ResourceLocation resource)
+    {
+        this(resource.toString());
+    }
+
+    public TinyItemDataComponent(@NotNull TinyBlock tinyBlock)
+    {
+        this(tinyBlock.registerName);
+    }
 
     public TinyItemDataComponent
     {

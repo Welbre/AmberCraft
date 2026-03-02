@@ -72,6 +72,10 @@ public class TinyBlockItem extends Item
                 (soundtype.getVolume() + 1.0F) / 2.0F,
                 soundtype.getPitch() * 0.8F
         );
+
+        //consume amount
+        stack.shrink(1);
+
         return InteractionResult.SUCCESS;
     }
 
