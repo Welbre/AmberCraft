@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 public class SubBlock extends Block implements EntityBlock
 {
     public SubBlock(Properties properties) {
-        super(properties);
+        super(properties.destroyTime(0.5f));
     }
 
     @Override
@@ -42,8 +42,21 @@ public class SubBlock extends Block implements EntityBlock
     }
 
     @Override
-    public void destroy(@NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockState state) {
-        super.destroy(level, pos, state);
+    protected float getDestroyProgress(@NotNull BlockState state, @NotNull Player player, @NotNull BlockGetter level, @NotNull BlockPos pos)
+    {
+        TinyBlockState tiny;
+        if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
+        {
+            float f = tiny.definition.getDestroySpeed(tiny, level, pos);
+            if (f == -1.0F) {
+                return 0.0F;
+            } else {
+                int i = net.neoforged.neoforge.event.EventHooks.doPlayerHarvestCheck(player, state, level, pos) ? 30 : 100;
+                return tiny.definition.getPlayerDestroySpeed(player,tiny, level, pos) / f / (float)i;
+            }
+        }
+        else
+            return 0;
     }
 
     @Override

@@ -1,9 +1,12 @@
 package welbre.ambercraft.subblock;
 
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -71,10 +74,31 @@ public abstract class TinyBlock
 
     /// Return an itemStack or null based on the parameters.<br>
     /// Use it for drop itemStack when breaks, exploded, broken with wrong tool, or others situations.
-    //  todo implement all the parameters need to decide the item
     public abstract @Nullable ItemStack getDroppedItem(TinyBlockState state, LootParams.Builder params);
 
+    /**
+     * AmberCraft uses only one item {@link welbre.ambercraft.AmberCraft.Items#TINY_ITEM} to represent all TinyBlock in the inventory.
+     * To change which TinyBlock an ItemStack represents, we use the {@link welbre.ambercraft.AmberCraft.DataComponents#TINY_BLOCK_DATA_COMPONENT} to set a TinyBlock, and this method is used
+     * to get the name that the ItemStack have.
+     */
     public abstract @NotNull Component getTinyItemName();
 
+    /**
+     * Returns a SoundType that will be used to the default minecraft operations, like place, step, and break a TinyBlock.
+     */
     public abstract @NotNull SoundType getSoundType(TinyBlockState state);
+
+    /**
+     * Similar to {@link net.minecraft.world.level.block.state.BlockState#getDestroySpeed(BlockGetter, BlockPos)}, but this provides a TinyBlockState to be used.
+     * @return The TinyBlock hardness
+     */
+    public abstract float getDestroySpeed(TinyBlockState state, BlockGetter level, BlockPos pos);
+    /**
+     * Similar to {@link Player#getDestroySpeed(BlockState, BlockPos)}, Used to get the destroySpeed when a player is braking a TinyBlockState.<br>
+     * This method check for player enchantment in the ItemStack, if is the correct tool, for {@link net.minecraft.world.effect.MobEffect} and other things that you deem essencial.
+     * @param player The player that is breaking the state.
+     * @param state The state which is being broken.
+     * @return The speed
+     */
+    public abstract float getPlayerDestroySpeed(Player player, TinyBlockState state, BlockGetter level, BlockPos pos);
 }

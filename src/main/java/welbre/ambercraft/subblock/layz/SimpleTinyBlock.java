@@ -6,13 +6,16 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.DelegateBakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -92,6 +95,17 @@ public class SimpleTinyBlock extends TinyBlock
     public @NotNull SoundType getSoundType(TinyBlockState state){
         //todo check if getSoundType(BlockState .......) can be used where
         return block.defaultBlockState().getSoundType();
+    }
+
+    @Override
+    public float getDestroySpeed(TinyBlockState state, BlockGetter level, BlockPos pos)
+    {
+        return block.defaultBlockState().getDestroySpeed(level, pos);
+    }
+
+    @Override
+    public float getPlayerDestroySpeed(Player player, TinyBlockState state, BlockGetter level, BlockPos pos) {
+        return player.getDestroySpeed(block.defaultBlockState(), pos);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
