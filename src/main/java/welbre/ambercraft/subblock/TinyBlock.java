@@ -4,9 +4,11 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -86,7 +88,7 @@ public abstract class TinyBlock
     /**
      * Returns a SoundType that will be used to the default minecraft operations, like place, step, and break a TinyBlock.
      */
-    public abstract @NotNull SoundType getSoundType(TinyBlockState state);
+    public abstract @NotNull SoundType getSoundType(TinyBlockState state, LevelReader level, BlockPos pos, @Nullable Entity entity);
 
     /**
      * Similar to {@link net.minecraft.world.level.block.state.BlockState#getDestroySpeed(BlockGetter, BlockPos)}, but this provides a TinyBlockState to be used.

@@ -62,7 +62,7 @@ public class TinyBlockItem extends Item
             return InteractionResult.FAIL;
 
         //Play sound
-        SoundType soundtype = tinyBlock.getSoundType(sub.tinyBS.getLast());
+        SoundType soundtype = tinyBlock.getSoundType(sub.tinyBS.getLast(), level, sub.getBlockPos(), context.getPlayer());
 
         level.playSound(
                 context.getPlayer(),

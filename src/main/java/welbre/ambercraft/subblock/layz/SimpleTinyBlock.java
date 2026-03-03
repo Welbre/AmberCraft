@@ -12,10 +12,12 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -92,9 +94,9 @@ public class SimpleTinyBlock extends TinyBlock
     }
 
     @Override
-    public @NotNull SoundType getSoundType(TinyBlockState state){
+    public @NotNull SoundType getSoundType(TinyBlockState state, LevelReader level, BlockPos pos, @Nullable Entity entity){
         //todo check if getSoundType(BlockState .......) can be used where
-        return block.defaultBlockState().getSoundType();
+        return block.defaultBlockState().getSoundType(level, pos, entity);
     }
 
     @Override
