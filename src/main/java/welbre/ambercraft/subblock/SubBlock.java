@@ -1,18 +1,27 @@
 package welbre.ambercraft.subblock;
 
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.data.SoundDefinition;
+import net.neoforged.neoforge.common.util.DeferredSoundType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +48,29 @@ public class SubBlock extends Block implements EntityBlock
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new SubBlockBE(pos, state);
+    }
+
+    @Override
+    public void stepOn(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Entity entity)
+    {
+        float f = DeltaTracker.ONE.getGameTimeDeltaPartialTick(!level.tickRateManager().isEntityFrozen(entity));
+        if (level.getBlockEntity(pos) instanceof SubBlockBE be)
+            for (var tiny : be.getTinyStates())
+                for (AABB aabb : tiny.getTranslatedAABB())
+                    if (aabb.contains(entity.getPosition(f).subtract(pos.getX(), pos.getY(), pos.getZ()).subtract(0, 1 / 32f, 0)))//half of a tinyblock in -y dir
+                    {
+                        tiny.definition.playStepSound(tiny, level, pos, entity);
+                        return;
+                    }
+        super.stepOn(level, pos, state, entity);
+    }
+
+    @Override
+    public @NotNull SoundType getSoundType(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos, @Nullable Entity entity)
+    {
+        SoundType type = super.getSoundType(state, level, pos, entity);
+        var deff = new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> SoundEvents.EMPTY, type::getPlaceSound, type::getHitSound, type::getFallSound);
+        return deff;
     }
 
     @Override

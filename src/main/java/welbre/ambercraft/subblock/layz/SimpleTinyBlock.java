@@ -11,12 +11,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -34,6 +36,8 @@ import welbre.ambercraft.subblock.TinyBlockRegister;
 import welbre.ambercraft.subblock.TinyBlockState;
 import welbre.ambercraft.subblock.TinyItemDataComponent;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -95,7 +99,6 @@ public class SimpleTinyBlock extends TinyBlock
 
     @Override
     public @NotNull SoundType getSoundType(TinyBlockState state, LevelReader level, BlockPos pos, @Nullable Entity entity){
-        //todo check if getSoundType(BlockState .......) can be used where
         return block.defaultBlockState().getSoundType(level, pos, entity);
     }
 
@@ -108,6 +111,21 @@ public class SimpleTinyBlock extends TinyBlock
     @Override
     public float getPlayerDestroySpeed(Player player, TinyBlockState state, BlockGetter level, BlockPos pos) {
         return player.getDestroySpeed(block.defaultBlockState(), pos);
+    }
+
+    @Override
+    public void playStepSound(@NotNull TinyBlockState tiny, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity)
+    {
+        try
+        {
+            var x = Entity.class.getDeclaredMethod("playStepSound", BlockPos.class, BlockState.class);
+            x.setAccessible(true);
+            x.invoke(entity, pos, block.defaultBlockState());
+            x.setAccessible(false);
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
