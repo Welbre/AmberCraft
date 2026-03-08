@@ -263,13 +263,11 @@ public class SubBlockBE extends BlockEntity
     {
         if (level != null)
         {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
             if (level.isClientSide())
                 requestModelDataUpdate();
             else
-            {
                 setChanged();
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-            }
 
             //this requires a new BakedModel in the client and does some updates in the server
         }
