@@ -37,6 +37,7 @@ public class SubBlockBakedModel implements IDynamicBakedModel
             @NotNull ModelData extraData,
             @Nullable RenderType renderType)
     {
+        System.out.println("Model required in side: " + (side != null ? side.getName(): "null"));
         List<TinyBlockState> dat = extraData.get(SubBlockBE.TINY_BLOCK_STATE_MODEL_PROPERTY);
         ArrayList<BakedQuad> quads = new ArrayList<>();
 
@@ -50,13 +51,9 @@ public class SubBlockBakedModel implements IDynamicBakedModel
             if (side != null)//requiring non-occluded facing
                 quads.addAll(model.getQuads(state, side, rand, extraData, renderType));
             else //minecraft requiring all faces outside the occlusion, so we should return faces occluded by the block, but that should be render
-            {
-                //if is occluded by the block and isn't in contact with the external world.
-                //
-                for (Map.Entry<Direction, @Nullable TinyBlockState> set : blockState.fullOccluded.entrySet())
-                    if (set.getValue() == null && !blockState.externalContact.contains(set.getKey()))
+                for (var set : blockState.fullOccluded.entrySet())
+                    if (set.getValue() == null && !blockState.externalContact.contains(set.getKey()))//if the block is occluded by some other block in the side AND the state isn't side by side
                         quads.addAll(model.getQuads(state, set.getKey(), rand, extraData, renderType));
-            }
         }
 
         return quads;

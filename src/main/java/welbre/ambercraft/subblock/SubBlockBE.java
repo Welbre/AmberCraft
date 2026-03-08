@@ -4,6 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -135,6 +139,25 @@ public class SubBlockBE extends BlockEntity
     }
 
     /**
+     * Used in the SubBlock to update all Occlusion data when a neighbor change.
+     * @param direction The directions to update
+     */
+    void updateOcclusion(Direction... direction)
+    {
+        for (var dir : direction)
+            //clear the direction if is null
+            for (var state : tinyBS)
+                //if isn't occluded by other TinyBlockState (fullOccluded don't contain the key) or is occluded by block (fullOccluded contain the key, but it is null)
+                if (state.fullOccluded.get(dir) == null)
+                    if (getLevel() != null && Block.shouldRenderFace(getLevel(), getBlockPos(), getBlockState(), getLevel().getBlockState(getBlockPos().relative(dir)), dir))
+                        state.fullOccluded.remove(dir);//mark the face to be rendered
+                    else
+                        state.fullOccluded.put(dir, null);//skip render this face
+
+        update();
+    }
+
+    /**
      * Adds a new {@link TinyBlockState} in the SubBlock using the tinyBlock
      * @param tinyBlock The TinyBlock type
      * @param x the x coordinate in a 0 to 15 scale
@@ -153,11 +176,7 @@ public class SubBlockBE extends BlockEntity
 
         updateAround();
 
-        setChanged();
-        requestModelDataUpdate();
-        if (level != null)
-            //todo check if is working in the multiplayer. Microsoft sucks a lot.
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL_IMMEDIATE);//forces the re-rendering of the block, requiring a new BakedModel
+        update();
 
         return true;
     }
@@ -229,10 +248,30 @@ public class SubBlockBE extends BlockEntity
             for (TinyBlockState a : tinyBS)
                 shape = Shapes.or(shape, a.definition.shape.move(a.x / 16.0, a.y/16.0, a.z/16.0));
 
-            setChanged();
-            requestModelDataUpdate();
-            //todo check if is working in the multiplayer. Microsoft sucks a lot.
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL_IMMEDIATE);
+            update();
+        }
+    }
+
+    /**
+     * Synchronizes the client model with the server version.<br><br>
+     * The default pipeline uses level.sendBlockUpdated in method that runs in both sides so,
+     * you can't send a {@link net.minecraft.client.renderer.LevelRenderer#setBlockDirty(BlockPos, BlockState, BlockState)} from the server,
+     * and the default implementation checks for BlockState changes to send the packet,
+     * that inhibit the SubBlock to update, duo the all data is stores in the BlockEntity.<br>
+     */
+    public void update()
+    {
+        if (level != null)
+        {
+            if (level.isClientSide())
+                requestModelDataUpdate();
+            else
+            {
+                setChanged();
+                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            }
+
+            //this requires a new BakedModel in the client and does some updates in the server
         }
     }
     //endregion
@@ -355,6 +394,17 @@ public class SubBlockBE extends BlockEntity
             tag.put("tbs", tbs);//tiny block state
         }
         TBSReference.SAVE_BATCH(tag, registries, this.tinyBS);
+    }
+
+    @Override
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(@NotNull Connection net, @NotNull ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider lookupProvider)
+    {
+        super.onDataPacket(net, pkt, lookupProvider);
     }
 
     @Override

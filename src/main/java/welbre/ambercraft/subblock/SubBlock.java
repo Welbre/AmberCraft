@@ -3,19 +3,19 @@ package welbre.ambercraft.subblock;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -89,6 +89,33 @@ public class SubBlock extends Block implements EntityBlock
         }
         else
             return 0;
+    }
+
+    @Override
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState)
+    {
+        super.onBlockStateChange(level, pos, oldState, newState);
+    }
+
+    @Override
+    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
+        super.onNeighborChange(state, level, pos, neighbor);
+    }
+
+    @Override
+    protected void neighborChanged(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston)
+    {
+
+        super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
+    }
+
+    @Override
+    protected @NotNull BlockState updateShape(@NotNull BlockState state, LevelReader level, @NotNull ScheduledTickAccess scheduledTickAccess, @NotNull BlockPos pos, @NotNull Direction direction, @NotNull BlockPos neighborPos, @NotNull BlockState neighborState, @NotNull RandomSource random)
+    {
+        //re-compute all occlusions
+        if (level.getBlockEntity(pos) instanceof SubBlockBE sub)
+            sub.updateOcclusion(direction);
+        return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
     }
 
     @Override
