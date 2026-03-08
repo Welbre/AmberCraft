@@ -20,7 +20,6 @@ import welbre.ambercraft.subblock.TinyBlockState;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SubBlockBakedModel implements IDynamicBakedModel
 {
@@ -37,7 +36,6 @@ public class SubBlockBakedModel implements IDynamicBakedModel
             @NotNull ModelData extraData,
             @Nullable RenderType renderType)
     {
-        System.out.println("Model required in side: " + (side != null ? side.getName(): "null"));
         List<TinyBlockState> dat = extraData.get(SubBlockBE.TINY_BLOCK_STATE_MODEL_PROPERTY);
         ArrayList<BakedQuad> quads = new ArrayList<>();
 

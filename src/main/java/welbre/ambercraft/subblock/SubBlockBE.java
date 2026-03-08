@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -42,6 +43,8 @@ public class SubBlockBE extends BlockEntity
     protected final List<TinyBlockState> tinyBS = new ArrayList<>();
     protected VoxelShape shape = Shapes.empty();
 
+    /// Used in the breaking pipeline
+    @Nullable TinyBlockState playerIsBreaking = null;
 
     public SubBlockBE(BlockPos pos, BlockState blockState) {
         super(AmberCraft.BlockEntity.SUB_BLOCK_BE.get(), pos, blockState);
@@ -253,6 +256,35 @@ public class SubBlockBE extends BlockEntity
     }
 
     /**
+     * Breaks a TinyState from the SubBlock.<br> Dropping the loop if is in the right game mode.
+     * @return If the SubBlock should be removed from the level
+     */
+    public boolean breakTinyState(@NotNull TinyBlockState state, @NotNull Player player, boolean willHarvest, @NotNull FluidState fluid)
+    {
+        if (level == null)
+            return false;
+
+        if (tinyBS.contains(state))
+        {
+            if (player.isCreative())
+                tinyBS.remove(state);
+            else
+                dropTinyState(state);
+
+            if (tinyBS.isEmpty())
+                return true;
+
+            shape = Shapes.empty();
+            for (TinyBlockState a : tinyBS)
+                shape = Shapes.or(shape, a.definition.shape.move(a.x / 16.0, a.y/16.0, a.z/16.0));
+
+            update();
+        }
+
+        return false;
+    }
+
+    /**
      * Synchronizes the client model with the server version.<br><br>
      * The default pipeline uses level.sendBlockUpdated in method that runs in both sides so,
      * you can't send a {@link net.minecraft.client.renderer.LevelRenderer#setBlockDirty(BlockPos, BlockState, BlockState)} from the server,
@@ -268,8 +300,6 @@ public class SubBlockBE extends BlockEntity
                 requestModelDataUpdate();
             else
                 setChanged();
-
-            //this requires a new BakedModel in the client and does some updates in the server
         }
     }
     //endregion
@@ -436,6 +466,10 @@ public class SubBlockBE extends BlockEntity
     }
 
     protected @NotNull VoxelShape shape(){return shape;}
+
+    public @Nullable TinyBlockState getPlayerIsBreaking() {
+        return playerIsBreaking;
+    }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------Helpers/extras-------------------------------------------------------------------

@@ -20,7 +20,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.data.SoundDefinition;
 import net.neoforged.neoforge.common.util.DeferredSoundType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +52,8 @@ public class SubBlock extends Block implements EntityBlock
     @Override
     public void stepOn(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Entity entity)
     {
+        //todo implement a way yo play the correct sound.
+        /*
         float f = DeltaTracker.ONE.getGameTimeDeltaPartialTick(!level.tickRateManager().isEntityFrozen(entity));
         if (level.getBlockEntity(pos) instanceof SubBlockBE be)
             for (var tiny : be.getTinyStates())
@@ -62,6 +63,8 @@ public class SubBlock extends Block implements EntityBlock
                         tiny.definition.playStepSound(tiny, level, pos, entity);
                         return;
                     }
+
+         */
         super.stepOn(level, pos, state, entity);
     }
 
@@ -74,9 +77,34 @@ public class SubBlock extends Block implements EntityBlock
     }
 
     @Override
+    protected @NotNull BlockState updateShape(@NotNull BlockState state, LevelReader level, @NotNull ScheduledTickAccess scheduledTickAccess, @NotNull BlockPos pos, @NotNull Direction direction, @NotNull BlockPos neighborPos, @NotNull BlockState neighborState, @NotNull RandomSource random)
+    {
+        //re-compute all occlusions
+        if (level.getBlockEntity(pos) instanceof SubBlockBE sub)
+            sub.updateOcclusion(direction);
+        return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
+    }
+
+    //-------------------------------------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------Breaking----------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    @Override
+    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player)
+    {
+        //marks which block is being broken to later use.
+        TinyBlockState tiny;
+        if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
+            be.playerIsBreaking = tiny;
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
     protected float getDestroyProgress(@NotNull BlockState state, @NotNull Player player, @NotNull BlockGetter level, @NotNull BlockPos pos)
     {
-        TinyBlockState tiny;
+        //Return different progress because SubBlock has different Blocks inside-it with different DestroyProgress
+        TinyBlockState tiny;//todo use the be#playerIsBreaking instead
         if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
         {
             float f = tiny.definition.getDestroySpeed(tiny, level, pos);
@@ -92,42 +120,17 @@ public class SubBlock extends Block implements EntityBlock
     }
 
     @Override
-    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState)
-    {
-        super.onBlockStateChange(level, pos, oldState, newState);
-    }
-
-    @Override
-    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
-        super.onNeighborChange(state, level, pos, neighbor);
-    }
-
-    @Override
-    protected void neighborChanged(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston)
-    {
-
-        super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
-    }
-
-    @Override
-    protected @NotNull BlockState updateShape(@NotNull BlockState state, LevelReader level, @NotNull ScheduledTickAccess scheduledTickAccess, @NotNull BlockPos pos, @NotNull Direction direction, @NotNull BlockPos neighborPos, @NotNull BlockState neighborState, @NotNull RandomSource random)
-    {
-        //re-compute all occlusions
-        if (level.getBlockEntity(pos) instanceof SubBlockBE sub)
-            sub.updateOcclusion(direction);
-        return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
-    }
-
-    @Override
     public boolean onDestroyedByPlayer(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, boolean willHarvest, @NotNull FluidState fluid)
     {
+        //todo use the be#playerIsBreaking instead
         TinyBlockState tiny;
         if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
         {
-            be.dropTinyState(tiny);
-            if (be.tinyBS.isEmpty())
-                super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
-            return be.tinyBS.isEmpty();
+            boolean shouldbeRemoved = be.breakTinyState(tiny, player, willHarvest, fluid);
+            if (shouldbeRemoved)
+                super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);//continues the pipe line if the block should be removed
+
+            return shouldbeRemoved;
         }
 
         return false;

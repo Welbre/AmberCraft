@@ -1,5 +1,7 @@
 package welbre.ambercraft.subblock;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,6 +17,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -106,4 +110,17 @@ public abstract class TinyBlock
     public abstract float getPlayerDestroySpeed(Player player, TinyBlockState state, BlockGetter level, BlockPos pos);
 
     public abstract void playStepSound(@NotNull TinyBlockState tiny, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity);
+
+    @OnlyIn(Dist.CLIENT)
+    public abstract void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase);
+
+
+
+
+
+    @OnlyIn(Dist.CLIENT)
+    public enum ParticleCase
+    {
+        DESTROY, STEP
+    }
 }

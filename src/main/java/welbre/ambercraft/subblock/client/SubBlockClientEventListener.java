@@ -29,6 +29,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import welbre.ambercraft.AmberCraft;
 import welbre.ambercraft.subblock.*;
@@ -141,9 +142,14 @@ public final class SubBlockClientEventListener
         }
     }
 
-    /**
-     * Used to overwrite a data-generated model to simply use the {@link SubBlockBakedModel} .
-     */
+    /// Register extra effects to the client, like sound and particles
+    @SubscribeEvent
+    public static void onRegisterClientExtensions(RegisterClientExtensionsEvent event)
+    {
+        event.registerBlock(new SubBlockClientExtensions(), AmberCraft.Blocks.SUB_BLOCK.get());
+    }
+
+    /// Used to overwrite a data-generated model to simply use the [SubBlockBakedModel] .
     @SubscribeEvent
     public static void onModelBake(ModelEvent.ModifyBakingResult event)
     {

@@ -2,6 +2,8 @@ package welbre.ambercraft.subblock.layz;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
@@ -11,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -36,8 +37,6 @@ import welbre.ambercraft.subblock.TinyBlockRegister;
 import welbre.ambercraft.subblock.TinyBlockState;
 import welbre.ambercraft.subblock.TinyItemDataComponent;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -125,6 +124,15 @@ public class SimpleTinyBlock extends TinyBlock
         } catch (Exception e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase)
+    {
+        switch (particleCase)
+        {
+            case DESTROY -> engine.destroy(pos, block.defaultBlockState());
         }
     }
 
