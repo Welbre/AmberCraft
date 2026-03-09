@@ -21,7 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -64,7 +63,7 @@ public final class SubBlockClientEventListener
                 if (level.getBlockEntity(event.getTarget().getBlockPos()) instanceof SubBlockBE sub)
                 {
                     event.setCanceled(true);
-                    TinyBlockState state = sub.getStateByRayCast(player);
+                    TinyBlockState state = sub.getTinyStateByRayCast(player);
                     if (state != null)
                     {
                         Vec3 cam = event.getCamera().getPosition();

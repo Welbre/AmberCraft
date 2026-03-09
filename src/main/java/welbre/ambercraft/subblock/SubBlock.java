@@ -1,7 +1,5 @@
 package welbre.ambercraft.subblock;
 
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -15,8 +13,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.redstone.Orientation;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -36,6 +32,8 @@ import static welbre.ambercraft.AmberCraft.MOD_ID;
  */
 public class SubBlock extends Block implements EntityBlock
 {
+    public static boolean IS_REQUIRING_STEP_SOUND = false;
+
     public SubBlock(Properties properties) {
         super(properties.destroyTime(0.5f));
     }
@@ -77,8 +75,13 @@ public class SubBlock extends Block implements EntityBlock
     public @NotNull SoundType getSoundType(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos, @Nullable Entity entity)
     {
         SoundType type = super.getSoundType(state, level, pos, entity);
-        var deff = new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> SoundEvents.EMPTY, type::getPlaceSound, type::getHitSound, type::getFallSound);
-        return deff;
+        if (IS_REQUIRING_STEP_SOUND && level.getBlockEntity(pos) instanceof SubBlockBE sub && entity != null)
+        {
+            TinyBlockState tiny = sub.getTinyStateAboveEntity(entity);
+            if (tiny != null)
+                return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound,() -> tiny.definition.getSoundType(tiny, level, pos, entity).getStepSound(), type::getPlaceSound, type::getHitSound, type::getFallSound);
+        }
+        return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> SoundEvents.EMPTY, type::getPlaceSound, type::getHitSound, type::getFallSound);
     }
 
     @Override
@@ -108,7 +111,7 @@ public class SubBlock extends Block implements EntityBlock
                 {
                     //marks which block is being broken to later use.
                     TinyBlockState tiny;
-                    if ((tiny = be.getStateByRayCast(event.getEntity())) != null)
+                    if ((tiny = be.getTinyStateByRayCast(event.getEntity())) != null)
                         be.setPlayerIsBreaking(tiny);
                 }
         }

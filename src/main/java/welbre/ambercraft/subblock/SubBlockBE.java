@@ -8,6 +8,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -475,6 +476,22 @@ public class SubBlockBE extends BlockEntity
         return playerIsBreaking;
     }
 
+    /**
+     * Get a TinyState where an entity is stepping.
+     */
+    public @Nullable TinyBlockState getTinyStateAboveEntity(@NotNull Entity entity)
+    {
+        var old = entity.getBoundingBox();
+        AABB shape = new AABB(old.minX, old.minY, old.minZ, old.maxX, old.maxY, old.maxZ).move(Vec3.atLowerCornerOf(getBlockPos()).reverse());
+        if (Shapes.block().bounds().intersects(shape))//check if the entity is inside the SubBlock
+            for (var state : tinyBS)//for each state check if the state shape collides with the entity shape
+                for (AABB aabb : state.getTranslatedAABB())
+                    if (aabb.minX < shape.maxX && aabb.maxX > shape.minX && aabb.minY < shape.maxY && aabb.maxY >= shape.minY && aabb.minZ < shape.maxZ && aabb.maxZ > shape.minZ)
+                        return state;
+
+        return null;
+    }
+
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------Helpers/extras-------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -485,7 +502,7 @@ public class SubBlockBE extends BlockEntity
      * @param player The player to use to the RayCast.
      * @return Returns the aimed TinyBlockState or null if don't find one.
      */
-    public @Nullable TinyBlockState getStateByRayCast(Player player)
+    public @Nullable TinyBlockState getTinyStateByRayCast(Player player)
     {
         HitResult pick = player.pick(Math.pow(player.blockInteractionRange(), 2), 1F, false);
         if (pick instanceof BlockHitResult result)
