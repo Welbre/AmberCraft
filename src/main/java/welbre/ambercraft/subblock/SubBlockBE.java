@@ -44,7 +44,7 @@ public class SubBlockBE extends BlockEntity
     protected VoxelShape shape = Shapes.empty();
 
     /// Used in the breaking pipeline
-    @Nullable TinyBlockState playerIsBreaking = null;
+    private @Nullable TinyBlockState playerIsBreaking = null;
 
     public SubBlockBE(BlockPos pos, BlockState blockState) {
         super(AmberCraft.BlockEntity.SUB_BLOCK_BE.get(), pos, blockState);
@@ -466,6 +466,10 @@ public class SubBlockBE extends BlockEntity
     }
 
     protected @NotNull VoxelShape shape(){return shape;}
+
+    public void setPlayerIsBreaking(@Nullable TinyBlockState playerIsBreaking) {
+        this.playerIsBreaking = playerIsBreaking;
+    }
 
     public @Nullable TinyBlockState getPlayerIsBreaking() {
         return playerIsBreaking;

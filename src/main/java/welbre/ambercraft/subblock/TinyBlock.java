@@ -112,7 +112,7 @@ public abstract class TinyBlock
     public abstract void playStepSound(@NotNull TinyBlockState tiny, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity);
 
     @OnlyIn(Dist.CLIENT)
-    public abstract void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase);
+    public abstract void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull TinyBlockState state, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase);
 
 
 
@@ -121,6 +121,6 @@ public abstract class TinyBlock
     @OnlyIn(Dist.CLIENT)
     public enum ParticleCase
     {
-        DESTROY, STEP
+        DESTROY, STEP, BREAKING
     }
 }

@@ -5,6 +5,8 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.subblock.SubBlockBE;
@@ -20,9 +22,21 @@ public final class SubBlockClientExtensions implements IClientBlockExtensions
         {
             TinyBlockState isBreaking = sub.getPlayerIsBreaking();
             if (isBreaking != null)
-                isBreaking.definition.handleParticles((ClientLevel) level, pos, manager, TinyBlock.ParticleCase.DESTROY);
+                isBreaking.definition.handleParticles((ClientLevel) level, pos, isBreaking, manager, TinyBlock.ParticleCase.DESTROY);
         }
-        return true;//don't spawn particles at all
+        return true;//don't spawn default particle
+    }
+
+    @Override
+    public boolean addHitEffects(@NotNull BlockState state, @NotNull Level level, @NotNull HitResult target, @NotNull ParticleEngine manager)
+    {
+        if (target instanceof BlockHitResult result && level.getBlockEntity(result.getBlockPos()) instanceof SubBlockBE sub)
+        {
+            TinyBlockState isBreaking = sub.getPlayerIsBreaking();
+            if (isBreaking != null)
+                isBreaking.definition.handleParticles((ClientLevel) level, result.getBlockPos(), isBreaking, manager, TinyBlock.ParticleCase.BREAKING);
+        }
+        return true;//don't spawn default particle
     }
 
     @Override

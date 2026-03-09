@@ -20,9 +20,14 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.DeferredSoundType;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static welbre.ambercraft.AmberCraft.MOD_ID;
 
 /**
  * Is the main block used by ambercraft cables and pipes; Roughly is a 16 * 16 * 16 block, that {@link TinyBlock} can be added to it.<br>
@@ -89,24 +94,33 @@ public class SubBlock extends Block implements EntityBlock
     //-------------------------------------------------------Breaking----------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------------------------------------------------------------
 
-
-    @Override
-    public @NotNull BlockState playerWillDestroy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Player player)
+    /// Server Events related to the SubBlock breaking system.
+    @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MOD_ID)
+    public static final class EventHandler
     {
-        //marks which block is being broken to later use.
-        TinyBlockState tiny;
-        if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
-            be.playerIsBreaking = tiny;
-        return super.playerWillDestroy(level, pos, state, player);
+
+        /// Used to set which block is being break
+        @SubscribeEvent
+        public static void onPlayerInteractWithLeftClickInBlock(PlayerInteractEvent.LeftClickBlock event)
+        {
+            if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START)
+                if (event.getLevel().getBlockEntity(event.getPos()) instanceof SubBlockBE be)
+                {
+                    //marks which block is being broken to later use.
+                    TinyBlockState tiny;
+                    if ((tiny = be.getStateByRayCast(event.getEntity())) != null)
+                        be.setPlayerIsBreaking(tiny);
+                }
+        }
     }
 
     @Override
     protected float getDestroyProgress(@NotNull BlockState state, @NotNull Player player, @NotNull BlockGetter level, @NotNull BlockPos pos)
     {
         //Return different progress because SubBlock has different Blocks inside-it with different DestroyProgress
-        TinyBlockState tiny;//todo use the be#playerIsBreaking instead
-        if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
+        if (level.getBlockEntity(pos) instanceof SubBlockBE be && be.getPlayerIsBreaking() != null)
         {
+            TinyBlockState tiny = be.getPlayerIsBreaking();
             float f = tiny.definition.getDestroySpeed(tiny, level, pos);
             if (f == -1.0F) {
                 return 0.0F;
@@ -122,13 +136,16 @@ public class SubBlock extends Block implements EntityBlock
     @Override
     public boolean onDestroyedByPlayer(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, boolean willHarvest, @NotNull FluidState fluid)
     {
-        //todo use the be#playerIsBreaking instead
-        TinyBlockState tiny;
-        if (level.getBlockEntity(pos) instanceof SubBlockBE be && (tiny = be.getStateByRayCast(player)) != null)
+        //break a TinyBloc inside the SubBlock instead of break the entire block.
+        if (level.getBlockEntity(pos) instanceof SubBlockBE be && be.getPlayerIsBreaking() != null)
         {
+            TinyBlockState tiny = be.getPlayerIsBreaking();
+
             boolean shouldbeRemoved = be.breakTinyState(tiny, player, willHarvest, fluid);
+            //continues the pipeline if the block should be removed
+            //this only happens if the BE don't have any TinyState left
             if (shouldbeRemoved)
-                super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);//continues the pipe line if the block should be removed
+                super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
 
             return shouldbeRemoved;
         }

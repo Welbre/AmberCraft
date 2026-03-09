@@ -149,7 +149,7 @@ public final class SubBlockClientEventListener
         event.registerBlock(new SubBlockClientExtensions(), AmberCraft.Blocks.SUB_BLOCK.get());
     }
 
-    /// Used to overwrite a data-generated model to simply use the [SubBlockBakedModel] .
+    /// Used to overwrite a data-generated model to simply use the [SubBlockBakedModel].
     @SubscribeEvent
     public static void onModelBake(ModelEvent.ModifyBakingResult event)
     {

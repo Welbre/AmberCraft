@@ -24,6 +24,7 @@ public enum TinyBlockRegister
     COAL((r) -> new SimpleTinyBlock(r, 6, Blocks.COAL_BLOCK)),
     EMERALD((r) -> new SimpleTinyBlock(r, 6, Blocks.EMERALD_BLOCK)),
     BLACK_WOOL((r) -> new SimpleTinyBlock(r, 5, Blocks.BLACK_WOOL)),
+    BIG((r) -> new SimpleTinyBlock(r, 14, Blocks.DIRT)),
     DEBUG((r) -> new SimpleTinyBlock(r, 1, Blocks.PURPLE_WOOL));
 
     private DeferredHolder<TinyBlock, TinyBlock> tinyBlock;
