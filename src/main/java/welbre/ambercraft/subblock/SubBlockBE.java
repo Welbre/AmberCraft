@@ -132,7 +132,6 @@ public class SubBlockBE extends BlockEntity
                     if (box.intersect(faceBox).equals(faceBox))//full occlusion check
                     {
                         last.fullOccluded.put(dir, state);
-                        state.fullOccluded.put(dir.getOpposite(), last);//todo fix, this should be wrong :(
                     }
 
                     last.addNeighbor(dir, state);
