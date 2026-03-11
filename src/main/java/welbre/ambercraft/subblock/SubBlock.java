@@ -36,6 +36,7 @@ import static welbre.ambercraft.AmberCraft.MOD_ID;
 public class SubBlock extends Block implements EntityBlock
 {
     public static boolean IS_REQUIRING_STEP_SOUND = false;
+    public static boolean IS_REQUIRING_BREAKING_SOUND = false;
 
     public SubBlock(Properties properties) {
         super(properties.destroyTime(0.5f));
@@ -78,11 +79,20 @@ public class SubBlock extends Block implements EntityBlock
     public @NotNull SoundType getSoundType(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos, @Nullable Entity entity)
     {
         SoundType type = super.getSoundType(state, level, pos, entity);
-        if (IS_REQUIRING_STEP_SOUND && level.getBlockEntity(pos) instanceof SubBlockBE sub && entity != null)
+        if (level.getBlockEntity(pos) instanceof SubBlockBE sub)
         {
-            TinyBlockState tiny = sub.getTinyStateAboveEntity(entity);
-            if (tiny != null)
-                return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound,() -> tiny.definition.getSoundType(tiny, level, pos, entity).getStepSound(), type::getPlaceSound, type::getHitSound, type::getFallSound);
+            if (IS_REQUIRING_STEP_SOUND && entity != null)
+            {
+                TinyBlockState tiny = sub.getTinyStateAboveEntity(entity);
+                if (tiny != null)
+                    return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> tiny.definition.getSoundType(tiny, level, pos, entity).getStepSound(), type::getPlaceSound, type::getHitSound, type::getFallSound);
+            }
+            else if (IS_REQUIRING_BREAKING_SOUND)
+            {
+                TinyBlockState tiny = sub.getPlayerIsBreaking();
+                if (tiny != null)
+                    return new DeferredSoundType(type.volume, type.pitch, () -> tiny.definition.getSoundType(tiny, level, pos, entity).getBreakSound(), type::getStepSound, type::getPlaceSound, type::getHitSound, type::getFallSound);
+            }
         }
         return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> SoundEvents.EMPTY, type::getPlaceSound, type::getHitSound, type::getFallSound);
     }
