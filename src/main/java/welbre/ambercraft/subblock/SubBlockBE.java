@@ -517,4 +517,15 @@ public class SubBlockBE extends BlockEntity
         }
         return null;
     }
+
+    /// A helper to set the breaking block based on ray cast
+    /// @return if the ray cast success.
+    boolean setBreakingByRayCast(@NotNull Player player)
+    {
+        TinyBlockState state = getTinyStateByRayCast(player);
+        if (state != null)
+            playerIsBreaking = state;
+
+        return state != null;
+    }
 }

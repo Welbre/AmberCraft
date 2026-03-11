@@ -141,4 +141,10 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
         List<TinyBlockState> states = neighbors.computeIfAbsent(direction, k -> new ArrayList<>());
         states.add(state);
     }
+
+    @Override
+    public String toString()
+    {
+        return "TinyBlockState(%s at %d %d %d)".formatted(definition.registerName, x, y, z);
+    }
 }

@@ -37,6 +37,7 @@ public class SubBlock extends Block implements EntityBlock
 {
     public static boolean IS_REQUIRING_STEP_SOUND = false;
     public static boolean IS_REQUIRING_BREAKING_SOUND = false;
+    public static boolean IS_REQUIRING_HIT_SOUND = false;
 
     public SubBlock(Properties properties) {
         super(properties.destroyTime(0.5f));
@@ -81,7 +82,13 @@ public class SubBlock extends Block implements EntityBlock
         SoundType type = super.getSoundType(state, level, pos, entity);
         if (level.getBlockEntity(pos) instanceof SubBlockBE sub)
         {
-            if (IS_REQUIRING_STEP_SOUND && entity != null)
+            if (IS_REQUIRING_HIT_SOUND)
+            {
+                TinyBlockState tiny = sub.getPlayerIsBreaking();
+                if (tiny != null)
+                    return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, type::getStepSound, type::getPlaceSound, () -> tiny.definition.getSoundType(tiny, level, pos, entity).getHitSound(), type::getFallSound);
+            }
+            else if (IS_REQUIRING_STEP_SOUND && entity != null)
             {
                 TinyBlockState tiny = sub.getTinyStateAboveEntity(entity);
                 if (tiny != null)
@@ -120,13 +127,9 @@ public class SubBlock extends Block implements EntityBlock
         public static void onPlayerInteractWithLeftClickInBlock(PlayerInteractEvent.LeftClickBlock event)
         {
             if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START)
+                //marks which block is being broken to later use.
                 if (event.getLevel().getBlockEntity(event.getPos()) instanceof SubBlockBE be)
-                {
-                    //marks which block is being broken to later use.
-                    TinyBlockState tiny;
-                    if ((tiny = be.getTinyStateByRayCast(event.getEntity())) != null)
-                        be.setPlayerIsBreaking(tiny);
-                }
+                    be.setBreakingByRayCast(event.getEntity());
         }
     }
 
@@ -158,10 +161,14 @@ public class SubBlock extends Block implements EntityBlock
             TinyBlockState tiny = be.getPlayerIsBreaking();
 
             boolean shouldbeRemoved = be.breakTinyState(tiny, player, willHarvest, fluid);
+
             //continues the pipeline if the block should be removed
             //this only happens if the BE don't have any TinyState left
             if (shouldbeRemoved)
                 super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+
+            //marks the next tiny state to be broken
+            be.setBreakingByRayCast(player);
 
             return shouldbeRemoved;
         }
