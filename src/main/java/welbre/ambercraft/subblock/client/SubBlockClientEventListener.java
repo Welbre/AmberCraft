@@ -48,41 +48,35 @@ public final class SubBlockClientEventListener
     public static final class ForgeBus
     {
         /**
-         * Renders a transparent version of the model in the world "a preview".<br>
+         * Renders the outline and a transparent version of the model in the world "a preview".<br>
          */
         @SubscribeEvent
         public static void onRenderHighLight(RenderHighlightEvent.Block event)
         {
-            if (event.getCamera().getEntity() instanceof Player player)
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null)
+                return;
+
+            Player player;
+            if (event.getCamera().getEntity() instanceof Player b)
+                player = b;
+            else
+                return;
+
+
+            //render the outline in a tinyBlock
+            if (level.getBlockEntity(event.getTarget().getBlockPos()) instanceof SubBlockBE sub)
             {
-                ClientLevel level = Minecraft.getInstance().level;
-                if (level == null)
-                    return;
+                event.setCanceled(true);
+                TinyBlockState state = sub.getTinyStateByRayCast(player);
 
-                //renders only tiny block that the player is aiming for
-                if (level.getBlockEntity(event.getTarget().getBlockPos()) instanceof SubBlockBE sub)
+                if (state != null)
                 {
-                    event.setCanceled(true);
-                    TinyBlockState state = sub.getTinyStateByRayCast(player);
-                    if (state != null)
-                    {
-                        Vec3 cam = event.getCamera().getPosition();
-                        Boolean outline = Minecraft.getInstance().options.highContrastBlockOutline().get();
-                        if (outline) {
-                            VertexConsumer consumer = event.getMultiBufferSource().getBuffer(RenderType.secondaryBlockOutline());
-                            ShapeRenderer.renderShape(
-                                    event.getPoseStack(),
-                                    consumer,
-                                    state.getTranslatedShape(),
-                                    (double)sub.getBlockPos().getX() - cam.x,
-                                    (double)sub.getBlockPos().getY() - cam.y,
-                                    (double)sub.getBlockPos().getZ() - cam.z,
-                                    -16777216
-                            );
-                        }
-
-                        VertexConsumer consumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
-                        int color = outline ? -11010079 : ARGB.color(102, -16777216);
+                    Vec3 cam = event.getCamera().getPosition();
+                    Boolean outline = Minecraft.getInstance().options.highContrastBlockOutline().get();
+                    //the outline
+                    if (outline) {
+                        VertexConsumer consumer = event.getMultiBufferSource().getBuffer(RenderType.secondaryBlockOutline());
                         ShapeRenderer.renderShape(
                                 event.getPoseStack(),
                                 consumer,
@@ -90,54 +84,63 @@ public final class SubBlockClientEventListener
                                 (double)sub.getBlockPos().getX() - cam.x,
                                 (double)sub.getBlockPos().getY() - cam.y,
                                 (double)sub.getBlockPos().getZ() - cam.z,
-                                color
+                                -16777216
                         );
                     }
-                }
 
-                //render the preview of the item in the main hand of the player
-                ItemStack stack = player.getMainHandItem();
-                if (stack.getItem() != AmberCraft.Items.TINY_ITEM.get())
-                    stack = player.getOffhandItem();
-                if (stack.getItem() != AmberCraft.Items.TINY_ITEM.get())
-                    return;
-
-                TinyItemDataComponent component = stack.get(AmberCraft.DataComponents.TINY_BLOCK_DATA_COMPONENT);
-                if (component == null)
-                    return;
-
-                Vec3i vec = TinyBlockItem.CONTEXT_TO_16_GRID(level, event.getTarget());
-
-                if (!TinyBlockItem.CAN_PLACE(component.get(), level, event.getTarget()))
-                    return;
-
-                {
-                    BlockPos blockPos;
-                    if (level.getBlockState(event.getTarget().getBlockPos()).is(AmberCraft.Blocks.SUB_BLOCK.get()))
-                        blockPos = event.getTarget().getBlockPos();
-                    else
-                        blockPos = event.getTarget().getBlockPos().relative(event.getTarget().getDirection());
-
-                    BlockState state = level.getBlockState(blockPos);
-
-                    TinyBlock tinyBlock = component.get();
-                    BakedModel bakedModel = tinyBlock.staticModel(new TinyBlockState(tinyBlock, vec.getX(), vec.getY(), vec.getZ()));
-
-                    VertexConsumer buffer = event.getMultiBufferSource().getBuffer(RenderType.translucent());
-                    RandomSource randomSource = level.getRandom();
-                    ArrayList<BakedQuad> list = new ArrayList<>();
-
-                    for (RenderType type : bakedModel.getRenderTypes(state, randomSource, ModelData.EMPTY))
-                        for (Direction direction : Direction.values())
-                            list.addAll(bakedModel.getQuads(state, direction, randomSource, ModelData.EMPTY, type));
-
-                    PoseStack poseStack = new PoseStack();
-                    poseStack.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-                    poseStack.translate(new Vec3(0,0,0).subtract(event.getCamera().getPosition()));
-                    for (BakedQuad quad : list)
-                        buffer.putBulkData(poseStack.last(), quad, 1f, 1f, 1f, 0.25f, LevelRenderer.getLightColor(level, blockPos), OverlayTexture.NO_OVERLAY);
+                    VertexConsumer consumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
+                    int color = outline ? -11010079 : ARGB.color(102, -16777216);
+                    ShapeRenderer.renderShape(
+                            event.getPoseStack(),
+                            consumer,
+                            state.getTranslatedShape(),
+                            (double)sub.getBlockPos().getX() - cam.x,
+                            (double)sub.getBlockPos().getY() - cam.y,
+                            (double)sub.getBlockPos().getZ() - cam.z,
+                            color
+                    );
                 }
             }
+
+
+            ItemStack stack = player.getMainHandItem();
+            if (stack.getItem() != AmberCraft.Items.TINY_ITEM.get())
+                return;
+
+            TinyItemDataComponent component = stack.get(AmberCraft.DataComponents.TINY_BLOCK_DATA_COMPONENT);
+            if (component == null)
+                return;
+
+            Vec3i vec = TinyBlockItem.CONTEXT_TO_16_GRID(level, event.getTarget());
+
+            //check if it can be placed
+            if (!TinyBlockItem.CAN_PLACE(component.get(), level, event.getTarget().getBlockPos(), event.getTarget().getLocation(), event.getTarget().getDirection()))
+                return;
+
+            BlockPos blockPos;
+            if (level.getBlockState(event.getTarget().getBlockPos()).is(AmberCraft.Blocks.SUB_BLOCK.get()))
+                blockPos = event.getTarget().getBlockPos();
+            else
+                blockPos = event.getTarget().getBlockPos().relative(event.getTarget().getDirection());
+
+            BlockState state = level.getBlockState(blockPos);
+
+            TinyBlock tinyBlock = component.get();
+            BakedModel bakedModel = tinyBlock.staticModel(new TinyBlockState(tinyBlock, vec.getX(), vec.getY(), vec.getZ()));
+
+            VertexConsumer buffer = event.getMultiBufferSource().getBuffer(RenderType.translucent());
+            RandomSource randomSource = level.getRandom();
+            ArrayList<BakedQuad> list = new ArrayList<>();
+
+            for (RenderType type : bakedModel.getRenderTypes(state, randomSource, ModelData.EMPTY))
+                for (Direction direction : Direction.values())
+                    list.addAll(bakedModel.getQuads(state, direction, randomSource, ModelData.EMPTY, type));
+
+            PoseStack poseStack = new PoseStack();
+            poseStack.translate(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+            poseStack.translate(new Vec3(0,0,0).subtract(event.getCamera().getPosition()));
+            for (BakedQuad quad : list)
+                buffer.putBulkData(poseStack.last(), quad, 1f, 1f, 1f, 0.25f, LevelRenderer.getLightColor(level, blockPos), OverlayTexture.NO_OVERLAY);
         }
     }
 

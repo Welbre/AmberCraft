@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
 
+import java.security.Key;
 import java.util.List;
 
 /**
@@ -98,40 +99,32 @@ public class TinyBlockItem extends Item
 
     public static Vec3i CONTEXT_TO_16_GRID(UseOnContext context)
     {
-        //value between 0 and 1
-        Vec3 r;
-
-        if (context.getLevel().getBlockState(context.getClickedPos()).is(AmberCraft.Blocks.SUB_BLOCK.get()))
-            r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()));
-        else
-            r = context.getClickLocation().subtract(new Vec3(context.getClickedPos().getX(), context.getClickedPos().getY(), context.getClickedPos().getZ()).add(context.getClickedFace().getUnitVec3()));
-
-        final int x,y,z;
-        //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
-        if (context.getClickedFace().getUnitVec3().x < 0 || context.getClickedFace().getUnitVec3().y < 0 || context.getClickedFace().getUnitVec3().z < 0)
-            r = r.multiply(0.999f, 0.999f, 0.999f);
-
-        x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
-        return new Vec3i(x,y,z);
+        return CONTEXT_TO_16_GRID(context.getLevel(), context.getClickedPos(), context.getClickLocation(), context.getClickedFace());
     }
 
     public static Vec3i CONTEXT_TO_16_GRID(Level level, BlockHitResult result)
     {
+        return CONTEXT_TO_16_GRID(level, result.getBlockPos(), result.getLocation(), result.getDirection());
+    }
+
+    /// Converts a generic position in a 16*16 grid
+    public static Vec3i CONTEXT_TO_16_GRID(Level level, BlockPos anchor, Vec3 pos, Direction face)
+    {
         //value between 0 and 1
         Vec3 r;
 
-        if (level.getBlockState(result.getBlockPos()).is(AmberCraft.Blocks.SUB_BLOCK.get()))
-            r = result.getLocation().subtract(new Vec3(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()));
+        if (level.getBlockState(anchor).is(AmberCraft.Blocks.SUB_BLOCK.get()))
+            r = pos.subtract(new Vec3(anchor.getX(), anchor.getY(), anchor.getZ()));//the pos is internal
         else
-            r = result.getLocation().subtract(new Vec3(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ()).add(result.getDirection().getUnitVec3()));
+            r = pos.subtract(new Vec3(anchor.getX(), anchor.getY(), anchor.getZ()).add(face.getUnitVec3()));//the pos is outside the block
 
         final int x,y,z;
         //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
-        if (result.getDirection().getUnitVec3().x < 0 || result.getDirection().getUnitVec3().y < 0 || result.getDirection().getUnitVec3().z < 0)
+        if (face.getUnitVec3().x < 0 || face.getUnitVec3().y < 0 || face.getUnitVec3().z < 0)
             r = r.multiply(0.999f, 0.999f, 0.999f);
 
         x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
-        return new Vec3i(x,y,z);
+        return new Vec3i(x,y,z);//value between [0,15]
     }
 
     /**
@@ -198,19 +191,19 @@ public class TinyBlockItem extends Item
         return null;
     }
 
-    public static boolean CAN_PLACE(@NotNull TinyBlock block, @NotNull Level level, @NotNull BlockHitResult context)
+    /// Returns if a TinyBLock can be place at this position in the world.
+    public static boolean CAN_PLACE(@NotNull TinyBlock block, @NotNull Level level, @NotNull BlockPos blockPos, @NotNull Vec3 pos, @NotNull Direction face)
     {
-        Vec3i vec = CONTEXT_TO_16_GRID(level, context);
-        BlockPos pos = context.getBlockPos();
+        Vec3i vec = CONTEXT_TO_16_GRID(level, blockPos, pos, face);
 
         //check if the clicked block is a tiny block
-        if (level.getBlockEntity(pos) instanceof SubBlockBE subBlockBE)
+        if (level.getBlockEntity(blockPos) instanceof SubBlockBE subBlockBE)
         {
             return subBlockBE.canPlace(block, vec.getX(), vec.getY(), vec.getZ());
         }
         else
         {
-            final BlockPos relative = pos.relative(context.getDirection());
+            final BlockPos relative = blockPos.relative(face);
             //if isn't, check if the block facing the clicked direction is a sub block
             if (level.getBlockEntity(relative) instanceof SubBlockBE subBlockBE)
             {
@@ -219,17 +212,18 @@ public class TinyBlockItem extends Item
             }
             else
             {
+                VoxelShape translated = block.getTranslatedShape(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
                 //check in the surrounds if was collision
-                var translatedAABB = block.getTranslatedAABB(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
+                var translatedAABB = translated.toAabbs();
 
-                for (Direction face : Direction.values())
+                for (Direction dir : Direction.values())
                 {
-                    BlockState state = level.getBlockState(relative.relative(face));
+                    BlockState state = level.getBlockState(relative.relative(dir));
                     if (state.isAir())
                         continue;
 
-                    VoxelShape shape = state.getShape(level, relative.relative(face));
-                    List<AABB> aabbList = shape.toAabbs().stream().map(a -> a.move(face.getStepX(), face.getStepY(), face.getStepZ())).toList();
+                    VoxelShape shape = state.getShape(level, relative.relative(dir));
+                    List<AABB> aabbList = shape.toAabbs().stream().map(a -> a.move(dir.getStepX(), dir.getStepY(), dir.getStepZ())).toList();
                     for (AABB aabb : aabbList)
                         for (AABB aabb1 : translatedAABB)
                             if (aabb.intersects(aabb1))
@@ -238,18 +232,18 @@ public class TinyBlockItem extends Item
 
                 //todo implement multiples-BlockEntity states
                 //create the BE only if the placement is in one block
-                var translatedBounds = block.getTranslatedBounds(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
+                var translatedBounds = translated.bounds();
                 if (Shapes.block().bounds().intersects(translatedBounds))
+                {
                     if (Shapes.block().bounds().intersect(translatedBounds).equals(translatedBounds))
                     {
-                        level.setBlockAndUpdate(relative, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
                         return true;
-                    }
-                    else
+                    } else
                     {
                         AmberCraft.LOGGER.warn("Non implemented branch!!!, TinyItem.CAN_PLACE:Multiples-BlockEntity");
                         return false;
                     }
+                }
             }
         }
 
