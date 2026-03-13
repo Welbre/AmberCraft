@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -111,9 +112,17 @@ public abstract class TinyBlock
 
     public abstract void playStepSound(@NotNull TinyBlockState tiny, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity);
 
+    /**
+     * Used to deal with particles in the client.
+     * <p>
+     *     Handle all particle cases related to blocks, Breaking, Hitting, And Stepping
+     * </p>
+     *
+     * @param particleCase The case that is dealing with.
+     * @param hitResult Isn't null only when particleCase == Hitting
+     */
     @OnlyIn(Dist.CLIENT)
-    public abstract void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull TinyBlockState state, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase);
-
+    public abstract void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull TinyBlockState state, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase, @Nullable BlockHitResult hitResult);
 
 
 
@@ -121,6 +130,6 @@ public abstract class TinyBlock
     @OnlyIn(Dist.CLIENT)
     public enum ParticleCase
     {
-        DESTROY, STEP, BREAKING
+        DESTROY, STEP, HIT
     }
 }

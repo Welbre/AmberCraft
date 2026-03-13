@@ -118,19 +118,19 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
     }
 
     /// returns the AABB with the bounds translated
-    protected @NotNull AABB getTranslatedBounds()
+    public @NotNull AABB getTranslatedBounds()
     {
         return definition.getTranslatedBounds(this);
     }
 
     /// Solves the shape ande return a translated list of AABB
-    protected @NotNull VoxelShape getTranslatedShape()
+    public @NotNull VoxelShape getTranslatedShape()
     {
         return definition.getTranslatedShape(this);
     }
 
     /// Solves the shape ande return a translated list of AABB
-    protected @NotNull List<AABB> getTranslatedAABB()
+    public @NotNull List<AABB> getTranslatedAABB()
     {
         return definition.getTranslatedAABB(this);
     }

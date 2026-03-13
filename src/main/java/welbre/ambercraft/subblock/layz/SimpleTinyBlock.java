@@ -24,9 +24,12 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -131,20 +134,26 @@ public class SimpleTinyBlock extends TinyBlock
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull TinyBlockState state, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase)
+    public void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull TinyBlockState state, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase, @Nullable BlockHitResult result)
     {
         switch (particleCase)
         {
-            case BREAKING, DESTROY -> SPAWN_DESTROY_PARTICLE(state, pos, engine, level);
+            case DESTROY -> SPAWN_BREAK_PARTICLE(state, pos, engine, level);
+            case HIT -> SPAWN_HIT_PARTICLE(state, pos, engine, level, result.getDirection());
         }
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------Client Side Helpers---------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------
+
     /// A modified version of {@link ParticleEngine#destroy(BlockPos, BlockState)} adapted to deal with TinyBlockState size
     @OnlyIn(Dist.CLIENT)
-    private void SPAWN_DESTROY_PARTICLE(TinyBlockState tiny, BlockPos pos, ParticleEngine engine, ClientLevel level)
+    private void SPAWN_BREAK_PARTICLE(TinyBlockState tiny, BlockPos pos, ParticleEngine engine, ClientLevel level)
     {
         BlockState state = this.block.defaultBlockState();
         if (!state.isAir() && !net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions.of(state).addDestroyEffects(state, level, pos, engine)) {
+
             getTranslatedShape(tiny).forAllBoxes(
                     (p_172273_, p_172274_, p_172275_, p_172276_, p_172277_, p_172278_) -> {
                         double d1 = Math.min(1.0, p_172276_ - p_172273_);
@@ -153,6 +162,7 @@ public class SimpleTinyBlock extends TinyBlock
                         int i = Math.max(2, Mth.ceil(d1 / 0.25));
                         int j = Math.max(2, Mth.ceil(d2 / 0.25));
                         int k = Math.max(2, Mth.ceil(d3 / 0.25));
+                        float volume = (float) Math.pow(d1 * d2 * d3, 1/3f);
 
                         for (int l = 0; l < i; l++) {
                             for (int i1 = 0; i1 < j; i1++) {
@@ -174,7 +184,7 @@ public class SimpleTinyBlock extends TinyBlock
                                                     d6 - 0.75,
                                                     state,
                                                     pos
-                                            ).updateSprite(state, pos)
+                                            ).updateSprite(state, pos).scale(volume)
                                     );
                                 }
                             }
@@ -184,10 +194,50 @@ public class SimpleTinyBlock extends TinyBlock
         }
     }
 
-    //------------------------------------------------------------------------------------------------------------------------------------------------
-    //-----------------------------------------------------------Model management---------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------------------------------------
+    /// A modified version of {@link ParticleEngine#crack(BlockPos, Direction)} adapted to deal with TinyBlockState size
+    @OnlyIn(Dist.CLIENT)
+    private void SPAWN_HIT_PARTICLE(TinyBlockState state, BlockPos pos, ParticleEngine engine, ClientLevel level, Direction side)
+    {
+        final RandomSource random = RandomSource.create();
+        BlockState blockstate = this.block.defaultBlockState();
+        if (blockstate.getRenderShape() != RenderShape.INVISIBLE && blockstate.shouldSpawnTerrainParticles()) {
+            int i = pos.getX();
+            int j = pos.getY();
+            int k = pos.getZ();
+            float f = 0.1F;
+            AABB aabb = state.getTranslatedShape().bounds();
+            final float volume = (float) Math.pow(Math.abs(aabb.maxX - aabb.minX) * Math.abs(aabb.maxY - aabb.minY) * Math.abs(aabb.maxZ - aabb.minZ) , 1/3.0);
 
+            double d0 = (double)i + random.nextDouble() * (aabb.maxX - aabb.minX - 0.2F) + 0.1F + aabb.minX;
+            double d1 = (double)j + random.nextDouble() * (aabb.maxY - aabb.minY - 0.2F) + 0.1F + aabb.minY;
+            double d2 = (double)k + random.nextDouble() * (aabb.maxZ - aabb.minZ - 0.2F) + 0.1F + aabb.minZ;
+            if (side == Direction.DOWN) {
+                d1 = (double)j + aabb.minY - 0.1F;
+            }
+
+            if (side == Direction.UP) {
+                d1 = (double)j + aabb.maxY + 0.1F;
+            }
+
+            if (side == Direction.NORTH) {
+                d2 = (double)k + aabb.minZ - 0.1F;
+            }
+
+            if (side == Direction.SOUTH) {
+                d2 = (double)k + aabb.maxZ + 0.1F;
+            }
+
+            if (side == Direction.WEST) {
+                d0 = (double)i + aabb.minX - 0.1F;
+            }
+
+            if (side == Direction.EAST) {
+                d0 = (double)i + aabb.maxX + 0.1F;
+            }
+
+            engine.add((new TerrainParticle(level, d0, d1, d2, 0.0D, 0.0D, 0.0D, blockstate, pos).updateSprite(blockstate, pos)).setPower(0.2F).scale(0.6F * volume));
+        }
+    }
 
     /**
      * Used to create the model of tiny blocks.

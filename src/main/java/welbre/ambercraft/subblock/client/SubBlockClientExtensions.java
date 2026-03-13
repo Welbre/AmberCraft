@@ -22,7 +22,7 @@ public final class SubBlockClientExtensions implements IClientBlockExtensions
         {
             TinyBlockState isBreaking = sub.getPlayerIsBreaking();
             if (isBreaking != null)
-                isBreaking.definition.handleParticles((ClientLevel) level, pos, isBreaking, manager, TinyBlock.ParticleCase.DESTROY);
+                isBreaking.definition.handleParticles((ClientLevel) level, pos, isBreaking, manager, TinyBlock.ParticleCase.DESTROY, null);
         }
         return true;//don't spawn default particle
     }
@@ -34,7 +34,7 @@ public final class SubBlockClientExtensions implements IClientBlockExtensions
         {
             TinyBlockState isBreaking = sub.getPlayerIsBreaking();
             if (isBreaking != null)
-                isBreaking.definition.handleParticles((ClientLevel) level, result.getBlockPos(), isBreaking, manager, TinyBlock.ParticleCase.BREAKING);
+                isBreaking.definition.handleParticles((ClientLevel) level, result.getBlockPos(), isBreaking, manager, TinyBlock.ParticleCase.HIT, result);
         }
         return true;//don't spawn default particle
     }
