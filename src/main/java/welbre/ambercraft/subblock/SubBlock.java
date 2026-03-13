@@ -67,19 +67,19 @@ public class SubBlock extends Block implements EntityBlock
             {
                 TinyBlockState tiny = sub.getPlayerIsBreaking();
                 if (tiny != null)
-                    return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, type::getStepSound, type::getPlaceSound, () -> tiny.definition.getSoundType(tiny, level, pos, entity).getHitSound(), type::getFallSound);
+                    return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, type::getStepSound, type::getPlaceSound, () -> tiny.getDefinition().getSoundType(tiny, level, pos, entity).getHitSound(), type::getFallSound);
             }
             else if (IS_REQUIRING_STEP_SOUND && entity != null)
             {
                 TinyBlockState tiny = sub.getTinyStateAboveEntity(entity);
                 if (tiny != null)
-                    return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> tiny.definition.getSoundType(tiny, level, pos, entity).getStepSound(), type::getPlaceSound, type::getHitSound, type::getFallSound);
+                    return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> tiny.getDefinition().getSoundType(tiny, level, pos, entity).getStepSound(), type::getPlaceSound, type::getHitSound, type::getFallSound);
             }
             else if (IS_REQUIRING_BREAKING_SOUND)
             {
                 TinyBlockState tiny = sub.getPlayerIsBreaking();
                 if (tiny != null)
-                    return new DeferredSoundType(type.volume, type.pitch, () -> tiny.definition.getSoundType(tiny, level, pos, entity).getBreakSound(), type::getStepSound, type::getPlaceSound, type::getHitSound, type::getFallSound);
+                    return new DeferredSoundType(type.volume, type.pitch, () -> tiny.getDefinition().getSoundType(tiny, level, pos, entity).getBreakSound(), type::getStepSound, type::getPlaceSound, type::getHitSound, type::getFallSound);
             }
         }
         return new DeferredSoundType(type.volume, type.pitch, type::getBreakSound, () -> SoundEvents.EMPTY, type::getPlaceSound, type::getHitSound, type::getFallSound);
@@ -121,12 +121,12 @@ public class SubBlock extends Block implements EntityBlock
         if (level.getBlockEntity(pos) instanceof SubBlockBE be && be.getPlayerIsBreaking() != null)
         {
             TinyBlockState tiny = be.getPlayerIsBreaking();
-            float f = tiny.definition.getDestroySpeed(tiny, level, pos);
+            float f = tiny.getDefinition().getDestroySpeed(tiny, level, pos);
             if (f == -1.0F) {
                 return 0.0F;
             } else {
                 int i = net.neoforged.neoforge.event.EventHooks.doPlayerHarvestCheck(player, state, level, pos) ? 30 : 100;
-                return tiny.definition.getPlayerDestroySpeed(player,tiny, level, pos) / f / (float)i;
+                return tiny.getDefinition().getPlayerDestroySpeed(player,tiny, level, pos) / f / (float)i;
             }
         }
         else

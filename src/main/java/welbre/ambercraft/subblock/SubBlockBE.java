@@ -175,7 +175,7 @@ public class SubBlockBE extends BlockEntity
         tinyBS.add(new TinyBlockState(tinyBlock, x, y, z));
         shape = Shapes.empty();
         for (TinyBlockState state : tinyBS)
-            shape = Shapes.or(shape, state.definition.shape.move(state.x / 16.0, state.y/16.0, state.z/16.0));
+            shape = Shapes.or(shape, state.getTranslatedShape());
 
         updateAround();
 
@@ -237,10 +237,10 @@ public class SubBlockBE extends BlockEntity
 
         if (tinyBS.remove(state))
         {
-            ItemStack droppedItem = state.definition.getDroppedItem(state, null);
+            ItemStack droppedItem = state.getDefinition().getDroppedItem(state, null);
             if (droppedItem != null)
             {
-                var itemEntity = new ItemEntity(level, state.x / 16f + getBlockPos().getX(), state.y / 16f + getBlockPos().getY(), state.z / 16f + getBlockPos().getZ(), droppedItem);
+                var itemEntity = new ItemEntity(level, state.getX() / 16f + getBlockPos().getX(), state.getY() / 16f + getBlockPos().getY(), state.getZ() / 16f + getBlockPos().getZ(), droppedItem);
                 level.addFreshEntity(itemEntity);
             }
 
@@ -248,8 +248,8 @@ public class SubBlockBE extends BlockEntity
                 return;
             
             shape = Shapes.empty();
-            for (TinyBlockState a : tinyBS)
-                shape = Shapes.or(shape, a.definition.shape.move(a.x / 16.0, a.y/16.0, a.z/16.0));
+            for (TinyBlockState tiny : tinyBS)
+                this.shape = Shapes.or(this.shape, tiny.getTranslatedShape());
 
             update();
         }
@@ -276,7 +276,7 @@ public class SubBlockBE extends BlockEntity
 
             shape = Shapes.empty();
             for (TinyBlockState a : tinyBS)
-                shape = Shapes.or(shape, a.definition.shape.move(a.x / 16.0, a.y/16.0, a.z/16.0));
+                shape = Shapes.or(shape, a.getTranslatedShape());
 
             update();
         }
@@ -392,7 +392,7 @@ public class SubBlockBE extends BlockEntity
                 state.deserializeNBT(registries, tbs.getCompound(String.valueOf(i)));
 
                 //checks if the added new state can be placed in the SubBlock
-                if (canPlace(state.definition, state.x, state.y, state.z))
+                if (canPlace(state.getDefinition(), state.getX(), state.getY(), state.getZ()))
                     tinyBS.add(state);
                 else
                     dropTinyState(state);

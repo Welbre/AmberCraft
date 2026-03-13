@@ -19,8 +19,8 @@ import java.util.*;
  */
 public class TinyBlockState implements INBTSerializable<CompoundTag>
 {
-    public @NotNull TinyBlock definition;
-    public short x,y,z;
+    private @NotNull TinyBlock definition;
+    private short x,y,z;
     /// List with all directions that the state have external access (is in the edge of the subblock)
     public List<Direction> externalContact = new ArrayList<>();
     /**
@@ -108,6 +108,22 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
                 SubBlockBE.TBSReference.SOLVE(pos, solved::add);//finish the memory address of the object later.
             }
         }
+    }
+
+    public @NotNull TinyBlock getDefinition() {
+        return definition;
+    }
+
+    public short getX() {
+        return x;
+    }
+
+    public short getY() {
+        return y;
+    }
+
+    public short getZ() {
+        return z;
     }
 
     /// Returns an integer with all x,y and z in one short, xxxxyyyyzzzz where x is the leftest bit.

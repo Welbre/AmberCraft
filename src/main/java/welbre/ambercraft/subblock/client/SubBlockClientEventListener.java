@@ -73,7 +73,7 @@ public final class SubBlockClientEventListener
                             ShapeRenderer.renderShape(
                                     event.getPoseStack(),
                                     consumer,
-                                    state.definition.shape.move(state.x / 16f, state.y / 16f, state.z / 16f),
+                                    state.getTranslatedShape(),
                                     (double)sub.getBlockPos().getX() - cam.x,
                                     (double)sub.getBlockPos().getY() - cam.y,
                                     (double)sub.getBlockPos().getZ() - cam.z,
@@ -86,7 +86,7 @@ public final class SubBlockClientEventListener
                         ShapeRenderer.renderShape(
                                 event.getPoseStack(),
                                 consumer,
-                                state.definition.shape.move(state.x / 16f, state.y / 16f, state.z / 16f),
+                                state.getTranslatedShape(),
                                 (double)sub.getBlockPos().getX() - cam.x,
                                 (double)sub.getBlockPos().getY() - cam.y,
                                 (double)sub.getBlockPos().getZ() - cam.z,

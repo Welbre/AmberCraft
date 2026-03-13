@@ -70,7 +70,7 @@ public class SimpleTinyBlock extends TinyBlock
     public BakedModel staticModel(@Nullable TinyBlockState state)
     {
         if (state != null)
-            return new SimpleTinyBlockBakedModel(Minecraft.getInstance().getBlockRenderer().getBlockModel(block.defaultBlockState()), state.x / 16f, state.y / 16f, state.z / 16f, size / 16f);
+            return new SimpleTinyBlockBakedModel(Minecraft.getInstance().getBlockRenderer().getBlockModel(block.defaultBlockState()), state.getX() / 16f, state.getY() / 16f, state.getZ() / 16f, size / 16f);
         else
             return new SimpleTinyBlockBakedModel(Minecraft.getInstance().getBlockRenderer().getBlockModel(block.defaultBlockState()), 0, 0, 0, size / 16f);
     }

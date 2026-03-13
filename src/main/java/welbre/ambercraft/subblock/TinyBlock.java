@@ -50,18 +50,18 @@ public abstract class TinyBlock
     /// returns the AABB with the bounds translated
     protected @NotNull AABB getTranslatedBounds(TinyBlockState state)
     {
-        return shape.bounds().move(state.x / 16.0, state.y / 16.0, state.z / 16.0);
+        return shape.bounds().move(state.getX() / 16.0, state.getY() / 16.0, state.getZ() / 16.0);
     }
 
     protected @NotNull VoxelShape getTranslatedShape(TinyBlockState state)
     {
-        return state.definition.shape.move(state.x / 16.0, state.y / 16.0, state.z / 16.0);
+        return state.getDefinition().shape.move(state.getX() / 16.0, state.getY() / 16.0, state.getZ() / 16.0);
     }
 
     /// Solves the shape ande return a translated list of AABB
     protected @NotNull List<AABB> getTranslatedAABB(TinyBlockState state)
     {
-        return shape.toAabbs().stream().map(aabb -> aabb.move(state.x / 16.0, state.y / 16.0, state.z / 16.0)).toList();
+        return shape.toAabbs().stream().map(aabb -> aabb.move(state.getX() / 16.0, state.getY() / 16.0, state.getZ() / 16.0)).toList();
     }
 
     /**
