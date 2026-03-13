@@ -58,25 +58,6 @@ public class SubBlock extends Block implements EntityBlock
     }
 
     @Override
-    public void stepOn(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull Entity entity)
-    {
-        //todo implement a way yo play the correct sound.
-        /*
-        float f = DeltaTracker.ONE.getGameTimeDeltaPartialTick(!level.tickRateManager().isEntityFrozen(entity));
-        if (level.getBlockEntity(pos) instanceof SubBlockBE be)
-            for (var tiny : be.getTinyStates())
-                for (AABB aabb : tiny.getTranslatedAABB())
-                    if (aabb.contains(entity.getPosition(f).subtract(pos.getX(), pos.getY(), pos.getZ()).subtract(0, 1 / 32f, 0)))//half of a tinyblock in -y dir
-                    {
-                        tiny.definition.playStepSound(tiny, level, pos, entity);
-                        return;
-                    }
-
-         */
-        super.stepOn(level, pos, state, entity);
-    }
-
-    @Override
     public @NotNull SoundType getSoundType(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos, @Nullable Entity entity)
     {
         SoundType type = super.getSoundType(state, level, pos, entity);

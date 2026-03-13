@@ -85,7 +85,7 @@ runs {
         runType 'client'
 
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        programArguments.addAll '--username', 'Welber0'
+        programArguments.addAll '--username', 'Izabely'
     }
 
     server {

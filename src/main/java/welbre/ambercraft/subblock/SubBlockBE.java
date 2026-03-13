@@ -295,11 +295,12 @@ public class SubBlockBE extends BlockEntity
     {
         if (level != null)
         {
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+            //force a re-render in the SinglePlayer
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             if (level.isClientSide())
                 requestModelDataUpdate();
             else
-                setChanged();
+                setChanged();//this will send Packet later to update all data and model at once via network.
         }
     }
     //endregion
@@ -433,6 +434,7 @@ public class SubBlockBE extends BlockEntity
     public void onDataPacket(@NotNull Connection net, @NotNull ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider lookupProvider)
     {
         super.onDataPacket(net, pkt, lookupProvider);
+        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_IMMEDIATE);
     }
 
     @Override
