@@ -72,12 +72,25 @@ runs {
         modSource project.sourceSets.main
     }
 
+
     client {
         // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+        runType 'client'
+
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        programArguments.addAll '--username', 'Welber'
+    }
+
+    client1 {
+        runType 'client'
+
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        programArguments.addAll '--username', 'Welber0'
     }
 
     server {
+        runType 'server'
+
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         argument '--nogui'
     }
@@ -168,6 +181,10 @@ tasks.withType(ProcessResources).configureEach {
     filesMatching(['META-INF/neoforge.mods.toml']) {
         expand replaceProperties
     }
+}
+
+tasks.withType(JavaExec).configureEach {
+    standardInput = System.in
 }
 
 // Example configuration to allow publishing using the maven-publish plugin

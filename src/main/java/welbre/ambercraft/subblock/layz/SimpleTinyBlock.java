@@ -130,6 +130,7 @@ public class SimpleTinyBlock extends TinyBlock
     }
 
     @Override
+    @OnlyIn(Dist.CLIENT)
     public void handleParticles(@NotNull ClientLevel level, @NotNull BlockPos pos, @NotNull TinyBlockState state, @NotNull ParticleEngine engine, @NotNull ParticleCase particleCase)
     {
         switch (particleCase)
@@ -139,6 +140,7 @@ public class SimpleTinyBlock extends TinyBlock
     }
 
     /// A modified version of {@link ParticleEngine#destroy(BlockPos, BlockState)} adapted to deal with TinyBlockState size
+    @OnlyIn(Dist.CLIENT)
     private void SPAWN_DESTROY_PARTICLE(TinyBlockState tiny, BlockPos pos, ParticleEngine engine, ClientLevel level)
     {
         BlockState state = this.block.defaultBlockState();

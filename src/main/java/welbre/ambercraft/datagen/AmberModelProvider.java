@@ -1,5 +1,6 @@
 package welbre.ambercraft.datagen;
 
+import com.google.errorprone.annotations.Var;
 import com.google.gson.JsonObject;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
@@ -89,7 +90,7 @@ public class AmberModelProvider extends ModelProvider {
 
     private static void registerBlocks(@NotNull BlockModelGenerators blocks) {
         blocks.createTrivialCube(AmberCraft.Blocks.IRON_MACHINE_CASE_BLOCK.get());
-        blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(AmberCraft.Blocks.SUB_BLOCK.get()));
+        blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(AmberCraft.Blocks.SUB_BLOCK.get(), Variant.variant().with(VariantProperties.MODEL, ResourceLocation.parse("minecraft:block/air"))));
 
         blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(AmberCraft.Blocks.HEAT_SINK_BLOCK.get(), Variant.variant().with(VariantProperties.MODEL,
                         ModelTemplates.PARTICLE_ONLY.createWithSuffix(AmberCraft.Blocks.HEAT_SINK_BLOCK.get(),"_particle", new TextureMapping().put(TextureSlot.PARTICLE, ResourceLocation.parse("ambercraft:block/copper_plate_dark")),blocks.modelOutput)
