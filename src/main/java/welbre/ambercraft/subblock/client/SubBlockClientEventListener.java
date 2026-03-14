@@ -36,6 +36,8 @@ import welbre.ambercraft.subblock.*;
 import java.util.ArrayList;
 
 import static welbre.ambercraft.AmberCraft.MOD_ID;
+import static welbre.ambercraft.subblock.SubBlockBE.CAN_PLACE;
+import static welbre.ambercraft.subblock.SubBlockBE.CONTEXT_TO_16_GRID;
 
 /// Client Events related to the SubBlock System.
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = MOD_ID, value = Dist.CLIENT)
@@ -111,10 +113,10 @@ public final class SubBlockClientEventListener
             if (component == null)
                 return;
 
-            Vec3i vec = TinyBlockItem.CONTEXT_TO_16_GRID(level, event.getTarget());
+            Vec3i vec = CONTEXT_TO_16_GRID(level, event.getTarget());
 
             //check if it can be placed
-            if (!TinyBlockItem.CAN_PLACE(component.get(), level, event.getTarget().getBlockPos(), event.getTarget().getLocation(), event.getTarget().getDirection()))
+            if (!CAN_PLACE(component.get(), level, event.getTarget().getBlockPos(), event.getTarget().getLocation(), event.getTarget().getDirection()))
                 return;
 
             BlockPos blockPos;
