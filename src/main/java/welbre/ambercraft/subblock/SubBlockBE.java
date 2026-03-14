@@ -63,6 +63,13 @@ public class SubBlockBE extends BlockEntity
         shape = Shapes.empty();
     }
 
+    protected void updateShape()
+    {
+        shape = Shapes.empty();
+        for (TinyBlockState state : tinyBS)
+            shape = Shapes.or(shape, state.getTranslatedShape());
+    }
+
     /**
      * Update the neighbor / external contact from the last state in the tinyBs. <br>
      * Call this only after add a new a fresh state in the subBlock,
@@ -173,9 +180,7 @@ public class SubBlockBE extends BlockEntity
         if (!canPlace(tinyBlock, x, y, z))
             return false;
         tinyBS.add(new TinyBlockState(tinyBlock, x, y, z));
-        shape = Shapes.empty();
-        for (TinyBlockState state : tinyBS)
-            shape = Shapes.or(shape, state.getTranslatedShape());
+        updateShape();
 
         updateAround();
 
@@ -247,9 +252,7 @@ public class SubBlockBE extends BlockEntity
             if (tinyBS.isEmpty())//don't remove it, if the shape is empty a crash will happen!
                 return;
             
-            shape = Shapes.empty();
-            for (TinyBlockState tiny : tinyBS)
-                this.shape = Shapes.or(this.shape, tiny.getTranslatedShape());
+            updateShape();
 
             update();
         }
@@ -274,9 +277,7 @@ public class SubBlockBE extends BlockEntity
             if (tinyBS.isEmpty())
                 return true;
 
-            shape = Shapes.empty();
-            for (TinyBlockState a : tinyBS)
-                shape = Shapes.or(shape, a.getTranslatedShape());
+            updateShape();
 
             update();
         }
@@ -401,10 +402,7 @@ public class SubBlockBE extends BlockEntity
             TBSReference.SOLVE_REQUESTS(tinyBS);
 
 
-            shape = Shapes.empty();
-            //add all, and re math the shape
-            for (TinyBlockState state : tinyBS)
-                shape = Shapes.or(shape, state.getTranslatedShape());
+            updateShape();
 
             requestModelDataUpdate();
         }
