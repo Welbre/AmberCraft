@@ -24,20 +24,17 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
-import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.client.BER.HeatSinkBER;
 import welbre.ambercraft.subblock.*;
 
 import java.util.ArrayList;
 
 import static welbre.ambercraft.AmberCraft.MOD_ID;
 import static welbre.ambercraft.subblock.SubBlockBE.CAN_PLACE;
-import static welbre.ambercraft.subblock.SubBlockBE.CONTEXT_TO_16_GRID;
 
 /// Client Events related to the SubBlock System.
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = MOD_ID, value = Dist.CLIENT)
@@ -113,7 +110,7 @@ public final class SubBlockClientEventListener
             if (component == null)
                 return;
 
-            Vec3i vec = CONTEXT_TO_16_GRID(level, event.getTarget());
+            Vec3i vec = Grid16Context.grid_from(level, event.getTarget());
 
             //check if it can be placed
             if (!CAN_PLACE(component.get(), level, event.getTarget().getBlockPos(), event.getTarget().getLocation(), event.getTarget().getDirection()))
@@ -144,6 +141,12 @@ public final class SubBlockClientEventListener
             for (BakedQuad quad : list)
                 buffer.putBulkData(poseStack.last(), quad, 1f, 1f, 1f, 0.25f, LevelRenderer.getLightColor(level, blockPos), OverlayTexture.NO_OVERLAY);
         }
+    }
+
+    /// Register the BER
+    @SubscribeEvent
+    public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(AmberCraft.BlockEntity.SUB_BLOCK_BE.get(), SubBlockBER::new);
     }
 
     /// Register extra effects to the client, like sound and particles

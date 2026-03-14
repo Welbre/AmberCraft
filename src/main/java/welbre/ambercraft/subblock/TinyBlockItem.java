@@ -12,8 +12,6 @@ import net.minecraft.world.level.block.SoundType;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
 
-import static welbre.ambercraft.subblock.SubBlockBE.*;
-
 /**
  * A class with methods to help any item to beable to place TinyBlock in the world.
  */
@@ -40,15 +38,23 @@ public class TinyBlockItem extends Item
 
         TinyBlock tinyBlock = component.get();
         Level level = context.getLevel();
-        var pos = CONTEXT_TO_16_GRID(context);
-        SubBlockBE sub = GET_SUB_BLOCK_BE_IF_CAN_PLACE(tinyBlock, level, context);
+        Grid16Context grid = new Grid16Context(component.get(), level, context.getClickedPos(), context.getClickLocation(), context.getClickedFace());
 
-        if (sub == null) {
-            return InteractionResult.FAIL;
+        SubBlockBE sub;
+        //get a tiny block or create one
+        if (level.getBlockEntity(grid.anchor()) instanceof SubBlockBE subBlockBE)
+            sub = subBlockBE;
+        else
+        {
+            level.setBlock(grid.anchor(), AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState(), 3);
+            sub = (SubBlockBE) level.getBlockEntity(grid.anchor());
         }
 
+        if (sub == null)
+            return InteractionResult.FAIL;
+
         //Place Tiny Item
-        if (!sub.addTinyBlock(tinyBlock, pos.getX(), pos.getY(), pos.getZ()))
+        if (!sub.addTinyBlock(tinyBlock, grid))
             return InteractionResult.FAIL;
 
         //Play sound

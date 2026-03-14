@@ -13,7 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,6 +23,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -71,7 +71,10 @@ public class SubBlockBE extends BlockEntity
     {
         shape = Shapes.empty();
         for (TinyBlockState state : tinyBS)
-            shape = Shapes.or(shape, state.getTranslatedShape());
+            shape = Shapes.or(shape, Shapes.join(Shapes.block(), state.getTranslatedShape(), BooleanOp.AND));//Join the shape and the intersection between shape and block bounds
+
+        for (SharedTBS shared : sharedTBS)
+            shape = Shapes.or(shape, Shapes.join(Shapes.block(), shared.sharedState().getTranslatedShape(), BooleanOp.AND));//the same
     }
 
     /**
@@ -168,7 +171,36 @@ public class SubBlockBE extends BlockEntity
                     else
                         state.fullOccluded.put(dir, null);//skip render this face
 
-        update();
+        synchronize();
+    }
+
+    /**
+     * Adds a new {@link TinyBlockState} in the SubBlock using the tinyBlock
+     * @param tinyBlock The TinyBlock type
+     * @param grid Placement context
+     * @return if the tiny state has been placed.
+     */
+    public boolean addTinyBlock(@NotNull TinyBlock tinyBlock, final Grid16Context grid)
+    {
+        if (level == null | !canPlace(tinyBlock, grid))
+            return false;
+        tinyBS.add(new TinyBlockState(tinyBlock, grid.x(), grid.y(), grid.z()));
+
+        if (grid.hasShared())//if is shared, then create all absent SubBlock
+            for (BlockPos shared : grid.shared())
+                if (!level.getBlockState(shared).is(AmberCraft.Blocks.SUB_BLOCK))
+                {
+                    level.setBlockAndUpdate(shared, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
+
+                    if (level.getBlockEntity(shared) instanceof SubBlockBE shareBE)
+                        shareBE.sharedTBS.add(new SharedTBS(getBlockPos(), tinyBS.getLast()));
+                }
+
+        updateShape();
+        updateAround();
+        synchronize();
+
+        return true;
     }
 
     /**
@@ -181,16 +213,7 @@ public class SubBlockBE extends BlockEntity
      */
     public boolean addTinyBlock(@NotNull TinyBlock tinyBlock, final int x, final int y, final int z)
     {
-        if (!canPlace(tinyBlock, x, y, z))
-            return false;
-        tinyBS.add(new TinyBlockState(tinyBlock, x, y, z));
-        updateShape();
-
-        updateAround();
-
-        update();
-
-        return true;
+        return addTinyBlock(tinyBlock, new Grid16Context(x, y, z, getBlockPos(), Grid16Context.GET_SHARED_LIST(tinyBlock, getBlockPos(), new Vec3i(x, y, z))));
     }
 
     /// Update the internal model of <b>one specific</b> state
@@ -213,29 +236,69 @@ public class SubBlockBE extends BlockEntity
      */
     public boolean canPlace(@NotNull TinyBlock tinyBlock, final int x, final int y, final int z)
     {
-        AABB moved = tinyBlock.shape.bounds().move(x / 16f, y / 16f, z / 16f);
-        if (moved.maxX > 1 || moved.maxY > 1 || moved.maxZ > 1 || moved.minX < 0 || moved.minY < 0 || moved.minZ < 0)
+        return canPlace(tinyBlock, new Grid16Context(x,y,z, getBlockPos(), Grid16Context.GET_SHARED_LIST(tinyBlock, getBlockPos(), new Vec3i(x, y, z))));
+    }
+
+    /**
+     * Checks if a tinyBlock can be placed in the SubBlock using a grid context.
+     * @param context The context placement
+     */
+    public boolean canPlace(@NotNull TinyBlock tinyBlock, final Grid16Context context)
+    {
+        if (level == null)
             return false;
 
-        List<TinyBlockState> states = new ArrayList<>(List.of(new TinyBlockState(tinyBlock, x, y, z)));
-        states.addAll(tinyBS);
+        List<AABB> aabb = tinyBlock.getTranslatedAABB(new TinyBlockState(tinyBlock, context.x(), context.y(), context.z()));
 
-        //collision check
-        final int size = states.size();
-        for (int i = 0; i < size - 1; i++)
-        {
-            final var shape_a = states.get(i).getTranslatedAABB();
-            for (int j = i + 1; j < size; j++)
+        //check for collision between the TinyBlock that will be placed and the TinyBlockState already in place in the anchor
+        if (this.collisionCheck(aabb))
+            return false;
+
+        //similar but check in all shared in the context and for block in the surround
+        for (BlockPos sharedPos : context.shared())
+            if (level.getBlockEntity(sharedPos) instanceof SubBlockBE sharedBE)
             {
-                final var shape_b = states.get(j).getTranslatedAABB();
-                for (AABB aabb_a : shape_a)
-                    for (AABB aabb_b : shape_b)
-                        if (aabb_a.intersects(aabb_b))
+                if (sharedBE.collisionCheck(aabb))
+                    return false;
+            }
+            else//if isn't a SubBlock, check if was collision in shapes
+            {
+                BlockState state = level.getBlockState(sharedPos);
+                if (state.isAir())
+                    continue;
+
+                //move the state using the anchor as origin
+                VoxelShape blockShape = state.getShape(level, sharedPos).move(
+                        new Vec3(
+                                sharedPos.getX() - context.anchor().getX(),
+                                sharedPos.getY() - context.anchor().getY(),
+                                sharedPos.getZ() - context.anchor().getZ()
+                        )
+                );
+                for (AABB boxA : blockShape.toAabbs())
+                    for (AABB boxB : aabb)
+                        if (boxA.intersects(boxB))
                             return false;
             }
-        }
+
 
         return true;
+    }
+
+    /// Check collision between the aabb and all state in the SubBlockBE, the owned and the shared.
+    /// @return if it has a collision.
+    public boolean collisionCheck(@NotNull Collection<AABB> aabb)
+    {
+        ArrayList<TinyBlockState> list = new ArrayList<>(tinyBS);
+        list.addAll(sharedTBS.stream().map(SharedTBS::sharedState).toList());
+
+        for (TinyBlockState state : list)
+            for (AABB boxA : aabb)
+                for (AABB boxB : state.getTranslatedAABB())
+                    if (boxA.intersects(boxB))
+                        return true;
+
+        return false;
     }
 
     /// Drops a tiny block from the subBlock, notice that the dropped item is defined by the {@link TinyBlock#getDroppedItem(TinyBlockState, LootParams.Builder)} not by this method.
@@ -258,7 +321,7 @@ public class SubBlockBE extends BlockEntity
             
             updateShape();
 
-            update();
+            synchronize();
         }
     }
 
@@ -283,7 +346,7 @@ public class SubBlockBE extends BlockEntity
 
             updateShape();
 
-            update();
+            synchronize();
         }
 
         return false;
@@ -296,7 +359,7 @@ public class SubBlockBE extends BlockEntity
      * and the default implementation checks for BlockState changes to send the packet,
      * that inhibit the SubBlock to update, duo the all data is stores in the BlockEntity.<br>
      */
-    public void update()
+    public void synchronize()
     {
         if (level != null)
         {
@@ -368,8 +431,9 @@ public class SubBlockBE extends BlockEntity
 
                 if (match != BATCH.size())
                 {
+                    var er = new RuntimeException("The cache is corrupted (BATCH: %d, REQUIRED: %d, MATCH: %d), please report this to the developer.".formatted(BATCH.size(), cords.length, match));
                     BATCH.clear();
-                    throw new RuntimeException("The cache is corrupted (BATCH: %d, REQUIRED: %d, MATCH: %d), please report this to the developer.".formatted(BATCH.size(), cords.length, match));
+                    throw er;
                 }
             }
         }
@@ -397,10 +461,7 @@ public class SubBlockBE extends BlockEntity
                 state.deserializeNBT(registries, tbs.getCompound(String.valueOf(i)));
 
                 //checks if the added new state can be placed in the SubBlock
-                if (canPlace(state.getDefinition(), state.getX(), state.getY(), state.getZ()))
-                    tinyBS.add(state);
-                else
-                    dropTinyState(state);
+                tinyBS.add(state);
             }
             TBSReference.BEGIN_BATCH(tag, registries, this.tinyBS);
             TBSReference.SOLVE_REQUESTS(tinyBS);
@@ -436,7 +497,8 @@ public class SubBlockBE extends BlockEntity
     public void onDataPacket(@NotNull Connection net, @NotNull ClientboundBlockEntityDataPacket pkt, HolderLookup.@NotNull Provider lookupProvider)
     {
         super.onDataPacket(net, pkt, lookupProvider);
-        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_IMMEDIATE);
+        if (level != null)
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_IMMEDIATE);
     }
 
     @Override
@@ -532,104 +594,10 @@ public class SubBlockBE extends BlockEntity
         return state != null;
     }
 
-    public static Vec3i CONTEXT_TO_16_GRID(UseOnContext context)
-    {
-        return CONTEXT_TO_16_GRID(context.getLevel(), context.getClickedPos(), context.getClickLocation(), context.getClickedFace());
-    }
-
-    public static Vec3i CONTEXT_TO_16_GRID(Level level, BlockHitResult result)
-    {
-        return CONTEXT_TO_16_GRID(level, result.getBlockPos(), result.getLocation(), result.getDirection());
-    }
-
-    /// Converts a generic position in a 16*16 grid
-    public static Vec3i CONTEXT_TO_16_GRID(Level level, BlockPos anchor, Vec3 pos, Direction face)
-    {
-        //value between 0 and 1
-        Vec3 r;
-
-        if (level.getBlockState(anchor).is(AmberCraft.Blocks.SUB_BLOCK.get()))
-            r = pos.subtract(new Vec3(anchor.getX(), anchor.getY(), anchor.getZ()));//the pos is internal
-        else
-            r = pos.subtract(new Vec3(anchor.getX(), anchor.getY(), anchor.getZ()).add(face.getUnitVec3()));//the pos is outside the block
-
-        final int x,y,z;
-        //if some value in r == 1, then the grid algorithm will return 0 at that coordinate, so multiply by 0.999f to 0.9999f * 16 != 16
-        if (face.getUnitVec3().x < 0 || face.getUnitVec3().y < 0 || face.getUnitVec3().z < 0)
-            r = r.multiply(0.999f, 0.999f, 0.999f);
-
-        x = (int) (r.x * 16) % 16; y = (int) (r.y * 16) % 16; z = (int) (r.z * 16) % 16;
-        return new Vec3i(x,y,z);//value between [0,15]
-    }
-
-    /**
-     * Used to check if a TinyBlock can be placed in this position in the world.<br>
-     * @return Null if can't place, otherwise, the subblock.
-     */
-    public static @Nullable SubBlockBE GET_SUB_BLOCK_BE_IF_CAN_PLACE(@NotNull TinyBlock block, @NotNull Level level, @NotNull UseOnContext context)
-    {
-        Vec3i vec = CONTEXT_TO_16_GRID(context);
-        BlockPos pos = context.getClickedPos();
-
-        //check if the clicked block is a tiny block
-        if (level.getBlockEntity(pos) instanceof SubBlockBE subBlockBE)
-        {
-            if (subBlockBE.canPlace(block, vec.getX(), vec.getY(), vec.getZ()))
-                return subBlockBE;
-        }
-        else
-        {
-            final BlockPos relative = pos.relative(context.getClickedFace());
-            //if isn't, check if the block facing the clicked direction is a sub block
-            if (level.getBlockEntity(relative) instanceof SubBlockBE subBlockBE)
-            {
-                //if the block in the clicked direction is a sub block, then get the BE
-                if (subBlockBE.canPlace(block, vec.getX(), vec.getY(), vec.getZ()))
-                    return subBlockBE;
-            }
-            else
-            {
-                //check in the surrounds if was collision
-                var translatedAABB = block.getTranslatedAABB(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
-
-                for (Direction face : Direction.values())
-                {
-                    BlockState state = level.getBlockState(relative.relative(face));
-                    if (state.isAir())
-                        continue;
-
-                    VoxelShape shape = state.getShape(level, relative.relative(face));
-                    List<AABB> aabbList = shape.toAabbs().stream().map(a -> a.move(face.getStepX(), face.getStepY(), face.getStepZ())).toList();
-                    for (AABB aabb : aabbList)
-                        for (AABB aabb1 : translatedAABB)
-                            if (aabb.intersects(aabb1))
-                                return null;
-                }
-
-                //todo implement multiples-BlockEntity states
-                //create the BE only if the placement is in one block
-                var translatedBounds = block.getTranslatedBounds(new TinyBlockState(block, vec.getX(), vec.getY(), vec.getZ()));
-                if (Shapes.block().bounds().intersects(translatedBounds))
-                    if (Shapes.block().bounds().intersect(translatedBounds).equals(translatedBounds))
-                    {
-                        level.setBlockAndUpdate(relative, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
-                        return (SubBlockBE) level.getBlockEntity(relative);
-                    }
-                    else
-                    {
-                        AmberCraft.LOGGER.warn("Non implemented branch!!!, TinyItem.GET_SUB_BLOCK_BE_IF_CAN_PLACE:Multiples-BlockEntity");
-                        return null;
-                    }
-            }
-        }
-
-        return null;
-    }
-
     /// Returns if a TinyBLock can be place at this position in the world.
     public static boolean CAN_PLACE(@NotNull TinyBlock block, @NotNull Level level, @NotNull BlockPos blockPos, @NotNull Vec3 pos, @NotNull Direction face)
     {
-        Vec3i vec = CONTEXT_TO_16_GRID(level, blockPos, pos, face);
+        Vec3i vec = Grid16Context.grid_from(level, blockPos, pos, face);
 
         //check if the clicked block is a tiny block
         if (level.getBlockEntity(blockPos) instanceof SubBlockBE subBlockBE)
