@@ -1,10 +1,12 @@
 package welbre.ambercraft.subblock;
 
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.client.model.EmptyModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -39,6 +41,11 @@ public class SharedTinyBlockState extends TinyBlockState
     {
     }
 
+    @Override
+    public BakedModel staticModel(TinyBlockState blockState)
+    {
+        return EmptyModel.BAKED;
+    }
 
     public @NotNull BlockPos getOwner() {
         return owner;

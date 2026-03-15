@@ -1,9 +1,21 @@
 package welbre.ambercraft.subblock;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.apache.commons.lang3.ArrayUtils;
@@ -44,6 +56,13 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
         this.x = (short) x;
         this.y = (short) y;
         this.z = (short) z;
+    }
+
+
+    /// @see TinyBlock#staticModel(TinyBlockState)
+    public BakedModel staticModel(TinyBlockState blockState)
+    {
+        return definition.staticModel(blockState);
     }
 
     @Override
@@ -110,10 +129,6 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
         }
     }
 
-    public @NotNull TinyBlock getDefinition() {
-        return definition;
-    }
-
     public short getX() {
         return x;
     }
@@ -162,5 +177,35 @@ public class TinyBlockState implements INBTSerializable<CompoundTag>
     public String toString()
     {
         return "TinyBlockState(%s at %d %d %d)".formatted(definition.registerName, x, y, z);
+    }
+
+    /// @see TinyBlock#getSoundType(TinyBlockState, LevelReader, BlockPos, Entity)
+    public SoundType getSoundType(TinyBlockState tiny, @NotNull LevelReader level, @NotNull BlockPos pos, @Nullable Entity entity)
+    {
+        return definition.getSoundType(tiny, level, pos, entity);
+    }
+
+    /// @see TinyBlock#getDestroySpeed(TinyBlockState, BlockGetter, BlockPos)
+    public float getDestroySpeed(TinyBlockState tiny, @NotNull BlockGetter level, @NotNull BlockPos pos)
+    {
+        return definition.getDestroySpeed(tiny, level, pos);
+    }
+
+    /// @see TinyBlock#getPlayerDestroySpeed(Player, TinyBlockState, BlockGetter, BlockPos)
+    public float getPlayerDestroySpeed(@NotNull Player player, TinyBlockState tiny, @NotNull BlockGetter level, @NotNull BlockPos pos)
+    {
+        return definition.getPlayerDestroySpeed(player, tiny, level, pos);
+    }
+
+    /// @see TinyBlock#getDroppedItem(TinyBlockState, LootParams.Builder)
+    public ItemStack getDroppedItem(TinyBlockState state, LootParams.Builder param)
+    {
+        return definition.getDroppedItem(state, param);
+    }
+
+    /// @see TinyBlock#handleParticles(ClientLevel, BlockPos, TinyBlockState, ParticleEngine, TinyBlock.ParticleCase, BlockHitResult)
+    public void handleParticles(ClientLevel level, BlockPos blockPos, TinyBlockState isBreaking, @NotNull ParticleEngine manager, TinyBlock.ParticleCase particleCase, BlockHitResult result)
+    {
+        definition.handleParticles(level, blockPos, isBreaking, manager, particleCase, result);
     }
 }

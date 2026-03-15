@@ -44,7 +44,7 @@ public class SubBlockBakedModel implements IDynamicBakedModel
 
         for (TinyBlockState blockState : dat)
         {
-            BakedModel model = blockState.getDefinition().staticModel(blockState);
+            BakedModel model = blockState.staticModel(blockState);
 
             if (side != null)//requiring non-occluded facing
                 quads.addAll(model.getQuads(state, side, rand, extraData, renderType));

@@ -55,7 +55,7 @@ public abstract class TinyBlock
 
     protected @NotNull VoxelShape getTranslatedShape(TinyBlockState state)
     {
-        return state.getDefinition().shape.move(state.getX() / 16.0, state.getY() / 16.0, state.getZ() / 16.0);
+        return shape.move(state.getX() / 16.0, state.getY() / 16.0, state.getZ() / 16.0);
     }
 
     /// Solves the shape ande return a translated list of AABB

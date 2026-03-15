@@ -304,14 +304,14 @@ public class SubBlockBE extends BlockEntity
 
         if (tinyBS.remove(state))
         {
-            ItemStack droppedItem = state.getDefinition().getDroppedItem(state, null);
+            ItemStack droppedItem = state.getDroppedItem(state, null);
             if (droppedItem != null)
             {
                 var itemEntity = new ItemEntity(level, state.getX() / 16f + getBlockPos().getX(), state.getY() / 16f + getBlockPos().getY(), state.getZ() / 16f + getBlockPos().getZ(), droppedItem);
                 level.addFreshEntity(itemEntity);
             }
 
-            if (tinyBS.isEmpty())//don't remove it, if the shape is empty a crash will happen!
+            if (tinyBS.isEmpty())//don't remove it, if the shape is empty, a crash will happen!
                 return;
             
             updateShape();
