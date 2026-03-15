@@ -74,7 +74,7 @@ public class SubBlockBE extends BlockEntity
             shape = Shapes.or(shape, Shapes.join(Shapes.block(), state.getTranslatedShape(), BooleanOp.AND));//Join the shape and the intersection between shape and block bounds
 
         for (SharedTBS shared : sharedTBS)
-            shape = Shapes.or(shape, Shapes.join(Shapes.block(), shared.sharedState().getTranslatedShape(), BooleanOp.AND));//the same
+            shape = Shapes.or(shape, Shapes.join(Shapes.block(), shared.getTranslatedShape(getBlockPos()), BooleanOp.AND));
     }
 
     /**
@@ -193,7 +193,7 @@ public class SubBlockBE extends BlockEntity
                     level.setBlockAndUpdate(shared, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
 
                     if (level.getBlockEntity(shared) instanceof SubBlockBE shareBE)
-                        shareBE.sharedTBS.add(new SharedTBS(getBlockPos(), tinyBS.getLast()));
+                        shareBE.sharedTBS.add(new SharedTBS(getBlockPos(), level, tinyBS.size()-1));
                 }
 
         updateShape();
@@ -290,7 +290,7 @@ public class SubBlockBE extends BlockEntity
     public boolean collisionCheck(@NotNull Collection<AABB> aabb)
     {
         ArrayList<TinyBlockState> list = new ArrayList<>(tinyBS);
-        list.addAll(sharedTBS.stream().map(SharedTBS::sharedState).toList());
+        list.addAll(sharedTBS.stream().map(SharedTBS::state).toList());
 
         for (TinyBlockState state : list)
             for (AABB boxA : aabb)
@@ -450,6 +450,8 @@ public class SubBlockBE extends BlockEntity
     {
         super.loadAdditional(tag, registries);
         reset();
+        boolean shouldUpdateShape = false;
+
         //load tiny block state
         if (tag.contains("tbs"))
         {
@@ -460,13 +462,34 @@ public class SubBlockBE extends BlockEntity
                 var state = new TinyBlockState();
                 state.deserializeNBT(registries, tbs.getCompound(String.valueOf(i)));
 
-                //checks if the added new state can be placed in the SubBlock
                 tinyBS.add(state);
             }
             TBSReference.BEGIN_BATCH(tag, registries, this.tinyBS);
             TBSReference.SOLVE_REQUESTS(tinyBS);
 
+            shouldUpdateShape = true;
+        }
+        if (tag.contains("stbs"))
+        {
+            var stbs = tag.getCompound("stbs");
+            int size = stbs.getInt("size");
+            if (level != null)
+            {
+                for (int i = 0; i < size; i++)
+                {
+                    SharedTBS shared = SharedTBS.deserializeNBT(registries, stbs.getCompound(String.valueOf(i)), level);
 
+                    sharedTBS.add(shared);
+                }
+                TBSReference.BEGIN_BATCH(tag, registries, this.tinyBS);
+                TBSReference.SOLVE_REQUESTS(tinyBS);
+
+                shouldUpdateShape = true;
+            }
+        }
+
+        if (shouldUpdateShape)
+        {
             updateShape();
 
             requestModelDataUpdate();
@@ -478,12 +501,23 @@ public class SubBlockBE extends BlockEntity
     {
         super.saveAdditional(tag, registries);
         {
-            var tbs = new CompoundTag();
-            tbs.putInt("size", tinyBS.size());
-            //serialize all tbs in an array format
-            for (int i = 0; i < tinyBS.size(); i++)
-                tbs.put(String.valueOf(i), tinyBS.get(i).serializeNBT(registries));
-            tag.put("tbs", tbs);//tiny block state
+            //tbs
+            {
+                var tbs = new CompoundTag();
+                tbs.putInt("size", tinyBS.size());
+                //serialize all tbs in an array format
+                for (int i = 0; i < tinyBS.size(); i++)
+                    tbs.put(String.valueOf(i), tinyBS.get(i).serializeNBT(registries));
+                tag.put("tbs", tbs);//tiny block state
+            }
+            //shared tbs
+            {
+                var stbs = new CompoundTag();
+                stbs.putInt("size", sharedTBS.size());
+                for (int i = 0; i < sharedTBS.size(); i++)
+                    stbs.put(String.valueOf(i), SharedTBS.serializeNBT(sharedTBS.get(i), registries));
+                tag.put("stbs", stbs);
+            }
         }
         TBSReference.SAVE_BATCH(tag, registries, this.tinyBS);
     }
@@ -516,7 +550,7 @@ public class SubBlockBE extends BlockEntity
     }
 
     //endregion
-
+    // region Getters
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------Getters--------------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -556,7 +590,8 @@ public class SubBlockBE extends BlockEntity
 
         return null;
     }
-
+    //endregion
+    //region Helpers
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------Helpers/extras-------------------------------------------------------------------
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -579,6 +614,11 @@ public class SubBlockBE extends BlockEntity
                 for (AABB aabb : state.getTranslatedAABB())
                     if (g.x >= aabb.minX && g.x <= aabb.maxX && g.y >= aabb.minY && g.y <= aabb.maxY && g.z >= aabb.minZ && g.z <= aabb.maxZ)
                         return state;
+
+            for (SharedTBS shared : sharedTBS)
+                for (AABB aabb : shared.getTranslatedShape(getBlockPos()).toAabbs())
+                    if (g.x >= aabb.minX && g.x <= aabb.maxX && g.y >= aabb.minY && g.y <= aabb.maxY && g.z >= aabb.minZ && g.z <= aabb.maxZ)
+                        return shared.state();
         }
         return null;
     }
@@ -652,4 +692,5 @@ public class SubBlockBE extends BlockEntity
 
         return false;
     }
+    //endregion
 }
