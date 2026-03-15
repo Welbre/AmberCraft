@@ -19,8 +19,8 @@ import java.util.*;
  */
 public class TinyBlockState implements INBTSerializable<CompoundTag>
 {
-    private @NotNull TinyBlock definition;
-    private short x,y,z;
+    protected @NotNull TinyBlock definition;
+    protected short x,y,z;
     /// List with all directions that the state have external access (is in the edge of the subblock)
     public List<Direction> externalContact = new ArrayList<>();
     /**
