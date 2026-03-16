@@ -95,6 +95,7 @@ public class SubBlock extends Block implements EntityBlock
         return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
     }
 
+    //region Breaking
     //-------------------------------------------------------------------------------------------------------------------------------------------
     //-------------------------------------------------------Breaking----------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -157,4 +158,6 @@ public class SubBlock extends Block implements EntityBlock
 
         return false;
     }
+
+    //endregion
 }
