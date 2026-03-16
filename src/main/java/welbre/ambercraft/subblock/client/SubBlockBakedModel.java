@@ -39,7 +39,7 @@ public class SubBlockBakedModel implements IDynamicBakedModel
         List<TinyBlockState> dat = extraData.get(SubBlockBE.TINY_BLOCK_STATE_MODEL_PROPERTY);
         ArrayList<BakedQuad> quads = new ArrayList<>();
 
-        if (dat == null) return quads;
+        if (dat == null | true) return quads;//todo remove the true
 
 
         for (TinyBlockState blockState : dat)

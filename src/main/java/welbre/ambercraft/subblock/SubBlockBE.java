@@ -45,6 +45,8 @@ public class SubBlockBE extends BlockEntity
     public static final ModelProperty<List<TinyBlockState>> TINY_BLOCK_STATE_MODEL_PROPERTY = new ModelProperty<>();
 
     protected final List<TinyBlockState> tinyBS = new ArrayList<>();
+    /// A list with all sharedTinyBlockState position that this SubBlockBE has.
+    protected final List<BlockPos> shared = new ArrayList<>();//todo preciso fazer com que isso consiga ser fácil de serializar e mantenha o "index" apos a lista atualizar
     protected VoxelShape shape = Shapes.empty();
 
     /// Used in the breaking pipeline
@@ -63,6 +65,7 @@ public class SubBlockBE extends BlockEntity
     protected void reset()
     {
         tinyBS.clear();
+        shared.clear();
         shape = Shapes.empty();
     }
 
@@ -184,13 +187,17 @@ public class SubBlockBE extends BlockEntity
 
         if (grid.hasShared())//if is shared, then create all absent SubBlock
             for (BlockPos shared : grid.shared())
-                if (!level.getBlockState(shared).is(AmberCraft.Blocks.SUB_BLOCK))
+            {
+                level.setBlockAndUpdate(shared, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
+                if (level.getBlockEntity(shared) instanceof SubBlockBE shareBE)
                 {
-                    level.setBlockAndUpdate(shared, AmberCraft.Blocks.SUB_BLOCK.get().defaultBlockState());
-
-                    if (level.getBlockEntity(shared) instanceof SubBlockBE shareBE)
-                        shareBE.tinyBS.add(new SharedTinyBlockState(tinyBS.getLast(), this, shareBE));
+                    shareBE.tinyBS.add(new SharedTinyBlockState(tinyBS.getLast(), this, shareBE));
+                    shareBE.updateShape();
+                    shareBE.updateAround();
+                    shareBE.synchronize();
+                    this.shared.add(shareBE.getBlockPos());
                 }
+            }
 
         updateShape();
         updateAround();
@@ -302,7 +309,7 @@ public class SubBlockBE extends BlockEntity
         if (level == null)
             return;
 
-        if (tinyBS.remove(state))
+        if (removeState(state))
         {
             ItemStack droppedItem = state.getDroppedItem(state, null);
             if (droppedItem != null)
@@ -315,11 +322,67 @@ public class SubBlockBE extends BlockEntity
                 return;
             
             updateShape();
-
+            updateAround();
             synchronize();
         }
     }
 
+    /// Handle all logic of removing a state from this and other SubBlock if is a shared TinyBlockState
+    /// @return if the state has been removed with success.
+    protected boolean removeState(@NotNull TinyBlockState toRemove)
+    {
+        if (level == null)
+            return false;
+
+        if (tinyBS.contains(toRemove))//remove from this
+        {
+            if (toRemove instanceof SharedTinyBlockState sharedTBS)
+            {
+                //if is shared should remove it from the owner
+                if (level.getBlockEntity(sharedTBS.getOwner()) instanceof SubBlockBE ownerBE)
+                {
+                    if (ownerBE.removeState(sharedTBS.getOriginalState(level)))
+                        level.removeBlock(sharedTBS.getOwner(), false);
+                }
+            }
+            else
+            {
+                List<BlockPos> markToRemove = new ArrayList<>();
+                //check if toRemove is shared with some shared
+                for (BlockPos sharedPos : shared)
+                    if (level.getBlockEntity(sharedPos) instanceof SubBlockBE sharedBE)
+                        for (var state : sharedBE.tinyBS)
+                            if (state instanceof SharedTinyBlockState sharedTBS)
+                                if (sharedTBS.getOriginalState(level) == toRemove)
+                                {
+                                    //the toRemove is shared with the sharedTBS
+                                    sharedBE.tinyBS.remove(sharedTBS);
+                                    markToRemove.add(sharedPos);//add in a other list to don't throw a exception
+                                    if (sharedBE.tinyBS.isEmpty())
+                                        level.removeBlock(sharedPos, false);
+                                    else
+                                    {
+                                        sharedBE.updateShape();
+                                        sharedBE.updateAround();
+                                        sharedBE.synchronize();
+                                    }
+                                    break;
+                                }
+                for (var a : markToRemove)
+                    shared.remove(a);
+            }
+            tinyBS.remove(toRemove);//remove only after check for shared!
+            if (!tinyBS.isEmpty())
+            {
+                updateShape();
+                updateAround();
+                synchronize();
+            }
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Breaks a TinyState from the SubBlock.<br> Dropping the loop if is in the right game mode.
      * @return If the SubBlock should be removed from the level
@@ -332,7 +395,7 @@ public class SubBlockBE extends BlockEntity
         if (tinyBS.contains(state))
         {
             if (player.isCreative())
-                tinyBS.remove(state);
+                removeState(state);
             else
                 dropTinyState(state);
 
@@ -340,7 +403,7 @@ public class SubBlockBE extends BlockEntity
                 return true;
 
             updateShape();
-
+            updateAround();
             synchronize();
         }
 
@@ -466,6 +529,8 @@ public class SubBlockBE extends BlockEntity
 
             shouldUpdateShape = true;
         }
+        if (tag.contains("shared"))
+            shared.addAll(Arrays.stream(tag.getLongArray("shared")).mapToObj(BlockPos::of).toList());
 
         if (shouldUpdateShape)
         {
@@ -494,6 +559,7 @@ public class SubBlockBE extends BlockEntity
                 }
                 tag.put("tbs", tbs);//tiny block state
             }
+            tag.putLongArray("shared", shared.stream().map(BlockPos::asLong).toList());
         }
         TBSReference.SAVE_BATCH(tag, registries, this.tinyBS);
     }
@@ -580,7 +646,7 @@ public class SubBlockBE extends BlockEntity
      */
     public @Nullable TinyBlockState getTinyStateByRayCast(Player player)
     {
-        HitResult pick = player.pick(Math.pow(player.blockInteractionRange(), 2), 1F, false);
+        HitResult pick = player.pick(Math.pow(player.blockInteractionRange(), 2), 0f, false);
         if (pick instanceof BlockHitResult result)
         {
             //grid location in 0 to 1 scale

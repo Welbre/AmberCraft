@@ -123,7 +123,7 @@ public record Grid16Context(int x, int y, int z, BlockPos anchor, List<BlockPos>
     }
 
     private static void CONVERT_AND_ADD(double x, double y, double z, BlockPos anchor, Collection<BlockPos> shared) {
-        BlockPos pos = new BlockPos((int) Math.round(anchor.getX() + x), (int) Math.round(anchor.getY() + y), (int) Math.round(anchor.getZ() + z));
+        BlockPos pos = new BlockPos((int) (anchor.getX() + x), (int) (anchor.getY() + y), (int) (anchor.getZ() + z));
         if (anchor.equals(pos))
             throw new RuntimeException("Anchor and position are the same");
 
