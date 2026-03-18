@@ -24,8 +24,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.DeferredSoundType;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import welbre.ambercraft.subblock.network.SubBlockStartBreakingState;
 
 import static welbre.ambercraft.AmberCraft.MOD_ID;
 
@@ -109,10 +111,14 @@ public class SubBlock extends Block implements EntityBlock
         @SubscribeEvent
         public static void onPlayerInteractWithLeftClickInBlock(PlayerInteractEvent.LeftClickBlock event)
         {
-            if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START)
+            if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START && event.getLevel().isClientSide)
                 //marks which block is being broken to later use.
-                if (event.getLevel().getBlockEntity(event.getPos()) instanceof SubBlockBE be)
-                    be.setBreakingByRayCast(event.getEntity());
+                if (event.getLevel().getBlockEntity(event.getPos()) instanceof SubBlockBE sub)
+                {
+                    sub.setBreakingByRayCast(event.getEntity());
+                    if (sub.getPlayerIsBreaking() != null)
+                        PacketDistributor.sendToServer(new SubBlockStartBreakingState(event.getPos(), sub.getPlayerIsBreaking().getX(), sub.getPlayerIsBreaking().getY(), sub.getPlayerIsBreaking().getZ()));
+                }
         }
     }
 
