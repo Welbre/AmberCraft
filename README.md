@@ -1,7 +1,7 @@
 AmberCraft
 =
 ```diff
-- Abandoned! due to complexity of minecraft modding.
+- Never give up !
 ```
 Real electricity simulation minecraft mod.
 
