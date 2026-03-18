@@ -429,6 +429,17 @@ public class SubBlockBE extends BlockEntity
                 setChanged();//this will send Packet later to update all data and model at once via network.
         }
     }
+
+    public @Nullable TinyBlockState getTinyStateByPos(int x, int y, int z)
+    {
+        //todo check if some other method do a similar thing to use this method instead
+        for (TinyBlockState state : this.tinyBS)
+        {
+            if (state.getX() == x && state.getY() == y && state.getZ() == z)
+                return state;
+        }
+        return null;
+    }
     //endregion
     //region Data
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -651,6 +662,7 @@ public class SubBlockBE extends BlockEntity
         {
             //grid location in 0 to 1 scale
             Vec3 g = pick.getLocation().subtract(result.getBlockPos().getX(), result.getBlockPos().getY(), result.getBlockPos().getZ());
+            g = new Vec3(Math.round(g.x * 10e4) / 10e4, Math.round(g.y * 10e4) / 10e4, Math.round(g.z * 10e4) / 10e4);//round it
 
             for (TinyBlockState state : getTinyStates())
                 for (AABB aabb : state.getTranslatedAABB())
@@ -661,14 +673,9 @@ public class SubBlockBE extends BlockEntity
     }
 
     /// A helper to set the breaking block based on ray cast
-    /// @return if the ray cast success.
-    boolean setBreakingByRayCast(@NotNull Player player)
+    public void setBreakingByRayCast(@NotNull Player player)
     {
-        TinyBlockState state = getTinyStateByRayCast(player);
-        if (state != null)
-            playerIsBreaking = state;
-
-        return state != null;
+        playerIsBreaking = getTinyStateByRayCast(player);
     }
 
     /// Returns if a TinyBLock can be place at this position in the world.
