@@ -204,11 +204,11 @@ public class AmberHeatCondutorTest {
 
             if (root != null)
             {
-                if (root != module.getRoot())
+                if (root != module.getMaster())
                     helper.fail("The nodes don't agree about the root!");
             }
             else
-                root = (HeatModule) module.getRoot();
+                root = (HeatModule) module.getMaster();
         }
 
         assert root != null;

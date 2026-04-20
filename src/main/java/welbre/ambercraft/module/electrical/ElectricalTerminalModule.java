@@ -118,6 +118,6 @@ public class ElectricalTerminalModule extends NetworkModule {
     {
         if (!this.isMaster())
             return;
-        master.tick(entity);
+        masterLogic.tick(entity);
     }
 }

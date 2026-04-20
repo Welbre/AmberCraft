@@ -298,7 +298,7 @@ public class MultimeterItem extends Item {
     protected void sendCableCurrent(ServerPlayer player, ElectricalCableModule ecm, NetworkModule preview)
     {
         //terminal modules are volatility, the circuit isn't connected to it, it is a warper.
-        if (!(preview instanceof ElectricalTerminalModule) && ecm.getRoot() != preview.getRoot())
+        if (!(preview instanceof ElectricalTerminalModule) && ecm.getMaster() != preview.getMaster())
         {
             player.sendSystemMessage(Component.translatable(MSG_CURRENT_DIF_CIRCUIT).withColor(DyeColor.RED.getTextColor()));
             return;

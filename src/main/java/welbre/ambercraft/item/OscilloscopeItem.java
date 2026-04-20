@@ -47,7 +47,7 @@ public class OscilloscopeItem extends MultimeterItem
                 if (contains)
                 {
                     if (checkForSamePin(ecm.getTerminal()[0], preview, player))
-                        initWatcher(player, (ElectricalMaster) ecm.getRoot().getMaster(), GET_VOLTAGE_SUPPLIER(ecm.getTerminal()[0], preview));
+                        initWatcher(player, (ElectricalMaster) ecm.getMaster().getMasterLogic(), GET_VOLTAGE_SUPPLIER(ecm.getTerminal()[0], preview));
                 }
                 else
                     mapPin(component.id(), ecm.getTerminal()[0], player);
@@ -56,14 +56,14 @@ public class OscilloscopeItem extends MultimeterItem
             case ElectricalTerminalModule etm ->
             {
                 if (contains)
-                    initWatcher(player, (ElectricalMaster) etm.getElectrical().getRoot().getMaster(), GET_VOLTAGE_SUPPLIER(etm.getTerminal()[0], preview));
+                    initWatcher(player, (ElectricalMaster) etm.getElectrical().getMaster().getMasterLogic(), GET_VOLTAGE_SUPPLIER(etm.getTerminal()[0], preview));
                 else
                     mapPin(component.id(), etm.getTerminal()[0], player);
                 return InteractionResult.SUCCESS;
             }
             case ElectricalElementModule eem ->
             {
-                initWatcher(player, (ElectricalMaster) eem.getRoot().getMaster(), GET_VOLTAGE_SUPPLIER(eem.getTerminalA().getTerminal()[0], eem.getTerminalB().getTerminal()[0]));
+                initWatcher(player, (ElectricalMaster) eem.getMaster().getMasterLogic(), GET_VOLTAGE_SUPPLIER(eem.getTerminalA().getTerminal()[0], eem.getTerminalB().getTerminal()[0]));
                 return InteractionResult.SUCCESS;
             }
             case null, default ->
@@ -102,7 +102,7 @@ public class OscilloscopeItem extends MultimeterItem
     protected void sendCableCurrent(ServerPlayer player, ElectricalCableModule ecm, NetworkModule preview)
     {
         //terminal modules are volatility, the circuit isn't connected to it, it is a warper.
-        if (!(preview instanceof ElectricalTerminalModule) && ecm.getRoot() != preview.getRoot())
+        if (!(preview instanceof ElectricalTerminalModule) && ecm.getMaster() != preview.getMaster())
         {
             player.sendSystemMessage(Component.translatable(MSG_CURRENT_DIF_CIRCUIT).withColor(DyeColor.RED.getTextColor()));
             return;
@@ -113,7 +113,7 @@ public class OscilloscopeItem extends MultimeterItem
         {
             Resistor resistor = FIND_BIGEST_RESISTOR(ecm);
             if (resistor != null)
-                initWatcher(player, (ElectricalMaster) ecm.getRoot().getMaster(), GET_CURRENT_SUPPLIER(resistor, null));
+                initWatcher(player, (ElectricalMaster) ecm.getMaster().getMasterLogic(), GET_CURRENT_SUPPLIER(resistor, null));
         }
         else //is in the same network but are different modules.
         {
@@ -147,7 +147,7 @@ public class OscilloscopeItem extends MultimeterItem
                 {
                     if (etm.getElectrical() instanceof ElectricalElementModule element)
                     {
-                        initWatcher(player, (ElectricalMaster) element.getRoot().getMaster(), GET_CURRENT_SUPPLIER(element.getElement(), etm.getTerminal()[0]));
+                        initWatcher(player, (ElectricalMaster) element.getMaster().getMasterLogic(), GET_CURRENT_SUPPLIER(element.getElement(), etm.getTerminal()[0]));
                     }
                     else
                         player.sendSystemMessage(Component.literal("Corruption in the circuit formation :(, send this message to the devs!").withColor(DyeColor.RED.getTextColor()));
@@ -182,7 +182,7 @@ public class OscilloscopeItem extends MultimeterItem
             }
             case ElectricalElementModule eem ->
             {
-                initWatcher(player, (ElectricalMaster) eem.getRoot().getMaster(), GET_CURRENT_SUPPLIER(eem.getElement(), eem.getTerminalA().getTerminal()[0]));
+                initWatcher(player, (ElectricalMaster) eem.getMaster().getMasterLogic(), GET_CURRENT_SUPPLIER(eem.getElement(), eem.getTerminalA().getTerminal()[0]));
                 return InteractionResult.SUCCESS;
             }
             case null, default ->
@@ -201,7 +201,7 @@ public class OscilloscopeItem extends MultimeterItem
             return;
         }
 
-        initWatcher(player, (ElectricalMaster) ecm.getRoot().getMaster(), GET_CURRENT_SUPPLIER(resistor, etm.getTerminal()[0]));
+        initWatcher(player, (ElectricalMaster) ecm.getMaster().getMasterLogic(), GET_CURRENT_SUPPLIER(resistor, etm.getTerminal()[0]));
     }
 
     @Override
@@ -212,7 +212,7 @@ public class OscilloscopeItem extends MultimeterItem
             player.sendSystemMessage(Component.translatable(MSG_TOO_FAR));
             return;
         }
-        initWatcher(player, (ElectricalMaster) ecm.getRoot().getMaster(), GET_CURRENT_SUPPLIER(resistor, ecm.getTerminal()[0]));
+        initWatcher(player, (ElectricalMaster) ecm.getMaster().getMasterLogic(), GET_CURRENT_SUPPLIER(resistor, ecm.getTerminal()[0]));
     }
 
     @Override
@@ -247,7 +247,7 @@ public class OscilloscopeItem extends MultimeterItem
             return;
         }
 
-        initWatcher(player, (ElectricalMaster) ecm.getRoot().getMaster(), GET_CURRENT_SUPPLIER(common, ecm.getTerminal()[0]));
+        initWatcher(player, (ElectricalMaster) ecm.getMaster().getMasterLogic(), GET_CURRENT_SUPPLIER(common, ecm.getTerminal()[0]));
     }
 
     /// @param positivePin the positive direction of the current, if is null, returns the absolute value.

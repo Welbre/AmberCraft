@@ -105,7 +105,7 @@ public class NetworkWidget extends AbstractWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        boolean isMaster = serverModule.getMaster() != null;
+        boolean isMaster = serverModule.getMasterLogic() != null;
         Minecraft.getInstance().debugRenderer.gameTestDebugRenderer
                 .addMarker(holder.getBlockPos(), isMaster ? MASTER_COLOR : (isMain ? MAIN_COLOR : this.color),
                         "@%x".formatted(serverModule.ID), 2000);
@@ -142,7 +142,7 @@ public class NetworkWidget extends AbstractWidget {
     {
         if (serverModule.getNeighbors().length != childConnection.length)
             warn(new IllegalStateException("The number of children doesn't match the number of connections."));
-        if (!serverModule.isRoot() && this.root == null)
+        if (!serverModule.isMaster() && this.root == null)
             warn(new IllegalStateException("The widget not founded!"));
         RuntimeException[] exception = serverModule.checkInconsistencies();
         if (exception != null)
@@ -174,8 +174,8 @@ public class NetworkWidget extends AbstractWidget {
     public void RENDER_TOOL_TIPS(GuiGraphics graphics, int mouseX, int mouseY, float ignoredParcialTick) {
         if (active == null)
             return;
-        NetworkModule father = active.getRoot();
-        boolean isMaster = active.getMaster() != null;
+        NetworkModule father = active.getMaster();
+        boolean isMaster = active.getMasterLogic() != null;
 
         ArrayList<Component> list = new ArrayList<>();
         list.add(Component.literal(active.getClass().getSimpleName()).withColor(DyeColor.WHITE.getTextColor()));
@@ -185,7 +185,7 @@ public class NetworkWidget extends AbstractWidget {
             list.add(Component.literal(w).withColor(NetworkWidget.WARN_COLOR));
         list.add(Component.literal("ID: " + Integer.toHexString(active.ID)).withColor(10494192));
         list.add(Component.literal("IsMaster: " + (isMaster ? "true " : "false")).withColor(10494192));
-        list.add(Component.literal("Father: " + (father.isRoot() ? "root" : Integer.toHexString(father.ID))).withColor(10494192));
+        list.add(Component.literal("Father: " + (father.isMaster() ? "root" : Integer.toHexString(father.ID))).withColor(10494192));
         list.add(Component.literal("Children: ").withColor(10494192));
 
         NetworkModule[] children = active.getNeighbors();

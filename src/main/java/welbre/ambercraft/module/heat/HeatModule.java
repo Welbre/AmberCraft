@@ -75,7 +75,7 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
             return;
         Profiler.get().push("HeatModuleTick");
 
-        master.tick(entity);
+        masterLogic.tick(entity);
 
         Profiler.get().pop();
     }
@@ -97,8 +97,8 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
         refresh(entity);
         this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
 
-        if (isRoot())
-            master = createMaster();
+        if (isMaster())
+            masterLogic = createMaster();
     }
 
     /**

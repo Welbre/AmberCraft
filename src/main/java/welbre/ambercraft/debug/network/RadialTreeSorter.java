@@ -63,7 +63,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
 
             List<NetworkWidget> children = map.get(1);
 
-            final double delta = Math.PI * 2 / (main.serverModule.getNeighbors().length + (main.serverModule.getRoot() == null ? 0 : 1));
+            final double delta = Math.PI * 2 / (main.serverModule.getNeighbors().length + (main.serverModule.getMaster() == null ? 0 : 1));
             double teta = - delta / 2.0;
             radius = children.stream().mapToDouble(RadialTreeSorter::computeDiagonal).max().orElse(0) + 30;
             for (NetworkWidget child : children)
@@ -85,7 +85,7 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
             for (NetworkWidget preview : map.get(orbit-1))
             {
                 List<NetworkWidget> children = GET_CHILDREN(preview, widgets);
-                NetworkWidget father = preview.serverModule.getRoot() != null ? NetworkViewerScreen.GET_WIDGET(widgets, preview.serverModule.getRoot()) : null;
+                NetworkWidget father = preview.serverModule.getMaster() != null ? NetworkViewerScreen.GET_WIDGET(widgets, preview.serverModule.getMaster()) : null;
 
                 List<NetworkWidget> subSpace = children.stream().filter(map.get(orbit)::contains).collect(Collectors.toList());
                 if (father != null && map.get(orbit).contains(father))
@@ -176,12 +176,12 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
             if (childOrbit != -1)
                 return childOrbit;
         }
-        if (module.getRoot() != null)
+        if (module.getMaster() != null)
         {
-            if (module.getRoot().ID == center.ID)
+            if (module.getMaster().ID == center.ID)
                 return orbit+1;
 
-            int fatherOrbit = COMPUTE_ORBIT_HELPER(module.getRoot(), center, orbit+1, visited);
+            int fatherOrbit = COMPUTE_ORBIT_HELPER(module.getMaster(), center, orbit+1, visited);
             if (fatherOrbit != -1)
                 return fatherOrbit;
         }

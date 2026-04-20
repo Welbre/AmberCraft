@@ -131,7 +131,7 @@ public class ElectricalCableModule extends ElectricalModule implements DebugTool
     public void tick(ModulesHolder entity) {
         if (!this.isMaster())
             return;
-        master.tick(entity);
+        masterLogic.tick(entity);
     }
 
     protected void addResistor(Circuit.Pin[] end, double resistence)

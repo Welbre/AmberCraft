@@ -198,7 +198,7 @@ public class ElectricalElementModule extends ElectricalModule implements DebugTo
     public void tick(ModulesHolder entity) {
         if (!this.isMaster())
             return;
-        master.tick(entity);
+        masterLogic.tick(entity);
     }
 
     @Override

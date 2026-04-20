@@ -42,7 +42,7 @@ public class NetworkViewerHelper {
         Set<NetworkModule> roots = new HashSet<>();
 
         for (NetworkModule module : serverModules)//filter to a root list
-            roots.add(module.getRoot());
+            roots.add(module.getMaster());
 
         for (NetworkModule root : roots)
         {
@@ -155,11 +155,11 @@ public class NetworkViewerHelper {
 
     private static void SET_FATHER(NetworkWidget widget, ArrayList<NetworkWidget> widgets)
     {
-        if (widget.serverModule.isRoot())//the root points to it-self, don't need to show an arrow.
+        if (widget.serverModule.isMaster())//the root points to it-self, don't need to show an arrow.
             return;
         NetworkWidget root = null;
         for (NetworkWidget networkWidget : widgets)
-            if (networkWidget.serverModule.ID == widget.serverModule.getRoot().ID)
+            if (networkWidget.serverModule.ID == widget.serverModule.getMaster().ID)
             {
                 root = networkWidget;
                 break;
@@ -171,7 +171,7 @@ public class NetworkViewerHelper {
         Set<NetworkModule> roots = new HashSet<>();
 
         for (NetworkModule module : serverModules)
-            roots.add(module.getRoot());
+            roots.add(module.getMaster());
 
         List<List<NetworkWidget>> layers = new ArrayList<>();
 
@@ -181,7 +181,7 @@ public class NetworkViewerHelper {
             layers.add(layer);
 
             for (NetworkWidget widget : networkWidgets)
-                if (widget.serverModule.getRoot().ID == root.ID)
+                if (widget.serverModule.getMaster().ID == root.ID)
                     layer.add(widget);
         }
 

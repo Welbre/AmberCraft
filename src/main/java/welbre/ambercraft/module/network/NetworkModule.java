@@ -18,29 +18,28 @@ import java.util.*;
  * A <a href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">graph</a> is used to storage and manage the connections, the NetworkModule it-self is the <a href="https://en.wikipedia.org/wiki/Node_(computer_science)">nodes</a>.<br>
  * Uses a <a href="https://en.wikipedia.org/wiki/Master%E2%80%93slave_(technology)">master/slave</a> to control how the networks work, only the master should tick and control others NetworkModules.<br>
  *
- * The {@link NetworkModule#master} is an important part of this module, they control all the behavior of the network and their modules,
- * only one instance is allowed in the network, therefore, only the master must have this field assigned.<br>
+ * The {@link NetworkModule#masterLogic} is an important part of this module, they control all the behavior of the network and their modules,
+ * only one instance is allowed in the network; therefore, only the master must have this field assigned.<br>
  * The master has a compilation system, so after the network change, you must re-compile the master using {@link Master#dirt()}.
  * The {@link NetworkModule#dirtMaster()} can be used to dirt the master from any node in the network.<br>
  *
  * The {@link NetworkModule#isMaster()} method can be used to check if the current Module is the master,
- * and {@link NetworkModule#createMaster()} should be overwritten to return yous own instance of {@link Master}.<br>
- * The root is a filed that signatures the network, modules in the same network must agree about the root module, therefore, only one root exits in the network.
- * Because this behavior only the root can be the master, the {@link #isRoot()} can be used to check if the current module is the root.<br>
+ * and {@link NetworkModule#createMaster()} should be overwritten to return your own instance of {@link Master}.<br>
+ * The master is a filed that signatures the network, modules in the same network must agree about the master module, therefore, only one master exits in the network.
  *
- * If you are extending the class, you should check if {@link #isMaster()} and {@link #isRoot()}, if isn't true, the module is corrupted!
- * This check isn't made, but {@link #checkInconsistencies()} can be used to do that and other integrity checks.
+ * If you are extending the class, {@link #isMaster()} == true if and only if {@link #masterLogic} != null, if this condition isn't true, the module is corrupted!
+ * This check isn't made automatically, but {@link #checkInconsistencies()} can be used to do that and other integrity checks.
  *
  * @see Master
  */
 public abstract class NetworkModule implements Module, Serializable, Iterable<NetworkModule> {
     /**
      * Points to the network master.<br>
-     * Only one root is allowed in the network;
-     * so, the root can be used to check if 2 nodes is in the same network.
+     * Only one master is allowed in the network;
+     * so, the field can be used to check if 2 nodes are in the same network easily.
      */
-    protected @NotNull NetworkModule root = this;
-    protected Master master = createMaster();
+    protected @NotNull NetworkModule master = this;
+    protected Master masterLogic = createMaster();
     protected NetworkModule[] neighbors = new NetworkModule[0];
 
     protected boolean isFresh = false;
@@ -50,16 +49,16 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
     }
 
-    private void setRoot()
+    private void setMaster()
     {
-        if (root == this)//is already the root
+        if (master == this)//is already the master
             return;
 
-        this.root.master = null;
+        this.master.masterLogic = null;
         for (NetworkModule module : this)
-            module.root = this;
+            module.master = this;
 
-        this.master = createMaster();
+        this.masterLogic = createMaster();
     }
 
     /**
@@ -74,18 +73,18 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
             for (NetworkModule neighbor : neighbors)
             {
-                if (neighbor.isRoot())
+                if (neighbor.isMaster())
                 {
                     neighbor.dirtMaster();
                     continue;
                 }
-                List<NetworkModule> path = neighbor.getPath(this.root);
-                if (path.isEmpty())//if after remotion, it is isolated, set as root, a split happens;
+                List<NetworkModule> path = neighbor.getPath(this.master);
+                if (path.isEmpty())//if after remotion, it is isolated, set as master, a split happens;
                 {
                     for (NetworkModule module : neighbor)
-                        module.root = neighbor;
+                        module.master = neighbor;
 
-                    neighbor.master = neighbor.createMaster();
+                    neighbor.masterLogic = neighbor.createMaster();
                 }
                 else
                     neighbor.dirtMaster();
@@ -93,18 +92,18 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
         }
 
         this.neighbors = new NetworkModule[0];
-        this.root = this;
-        this.master = createMaster();
+        this.master = this;
+        this.masterLogic = createMaster();
     }
 
     /**
      * Connects <code>this</code> module to <code>target</code>.<br>
-     * This method is very friendly. If needed, they merge the network, re-root and dirt all masters in the process.
+     * This method is very friendly. If needed, they merge the network, re-master, and dirt all masters in the process.
      * @return if a new connection has been created.
      */
     public boolean connect(NetworkModule target)
     {
-        if (this.root == target.root) //always in the same network
+        if (this.master == target.master) //always in the same network
         {
             //check the same connection will be done again
             for (NetworkModule neighbor : this.neighbors)
@@ -112,12 +111,12 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
                     return false;
         } else {
             //at this point 2 different networks are connecting.
-            //first, clear up the target network; these have your own master and root,
-            //so, set the root to this.root (the root of this network), and clear up any master in the target network
+            //first, clear up the target network; these have your own master,
+            //so, set the master to this.master (the master of this network), and clear up any master in the target network
             for (var nm : target)
             {
-                nm.root = this.root;
-                nm.master = null;
+                nm.master = this.master;
+                nm.masterLogic = null;
             }
         }
 
@@ -127,12 +126,6 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
         dirtMaster();//dirt the master to compile all changes
         return true;
-    }
-
-    /// @return If the current module is the master.
-    public boolean isMaster()
-    {
-        return master != null;
     }
 
     /// Copy the neighborhood array and add the neighbor on it.<br> don't use it to connect 2 modules!
@@ -190,25 +183,25 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
         return false;
     }
 
-    /// @return If the current module is the root of the network.
-    public boolean isRoot()
+    /// @return If the current module is the master of the network.
+    public boolean isMaster()
     {
-        return root == this;
+        return master == this;
     }
 
     /// used only in diagnostic, test, and debug.
     /// @return null if success, or an array of execution in the module.
     public RuntimeException[] checkInconsistencies() {
         List<RuntimeException> errors = new ArrayList<>();
-        if (isMaster() && !isRoot())
-            errors.add(new IllegalStateException("module 0x%x corrupted! is master but isn't root".formatted(this.ID)));
-        if (!isMaster() && isRoot())
-            errors.add(new IllegalStateException("module 0x%x corrupted! is root but isn't master".formatted(this.ID)));
+        if (masterLogic != null && !isMaster())
+            errors.add(new IllegalStateException("module 0x%x corrupted! has MasterLogic but isn't Master".formatted(this.ID)));
+        if (masterLogic == null && isMaster())
+            errors.add(new IllegalStateException("module 0x%x corrupted! is Master but hasn't MasterLogic".formatted(this.ID)));
 
         for (NetworkModule n : neighbors)
         {
-            if (n.root != this.root)//check if the neighbor agrees about the root.
-                errors.add(new IllegalStateException("module 0x%x corrupted! with root 0x%X don't agree with module 0x%X and its root 0x%X".formatted(this.ID, this.root.ID, n.ID, n.root.ID)));
+            if (n.master != this.master)//check if the neighbor agrees about the master.
+                errors.add(new IllegalStateException("module 0x%x corrupted! with master 0x%X don't agree with module 0x%X and its master 0x%X".formatted(this.ID, this.master.ID, n.ID, n.master.ID)));
             boolean error = true;
             //checks if the neighbor has this as a neighbor
             for (var nn : n.neighbors)
@@ -314,16 +307,16 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
 
     /// Dirt the {@link Master} from any module in the network.
     public void dirtMaster(){
-        if (root.master != null)
-            root.master.dirt();
+        if (master.masterLogic != null)
+            master.masterLogic.dirt();
     }
 
-    public @NotNull NetworkModule getRoot() {
-        return root;
-    }
-
-    public Master getMaster() {
+    public @NotNull NetworkModule getMaster() {
         return master;
+    }
+
+    public Master getMasterLogic() {
+        return masterLogic;
     }
 
     /**
