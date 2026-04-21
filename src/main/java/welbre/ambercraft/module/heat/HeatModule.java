@@ -94,7 +94,7 @@ public class HeatModule extends NetworkModule implements Serializable, DebugTool
      */
     public <T extends ModulesHolder> void init(T entity, LevelAccessor level, BlockPos pos)
     {
-        refresh(entity);
+        entity.refresh(this);
         this.node.setTemperature(HeatNode.GET_AMBIENT_TEMPERATURE(level, pos));
 
         if (isMaster())

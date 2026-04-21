@@ -66,7 +66,7 @@ public class GroundBlock extends Block implements EntityBlock {
         {
             groundBE.groundModule = new GroundBE.GroundModule(0.005);
             groundBE.groundModule.alloc();
-            groundBE.groundModule.refresh(groundBE);
+            groundBE.refresh(groundBE.groundModule);
         }
     }
 

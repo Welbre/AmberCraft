@@ -42,7 +42,8 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
     protected Master masterLogic = createMaster();
     protected NetworkModule[] neighbors = new NetworkModule[0];
 
-    protected boolean isFresh = false;
+    /// Defines if is the first time that the module is used.
+    public boolean isFresh = false;
     public int ID = new Random().nextInt(0,0xffffff);
 
     public NetworkModule() {
@@ -221,47 +222,6 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
         return null;
     }
 
-    /**
-     * Search in the sides looking for {@link ModulesHolder} to connect with.
-     * @param entity the holder that this is stored.
-     */
-    public void refresh(ModulesHolder entity) {
-        if (isFresh)
-            return;
-
-        var level = entity.getLevel();
-        if (level == null)
-            throw new IllegalStateException("Trying to refresh module while the game isn't loaded!");
-        if (level.isClientSide())
-            return;
-
-        var pos = entity.getBlockPos();
-
-        //looks in all 6 neighbors of the block, and in the diagonal too looking for other modules holder
-        for (Direction dir : Direction.values())//check all faces in the BlockEntity
-            if (List.of(entity.getModule(dir)).contains(this))//check on which face this module can be founded
-            {
-                if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)//check if the block in the face direction is a ModulesHolder
-                    for (Module module : modular.getModule(dir.getOpposite()))//get all modules in the opposite face of dir.
-                        if (module instanceof NetworkModule networkModule)
-                            this.connect(networkModule);
-
-                //connect diagonal block
-                for (Direction axilDirection : Direction.values())
-                    if (axilDirection.getAxis() != dir.getAxis())//check all direction non-linear with the dir axil
-                        if (level.getBlockEntity(pos.relative(dir).relative(axilDirection)) instanceof ModulesHolder modular)
-                            for (Module module : modular.getModule(axilDirection.getOpposite()))
-                                if (module instanceof NetworkModule networkModule)
-                                {
-                                    this.connect(networkModule);
-                                    level.neighborChanged(modular.getBlockPos(), modular.getBlockState().getBlock(), null);
-                                }
-            }
-
-        isFresh = true;
-    }
-
-
     @Override
     public void writeData(CompoundTag tag, HolderLookup.Provider registries) {
         tag.putInt("ID", ID);
@@ -292,8 +252,9 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
     }
 
     @Override
-    public void onLoad(ModulesHolder entity) {
-        refresh(entity);
+    public void onLoad(ModulesHolder entity)
+    {
+
     }
 
     /// Returns a copy of children

@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.AmberCraft;
+import welbre.ambercraft.module.network.NetworkModule;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -130,6 +131,49 @@ public abstract class ModulesHolder extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    /**
+     * Search in the sides looking for {@link ModulesHolder} to connect with.
+     * @param entity the holder that this is stored.
+     */
+    public void refresh(Module modu)
+    {
+        if (!(modu instanceof NetworkModule netmod))
+            return;
+
+        if (netmod.isFresh)
+            return;
+
+        if (level == null)
+            throw new IllegalStateException("Trying to refresh module while the game isn't loaded!");
+        if (level.isClientSide())
+            return;
+
+        var pos = getBlockPos();
+
+        //it looks in all 6 neighbors of the block, and in the diagonal too looking for other modules holder
+        for (Direction dir : Direction.values())//check all faces in the BlockEntity
+            if (List.of(getModule(dir)).contains(netmod))//check on which face this module can be founded
+            {
+                if (level.getBlockEntity(pos.relative(dir)) instanceof ModulesHolder modular)//check if the block in the face direction is a ModulesHolder
+                    for (Module module : modular.getModule(dir.getOpposite()))//get all modules in the opposite face of dir.
+                        if (module instanceof NetworkModule networkModule)
+                            netmod.connect(networkModule);
+
+//                //connect diagonal block
+//                for (Direction axilDirection : Direction.values())
+//                    if (axilDirection.getAxis() != dir.getAxis())//check all direction non-linear with the dir axil
+//                        if (level.getBlockEntity(pos.relative(dir).relative(axilDirection)) instanceof ModulesHolder modular)
+//                            for (Module module : modular.getModule(axilDirection.getOpposite()))
+//                                if (module instanceof NetworkModule networkModule)
+//                                {
+//                                    netmod.connect(networkModule);
+//                                    level.neighborChanged(modular.getBlockPos(), modular.getBlockState().getBlock(), null);
+//                                }
+            }
+
+        netmod.isFresh = true;
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();
@@ -141,6 +185,7 @@ public abstract class ModulesHolder extends BlockEntity {
             {
                 module = value;
                 module.onLoad(this);
+                refresh(module);
             }
         }catch (Exception e)
         {
