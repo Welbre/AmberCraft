@@ -54,11 +54,11 @@ public abstract class NetworkModule implements Module, Serializable, Iterable<Ne
         if (master == this)//is already the master
             return;
 
-        this.master.masterLogic = null;
+        var oldMaster = this.master.masterLogic;
         for (NetworkModule module : this)
             module.master = this;
 
-        this.masterLogic = createMaster();
+        this.masterLogic = oldMaster == null ? createMaster() : oldMaster;
     }
 
     /**
