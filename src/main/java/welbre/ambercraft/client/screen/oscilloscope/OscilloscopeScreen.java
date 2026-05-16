@@ -22,11 +22,12 @@ public class OscilloscopeScreen extends Screen
 
     public int chartWidth = 480;
     public int charHeight = chartWidth * 9 / 16;//270 pixels
+    /// where the chart origin is positioned
     public Vector2i chartPosition;
 
 
 
-    public Trace[] traces = new Trace[]{new Trace(1000, this)};
+    public Trace[] traces = new Trace[]{new Trace(100, this)};
 
     public OscilloscopeScreen(FriendlyByteBuf buf)
     {
@@ -42,13 +43,16 @@ public class OscilloscopeScreen extends Screen
         addRenderableWidget(new InfiniteKnob(100 ,150 ,50 ,50, new double[]{0.01,0.01}, 20).setOnValueChange(this::moveXAxes).setRestriction(d -> {return d > 0;}));
         addRenderableWidget(new InfiniteKnob(100 ,200 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::zoomYAxes).setRestriction(d -> {return true;}));
         addRenderableWidget(new InfiniteKnob(100 ,250 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::moveYAxes).setRestriction(d -> {return true;}));
-        Button.Builder builder = Button.builder(Component.literal("clear"), button -> {
-            for (Trace trace : traces)
-            {
-                trace.isContinuos = !trace.isContinuos;
-            }
+        Button.Builder clear = Button.builder(Component.literal("clear"), button -> {
+            clearData();
         });
-        addRenderableWidget(builder.bounds(100, 300, 50, 50).build());
+        Button.Builder mode = Button.builder(Component.literal("mode"), button -> {
+            for (var trace : traces)
+                trace.isContinuos = !trace.isContinuos;
+        });
+
+        addRenderableWidget(clear.bounds(100, 300, 50, 50).build());
+        addRenderableWidget(mode.bounds(100, 360, 50, 50).build());
     }
 
     @Override
@@ -137,7 +141,7 @@ public class OscilloscopeScreen extends Screen
     {
         for (Trace trace : traces)
         {
-            trace.widthScale = infiniteKnob.value;
+            trace.widthScale += delta;
             trace.reComputeAllPoints(this);
         }
     }

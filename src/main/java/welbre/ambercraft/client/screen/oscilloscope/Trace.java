@@ -4,8 +4,9 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Vector3f;
 
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 
-/// A helper to deal with render the oscilloscope trace.
+/// A helper to deal with renders the oscilloscope trace.
 public class Trace
 {
     public boolean isVisible = true;
@@ -14,43 +15,41 @@ public class Trace
     public double widthScale = 1;
     /// each 1 value means 20 pixels of height
     public double heightScale = 20;
-    /// how many pixels the y is moved; Positive values move down!
+    /// how many pixels the y origin is moved; Positive values move down!
     public double heightOffSet;
     /// how many pixels the x is moved from the zero; Positive means more right.
     public double widthOffSet;
-    /// if the oscilloscope sample size
-    public int sampleSize;
     /// if the oscilloscope displays the values continuously
     public boolean isContinuos = true;
 
-    /// The header of the data, where the next value will be stored.
-    public int header = 0;
-    public boolean isFull = false;
+    /// The head of the data, where the next value will be stored.
+    public int head = 0;
+    public int used = 0;
+    public boolean isFresh = true;
+    /// stores the raw data value.
     public double[] data;
-
-    public int pointer_head;
+    /// store a transformed value used directly in the render process.
     public int[] points;
 
     public Trace(int size, OscilloscopeScreen info)
     {
         this(new double[size], info);
-        if (size == 0)
+        if (size <= 0)
             throw new IllegalArgumentException("Size must be greater than 0");
     }
 
     public Trace(double[] data, OscilloscopeScreen info)
     {
         this.data = data;
-        this.points = new int[info.chartWidth];
-        this.sampleSize = data.length;
-        this.heightOffSet = info.charHeight / 2.0;
+        this.points = new int[data.length];
     }
 
 
     public void clearData()
     {
-        isFull = false;
-        header = 0;
+        isFresh = true;
+        head = 0;
+        used = 0;
         data = new double[data.length];
         points = new int[points.length];
     }
@@ -58,14 +57,24 @@ public class Trace
     /// fit the y-axis in the screen.
     public void autoScaleY(OscilloscopeScreen info)
     {
-        double max = Arrays.stream(data).max().getAsDouble();
-        double min = Arrays.stream(data).min().getAsDouble();
+        double max = Arrays.stream(data).limit(head-1).max().orElse(1);
+        double min = Arrays.stream(data).limit(head-1).min().orElse(-1);
+        double avg = Arrays.stream(data).limit(head-1).average().orElse(0);
         double range = Math.abs(max - min);
-        if (range == 0)
-            return;
 
         //1.2 is a margin of 20% from the top and bottom of the chart.
-        heightScale = range * 1.2 / (2.0 * info.charHeight);
+        if (Math.abs(range) > 10e-9)
+            heightScale = info.charHeight / (range * 1.2);
+        else
+            heightScale = info.charHeight / (Math.abs(max) * 1.2);
+
+        if (Math.abs(range) > 10e-9)
+            heightOffSet = (avg * heightScale);
+        else
+            heightOffSet = (avg * heightScale / 2.0);
+
+        widthOffSet = 0;
+        widthScale = (double) data.length / info.chartWidth;
         reComputeAllPoints(info);
     }
     public void reComputeAllPoints(OscilloscopeScreen info)
@@ -73,71 +82,66 @@ public class Trace
         if (data.length == 0)
             return;
 
-        var chartPosition = info.chartPosition;
-        final int yZero = chartPosition.y + (int) Math.round(heightOffSet);
-        final int yDown = chartPosition.y + info.charHeight;
-        for (int i = 0; i < points.length; i++)
-        {
-            final double y = data[i] / 2.0 / heightScale;
-            final int height = (int) Math.round(Math.clamp(yZero + y, chartPosition.y, yDown));
+        //is on half of the height + the offset scaled
+        final double yZeroDelta = heightOffSet + info.charHeight / 2.0;
 
-            final int index = (int) Math.round(i + widthOffSet);
-            if (index >= points.length)
-                points[index - points.length] = height;
-            else if (index < 0)
-                points[index + points.length] = height;
-            else
-                points[index] = height;
-        }
+        var chartPosition = info.chartPosition;
+        final int yUp = chartPosition.y;
+        final int yDown = chartPosition.y + info.charHeight;
+
+        for (int i = 0; i < points.length; i++)
+            points[i] = Math.clamp((int) Math.round(yZeroDelta - (data[i] * heightScale) + info.chartPosition.y), yUp + 2, yDown);
     }
 
     public void pushData(double value, OscilloscopeScreen info)
     {
         if (data.length == 0)
             return;
-        //find the data end.
-        if (data.length == header)
+
+        //Compute the y componente of the data relative to the charOrigem info.chartPosition
+        //First find the distance to the data zero line
+
+        //is on half of the height + the offset scaled
+        final int yUp = info.chartPosition.y;
+        final int yDown = yUp + info.charHeight;
+        final double yZeroDelta = heightOffSet + info.charHeight / 2.0;
+        final double distanceToZero = yZeroDelta - (value * heightScale);//less because the positive is above the y0, but the screen is the 4th square so the y is inverted
+        final int y = Math.clamp( (int) Math.round(distanceToZero + info.chartPosition.y), yUp+2, yDown);//the distance to the origin that represents the value in the chart.
+
+        if (isContinuos)
         {
-            isFull = true;
-            header = 0;
-        }
-        data[header] = value;
-
-        var chartPosition = info.chartPosition;
-        final int yZero = chartPosition.y + (int) Math.round(heightOffSet);
-        final int yDown = chartPosition.y + info.charHeight;
-
-        final double y = value / 2.0 / heightScale;
-        final int point = (int) Math.round( Math.clamp(yZero + y, chartPosition.y, yDown) );
-
-        if (header >= points.length * widthScale)
-        {
-            if (isContinuos)
+            if (head >= data.length)
             {
-                final int[] nPoints = new int[points.length];
-                //todo fix used a better approach, maybe a "end less" array
-                if (nPoints.length - 1 >= 0)
-                    System.arraycopy(points, 1, nPoints, 0, nPoints.length - 1);
-                points = nPoints;
-                points[points.length - 1] = point;
-            }
-            else
-            {
-                if (pointer_head >= points.length * widthScale)
-                    pointer_head = 0;
-                points[pointer_head++] = point;
+                for (int i = 0; i < data.length - 1; i++)
+                {
+                    data[i] = data[i+1];
+                    points[i] = points[i+1];
+                }
+                head = data.length-1;
             }
         }
         else
-            if (header + widthOffSet >= points.length)
-                points[(int) Math.round(header++ + 1 - widthOffSet)] = point;
-            else
-                points[(int) Math.round(header++ + widthOffSet)] = point;
+        {
+            //reset the head to the sample beginning.
+            if (head == data.length)
+                head = 0;
+        }
 
-        //-------------- auto y-scale
+        data[head] = value;
+        points[head] = y;
+
+        head++;
+
+        if (used < data.length)
+            used++;
+
+        //-------------- auto y-scale --------------------
         //wait for 10 data and auto-scale the oscilloscope
-        if (!isFull && header == 10)
+        if (isFresh && head == 20)
+        {
             autoScaleY(info);
+            isFresh = false;
+        }
     }
 
     /// Don't change any field in the screen, only read it!
@@ -148,30 +152,29 @@ public class Trace
         var chartPosition = info.chartPosition;
 
         final int xLeft = chartPosition.x + 2;
-        final int yZero = chartPosition.y + (int) Math.round(heightOffSet);
-        final int yDown = chartPosition.y + info.charHeight;
-
-        final int finalYZero = Math.clamp(yZero, chartPosition.y, yDown);
+        final int yDown = info.chartPosition.y + info.charHeight;
+        final int yZero = (int) ( (info.chartPosition.y + info.charHeight / 2.0) + heightOffSet);
 
         //renders the y = 0 line.
-        //if (chartPosition.y + heightOffSet > chartPosition.y && chartPosition.y + heightOffSet < chartPosition.y + info.charHeight)
-        if (heightOffSet > 0 && heightOffSet < info.charHeight)
+        if (yZero > info.chartPosition.y && yZero < yDown)
         {
-            buffer.addVertex(new Vector3f(chartPosition.x + 2, chartPosition.y + (int) heightOffSet, 0));
+            buffer.addVertex(new Vector3f(chartPosition.x + 2, yZero, 0));
             buffer.setColor(0xff00ccff);
             buffer.setNormal(1, 0, 0);
-            buffer.addVertex(new Vector3f(chartPosition.x + info.chartWidth + 2, chartPosition.y + (int) heightOffSet, 0));
+            buffer.addVertex(new Vector3f(chartPosition.x + info.chartWidth + 2, yZero, 0));
             buffer.setColor(0xff00ccff);
             buffer.setNormal(1, 0, 0);
         }
 
-        for (int x = 0; x < (info.chartWidth * widthScale)  && x < header -1; x++)
+        for (int x = 0; x < (info.chartWidth * widthScale)  && x < used -1; x++)
         {
-            int fx = xLeft + Math.round(Math.round(x / widthScale));
+            int fx = xLeft + Math.round(Math.round(x / widthScale)) + (int) widthOffSet;
             int y = points[x];
+            fx = Math.clamp(fx, info.chartPosition.x, info.chartPosition.x + info.chartWidth);
 
-            int fx2 = xLeft + Math.round(Math.round((x+1) / widthScale));
+            int fx2 = xLeft + Math.round(Math.round((x+1) / widthScale)) + (int) widthOffSet;
             int y2 = points[x + 1];
+            fx2 = Math.clamp(fx2, info.chartPosition.x, info.chartPosition.x + info.chartWidth);
 
             buffer.addVertex(fx, y, 0);
             buffer.setColor(color);
