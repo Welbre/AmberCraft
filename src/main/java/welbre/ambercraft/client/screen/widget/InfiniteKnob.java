@@ -55,11 +55,16 @@ public class InfiniteKnob extends AbstractWidget
     {
         if (isMouseOver(mouseX, mouseY))
         {
-            //shift + scroll double the speed
+            //shift + scroll 10x the speed
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 340) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 344))
             {
-                scrollX *= 2;
-                scrollY *= 2;
+                scrollX *= 10;
+                scrollY *= 10;
+            }
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_RCONTROL))
+            {
+                scrollX /= 10;
+                scrollY /= 10;
             }
 
 

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -25,9 +26,11 @@ public class OscilloscopeScreen extends Screen
     /// where the chart origin is positioned
     public Vector2i chartPosition;
 
+    public int cursor = -1;
+    public boolean isPaused = false;
 
 
-    public Trace[] traces = new Trace[]{new Trace(100, this)};
+    public Trace[] traces = new Trace[]{new Trace(1000, this)};
 
     public OscilloscopeScreen(FriendlyByteBuf buf)
     {
@@ -39,10 +42,10 @@ public class OscilloscopeScreen extends Screen
         super.init();
         addRenderableWidget(new StringWidget(Component.literal("olá"), font));
         chartPosition = new Vector2i((width - chartWidth) / 2,(height - charHeight) / 2);
-        addRenderableWidget(new InfiniteKnob(100 ,100 ,50 ,50, new double[]{0.01,0.01}, 1).setOnValueChange(this::zoomXAxes).setRestriction(d -> {return d > 0;}));
-        addRenderableWidget(new InfiniteKnob(100 ,150 ,50 ,50, new double[]{0.01,0.01}, 20).setOnValueChange(this::moveXAxes).setRestriction(d -> {return d > 0;}));
-        addRenderableWidget(new InfiniteKnob(100 ,200 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::zoomYAxes).setRestriction(d -> {return true;}));
-        addRenderableWidget(new InfiniteKnob(100 ,250 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::moveYAxes).setRestriction(d -> {return true;}));
+        addRenderableWidget(new InfiniteKnob(100 ,100 ,50 ,50, new double[]{0.01,0.01}, 1).setOnValueChange(this::zoomXAxes));
+        addRenderableWidget(new InfiniteKnob(100 ,150 ,50 ,50, new double[]{0.01,0.01}, 20).setOnValueChange(this::moveXAxes));
+        addRenderableWidget(new InfiniteKnob(100 ,200 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::zoomYAxes));
+        addRenderableWidget(new InfiniteKnob(100 ,250 ,50 ,50, new double[]{0.01,0.01}, 0).setOnValueChange(this::moveYAxes));
         Button.Builder clear = Button.builder(Component.literal("clear"), button -> {
             clearData();
         });
@@ -50,9 +53,13 @@ public class OscilloscopeScreen extends Screen
             for (var trace : traces)
                 trace.isContinuos = !trace.isContinuos;
         });
+        Button.Builder pause = Button.builder(Component.literal("pause"), button -> {
+            isPaused = !isPaused;
+        });
 
         addRenderableWidget(clear.bounds(100, 300, 50, 50).build());
         addRenderableWidget(mode.bounds(100, 360, 50, 50).build());
+        addRenderableWidget(pause.bounds(100, 410, 50, 50).build());
     }
 
     @Override
@@ -74,11 +81,9 @@ public class OscilloscopeScreen extends Screen
     {
         try
         {
-            VertexConsumer buffer = source.getBuffer(RenderType.lines());
-
             //render traces
             for (Trace trace : traces)
-                trace.render(buffer, this);
+                trace.render(source, this);
 
         } catch (Exception a)
         {
@@ -95,6 +100,9 @@ public class OscilloscopeScreen extends Screen
 
     public void updateData(double value)
     {
+        if (isPaused)
+            return;
+
         traces[0].pushData(value, this);
 
         computeMaxAndMin(value);
@@ -117,6 +125,12 @@ public class OscilloscopeScreen extends Screen
         if (keyCode == InputConstants.KEY_SPACE)
         {
             for (Trace trace : traces)
+                trace.centralize(this);
+            return true;
+        }
+        if (keyCode == InputConstants.KEY_C)
+        {
+            for (Trace trace : traces)
                 trace.autoScaleY(this);
             return true;
         }
@@ -135,6 +149,17 @@ public class OscilloscopeScreen extends Screen
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY)
     {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    {
+        if (mouseX >= chartPosition.x && mouseX <= chartPosition.x + chartWidth && mouseY >= chartPosition.y && mouseY <= chartPosition.y + charHeight)
+            cursor = (int) Math.round(mouseY);
+        else
+            cursor = -1;
+
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     public void zoomXAxes(InfiniteKnob infiniteKnob, double delta)
