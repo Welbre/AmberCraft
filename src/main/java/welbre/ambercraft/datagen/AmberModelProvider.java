@@ -107,6 +107,8 @@ public class AmberModelProvider extends ModelProvider {
                 "connection_creative_block", "connection_creative_block", "capacitor_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.INDUCTOR_BLOCK.get(),
                 "connection_creative_block", "connection_creative_block", "inductor_block");
+        CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.DIODE_BLOCK.get(),
+                "connection_creative_block", "connection_creative_block", "diode_block");
         CREATE_AMBER_SIDED_BLOCK(blocks, AmberCraft.Blocks.GROUND_BLOCK.get(),
                 "connection_creative_block", "ground_block","ground_block");
         blocks.blockStateOutput.accept(MultiVariantGenerator.multiVariant(AmberCraft.Blocks.INSULATOR_BLOCk.get(), Variant.variant().with(VariantProperties.MODEL, ResourceLocation.parse("ambercraft:block/insulator_block"))));

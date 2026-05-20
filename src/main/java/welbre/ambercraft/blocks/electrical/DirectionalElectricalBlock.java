@@ -13,6 +13,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import welbre.ambercraft.blockentity.electrical.DirectionalElectricalBE;
 
+
+/**
+ * Should be registred in {@link welbre.ambercraft.AmberCraft.Blocks#DIRECTIONAl_ELECTRICAL_BE_USERS}
+ * @see welbre.ambercraft.blocks.electrical.ElectricalBlock
+ */
 public class DirectionalElectricalBlock extends ElectricalBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
