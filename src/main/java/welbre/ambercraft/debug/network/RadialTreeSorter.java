@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 /***
  * Sort the network in a radial tree;
  */
-//fixme after the network module rework, this is completely fucked, re-code all
 public class RadialTreeSorter implements NetworkWidgetSorter {
     private static boolean PRINT_DEBUG_TRACE = false;
 
