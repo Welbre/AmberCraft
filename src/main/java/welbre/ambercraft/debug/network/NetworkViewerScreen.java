@@ -208,7 +208,7 @@ public class NetworkViewerScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         fixedRenderableWidget.forEach(widget -> widget.mouseScrolled(mouseX, mouseY, scrollX, scrollY));
         var mouse = this.TransformGlobalMouseToLocal(mouseX, mouseY);
-        final float newZoom = (float) Math.max(0.25, Math.min(4.0, zoom + scrollY * 0.25));
+        final float newZoom = (float) Math.clamp(zoom + scrollY * 0.25, 0.25, 4.0);
         final float delta = newZoom - zoom;
         if (delta == 0)
             return false;

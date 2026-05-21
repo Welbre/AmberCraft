@@ -41,15 +41,18 @@ public class Trace
 
     public Trace(int size, OscilloscopeScreen info)
     {
-        this(new double[size], info);
+        this(new double[size],0, info);
         if (size <= 0)
             throw new IllegalArgumentException("Size must be greater than 0");
     }
 
-    public Trace(double[] data, OscilloscopeScreen info)
+    public Trace(double[] data, int head, OscilloscopeScreen info)
     {
         this.data = data;
+        this.head = head;
+        this.used = head;
         this.points = new int[data.length];
+        reComputeAllPoints(info);
     }
 
 
