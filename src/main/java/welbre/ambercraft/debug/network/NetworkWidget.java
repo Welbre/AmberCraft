@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
@@ -37,7 +38,7 @@ public class NetworkWidget extends AbstractWidget {
     public static final int CHILDREN_CONNECTION_COLOR = 0XFF7D86D1;
     public static final int FATHER_CONNECTION_COLOR = 0XFFCB200F;
     public static final int DEFAULT_SIZE = 60;
-    public static final float BLOCK_SCALE = 30f;
+    public static final float BLOCK_SCALE = 20f;
 
     public int color = 0;
     public final ModulesHolder holder;
@@ -246,7 +247,7 @@ public class NetworkWidget extends AbstractWidget {
         // stack control
         graphics.pose().pushPose();
         var p = graphics.pose();
-        p.translate(getX() + width/2f - BLOCK_SCALE/2f, getY()+ height/2f - BLOCK_SCALE/2f, 40);
+        p.translate(getX() + width/2f - BLOCK_SCALE/2f, getY()+ height*2f/3f - BLOCK_SCALE/2f, 40);
         p.rotateAround(new Quaternionf().rotateZ((float) Math.PI).rotateY((float) (yRotation / 30f)).rotateX((float) (Math.PI / 6f)), BLOCK_SCALE/2f,BLOCK_SCALE/2f,-BLOCK_SCALE/2f);
         p.scale(BLOCK_SCALE,BLOCK_SCALE,-BLOCK_SCALE);
 
@@ -261,6 +262,9 @@ public class NetworkWidget extends AbstractWidget {
         for (RenderType renderType : bakedmodel.getRenderTypes(blockState, RandomSource.create(42), modelData))
         {
             var consume = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(renderType);
+            for (var dir : Direction.values())
+                for (BakedQuad quad : bakedmodel.getQuads(blockState, dir, RandomSource.create(42), modelData, renderType))
+                    consume.putBulkData(graphics.pose().last(), quad, r, g, b, 1f, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, true);
             for (BakedQuad quad : bakedmodel.getQuads(blockState, null, RandomSource.create(42), modelData, renderType))
                 consume.putBulkData(graphics.pose().last(), quad, r, g, b, 1f, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, true);
         }

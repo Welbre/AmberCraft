@@ -163,28 +163,37 @@ public class RadialTreeSorter implements NetworkWidgetSorter {
         return COMPUTE_ORBIT_HELPER(module, center, 0, visited);
     }
 
-    private int COMPUTE_ORBIT_HELPER(NetworkModule module, NetworkModule center, int orbit, HashSet<NetworkModule> visited)
+    private int COMPUTE_ORBIT_HELPER(NetworkModule module, NetworkModule center, int orbit, HashSet<NetworkModule> visited_)
     {
         if (module.ID == center.ID)
             return orbit;
-        if (visited.contains(module))
-            return -1;
-        visited.add(module);
-        for (NetworkModule child : module.getNeighbors())
-        {
-            int childOrbit = COMPUTE_ORBIT_HELPER(child, center, orbit+1, visited);
-            if (childOrbit != -1)
-                return childOrbit;
-        }
-        if (module.getMaster() != null)
-        {
-            if (module.getMaster().ID == center.ID)
-                return orbit+1;
+        Queue<NetworkModule> toSearch = new ArrayDeque<>();
+        List<Integer> visited = new ArrayList<>();
+        toSearch.add(center);
 
-            int fatherOrbit = COMPUTE_ORBIT_HELPER(module.getMaster(), center, orbit+1, visited);
-            if (fatherOrbit != -1)
-                return fatherOrbit;
+        while (!toSearch.isEmpty())
+        {
+            orbit++;
+            Queue<NetworkModule> children = new ArrayDeque<>();
+
+            while (!toSearch.isEmpty())
+            {
+                var father = toSearch.poll();
+                visited.add(father.ID);
+
+                for (var child : father.getNeighbors())
+                {
+                    if (child.ID == module.ID)
+                        return orbit;
+
+                    if (!visited.contains(child.ID))//don't search path already tested.
+                        children.add(child);
+                }
+            }
+
+            toSearch = children;
         }
+
         return -1;
     }
 

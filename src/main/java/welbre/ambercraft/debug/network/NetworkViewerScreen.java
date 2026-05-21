@@ -29,7 +29,6 @@ import java.util.Random;
 
 //todo check for problems because we change how network modules works!
 //todo create a context menu in the left click in a widget
-//todo render the block in the screen based on the modulesholder
 //todo create a button to toggle the ModulesHolder packer, a function to create one widget to holders that contains more that 1 module.
 public class NetworkViewerScreen extends Screen {
 
