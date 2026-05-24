@@ -66,7 +66,7 @@ public class MultimeterItem extends Item {
     @Override
     public @NotNull InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
         //click in the ar, change the multimeter mode
-        if (player instanceof ServerPlayer sPlayer)
+        if (player instanceof ServerPlayer sPlayer && sPlayer.isShiftKeyDown())
         {
             ItemStack stack = player.getItemInHand(hand);
             MultimeterComponent component = PUT_MODULE_IF_ABSTENDE(stack);

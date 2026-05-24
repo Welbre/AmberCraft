@@ -18,7 +18,7 @@ import java.util.stream.DoubleStream;
 public class Trace
 {
     public boolean isVisible = true;
-    public int color = -1;//white
+    public int color;
     /// each 1 value means 20 pixels of width
     public double widthScale = 1;
     /// each 1 value means 20 pixels of height
@@ -39,18 +39,19 @@ public class Trace
     /// store a transformed value used directly in the render process.
     public int[] points;
 
-    public Trace(int size, OscilloscopeScreen info)
+    public Trace(int size, int color, OscilloscopeScreen info)
     {
-        this(new double[size],0, info);
+        this(new double[size],0,color, info);
         if (size <= 0)
             throw new IllegalArgumentException("Size must be greater than 0");
     }
 
-    public Trace(double[] data, int head, OscilloscopeScreen info)
+    public Trace(double[] data, int head, int color, OscilloscopeScreen info)
     {
         this.data = data;
         this.head = head;
         this.used = head;
+        this.color = color;
         this.points = new int[data.length];
         reComputeAllPoints(info);
     }
@@ -58,7 +59,7 @@ public class Trace
 
     public void clearData()
     {
-        isFresh = true;
+        isFresh = false;
         head = 0;
         used = 0;
         data = new double[data.length];

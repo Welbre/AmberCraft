@@ -19,6 +19,16 @@ import java.util.List;
 
 public class OscilloscopeScreen extends Screen
 {
+    public static final int[] TRACE_COLORS = {
+        0xFFFFFF00, // amarelo
+        0xFF00FFFF, // ciano
+        0xFFFF00FF, // magenta
+        0xFF00FF00, // verde
+        0xFFFFA500, // laranja
+        0xFFFF4040, // vermelho suave
+        0xFF4DA6FF, // azul claro
+        0xFFFFFFFF  // branco
+    };
     public boolean isAutomaticYScale = true;
 
     public int chartWidth = 480;
@@ -59,6 +69,7 @@ public class OscilloscopeScreen extends Screen
         });
         Button.Builder disconnectProbe = Button.builder(Component.literal("disconnect"), button -> {
             OscilloscopeDataPayload.DATA.remove(oscilloscope_id);
+            traces = new Trace[0];
             PacketDistributor.sendToServer(new OscilloscopeClosedPayload());
         });
 
@@ -72,11 +83,13 @@ public class OscilloscopeScreen extends Screen
         if (data != null)
         {
             traces = new Trace[data.size()];
+            int color = 0;
 
             for (OscilloscopeDataPayload.DataTrace dTrace : data)
                 traces[dTrace.id] = new Trace(
                         dTrace.head >= 1000 ? Arrays.copyOfRange(dTrace.data, dTrace.head-1000, dTrace.head) : Arrays.copyOf(dTrace.data, 1000),
                         dTrace.head >= 1000 ? 1000 : dTrace.head,
+                        TRACE_COLORS[color++ % 8],
                         this
                 );
         }
@@ -132,7 +145,7 @@ public class OscilloscopeScreen extends Screen
             var len = OscilloscopeDataPayload.DATA.get(oscilloscope_id).size();
             var temp = new Trace[len];
             System.arraycopy(traces, 0, temp, 0, traces.length);
-            temp[len-1] = new Trace(1000, this);
+            temp[len-1] = new Trace(1000, TRACE_COLORS[len-1 % 8], this);
 
             traces = temp;
         }

@@ -42,13 +42,16 @@ public class OscilloscopeItem extends MultimeterItem
     @Override
     public @NotNull InteractionResult use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand)
     {
+        var result = super.use(level, player, hand);
+        if (result.consumesAction())
+            return result;
+
         if (player instanceof ServerPlayer serverPlayer)
-            if (serverPlayer.isShiftKeyDown())
-            {
-                openOscilloscopeScreen(serverPlayer, GET_OSCLLOSCOPE_ID(player));
-                return InteractionResult.SUCCESS;
-            }
-        return super.use(level, player, hand);
+        {
+            openOscilloscopeScreen(serverPlayer, GET_OSCLLOSCOPE_ID(player));
+            return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.FAIL;
     }
 
     //----------------------------------------------------Voltage
