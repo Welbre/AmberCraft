@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.registries.*;
 import org.slf4j.Logger;
 import welbre.ambercraft.blockentity.FacedCableBE;
@@ -28,7 +29,7 @@ import welbre.ambercraft.blocks.heat.*;
 import welbre.ambercraft.cables.CableType;
 import welbre.ambercraft.cables.types.ElectricalCableType;
 import welbre.ambercraft.cables.types.HeatCableType;
-import welbre.ambercraft.commands.Event;
+import welbre.ambercraft.commands.CommandRegister;
 import welbre.ambercraft.item.*;
 import welbre.ambercraft.item.components.FacedCableComponent;
 import welbre.ambercraft.item.components.MultimeterComponent;
@@ -50,9 +51,12 @@ public class AmberCraft {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public AmberCraft(IEventBus modBus, ModContainer container) {
-        modBus.addListener(AmberRegisters::registerRegistries);
-        Event.register();
+        //NEO-FORGE REGISTER
+        CommandRegister.register();
+        NeoForge.EVENT_BUS.addListener(OscilloscopeItem::onLevelLoad);
 
+        //MODBUS REGISTER
+        modBus.addListener(AmberRegisters::registerRegistries);
 
         Modules.REGISTER.register(modBus);
         CableTypes.REGISTER.register(modBus);

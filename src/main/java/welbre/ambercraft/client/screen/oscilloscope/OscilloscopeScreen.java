@@ -11,11 +11,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 import welbre.ambercraft.client.screen.widget.InfiniteKnob;
-import welbre.ambercraft.network.OscilloscopeDataPayload;
-import welbre.ambercraft.network.oscilloscope.OscilloscopeClosedPayload;
+import welbre.ambercraft.network.OscilloscopePayload;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 public class OscilloscopeScreen extends Screen
 {
@@ -41,7 +42,7 @@ public class OscilloscopeScreen extends Screen
     public final int oscilloscope_id;
 
 
-    public Trace[] traces = new Trace[0];
+    public HashMap<Integer, Trace> traces = new HashMap<>();
 
     public OscilloscopeScreen(FriendlyByteBuf buf)
     {
@@ -61,16 +62,16 @@ public class OscilloscopeScreen extends Screen
             clearData();
         });
         Button.Builder mode = Button.builder(Component.literal("mode"), button -> {
-            for (var trace : traces)
+            for (var trace : traces.values())
                 trace.isContinuos = !trace.isContinuos;
         });
         Button.Builder pause = Button.builder(Component.literal("pause"), button -> {
             isPaused = !isPaused;
         });
         Button.Builder disconnectProbe = Button.builder(Component.literal("disconnect"), button -> {
-            OscilloscopeDataPayload.DATA.remove(oscilloscope_id);
-            traces = new Trace[0];
-            PacketDistributor.sendToServer(new OscilloscopeClosedPayload());
+            OscilloscopePayload.DATA.remove(oscilloscope_id);
+            traces.clear();
+            PacketDistributor.sendToServer(new OscilloscopePayload(OscilloscopePayload.PayType.STOP, 0,0,0));
         });
 
         addRenderableWidget(clear.bounds(100, 300, 50, 50).build());
@@ -79,19 +80,25 @@ public class OscilloscopeScreen extends Screen
         addRenderableWidget(disconnectProbe.bounds(100, 470, 100, 50).build());
 
         //update all trace data.
-        List<OscilloscopeDataPayload.DataTrace> data = OscilloscopeDataPayload.DATA.get(oscilloscope_id);
+        HashMap<Integer, OscilloscopePayload.DataTrace> data = OscilloscopePayload.DATA.get(oscilloscope_id);
         if (data != null)
         {
-            traces = new Trace[data.size()];
+            traces.clear();
             int color = 0;
 
-            for (OscilloscopeDataPayload.DataTrace dTrace : data)
-                traces[dTrace.id] = new Trace(
-                        dTrace.head >= 1000 ? Arrays.copyOfRange(dTrace.data, dTrace.head-1000, dTrace.head) : Arrays.copyOf(dTrace.data, 1000),
-                        dTrace.head >= 1000 ? 1000 : dTrace.head,
-                        TRACE_COLORS[color++ % 8],
-                        this
+            for (Map.Entry<Integer, OscilloscopePayload.DataTrace> entry : data.entrySet())
+            {
+                var dTrace = entry.getValue();
+                traces.put(
+                        entry.getKey(),
+                        new Trace(
+                                dTrace.head >= 1000 ? Arrays.copyOfRange(dTrace.data, dTrace.head-1000, dTrace.head) : Arrays.copyOf(dTrace.data, 1000),
+                                dTrace.head >= 1000 ? 1000 : dTrace.head,
+                                TRACE_COLORS[color++ % 8],
+                                this
+                        )
                 );
+            }
         }
     }
 
@@ -99,8 +106,8 @@ public class OscilloscopeScreen extends Screen
     public void onClose() {
         super.onClose();
         //check if they invalidated the data. if's true, can close all probe processes.
-        if (!OscilloscopeDataPayload.DATA.containsKey(oscilloscope_id))
-            PacketDistributor.sendToServer(new OscilloscopeClosedPayload());
+        if (!OscilloscopePayload.DATA.containsKey(oscilloscope_id))
+            PacketDistributor.sendToServer(new OscilloscopePayload(OscilloscopePayload.PayType.STOP,0,0,0));
     }
 
     @Override
@@ -117,8 +124,9 @@ public class OscilloscopeScreen extends Screen
         try
         {
             //render traces
-            for (Trace trace : traces)
-                trace.render(source, this);
+            for (Trace trace : traces.values())
+                if (trace != null)
+                    trace.render(source, this);
 
         } catch (Exception a)
         {
@@ -129,32 +137,32 @@ public class OscilloscopeScreen extends Screen
 
     public void clearData()
     {
-        for (Trace trace : traces)
-            trace.clearData();
+        for (Trace trace : traces.values())
+            if (trace != null)
+                trace.clearData();
     }
 
     /// Push fresh data from the payloads.
-    public void updateData(OscilloscopeDataPayload.DataTrace trace)
+    public void updateData(OscilloscopePayload.DataTrace dataTrace)
     {
         if (isPaused)
             return;
 
-        //check if the total off screen traces don't math with the data traces.
-        if (traces.length < OscilloscopeDataPayload.DATA.get(oscilloscope_id).size())
-        {
-            var len = OscilloscopeDataPayload.DATA.get(oscilloscope_id).size();
-            var temp = new Trace[len];
-            System.arraycopy(traces, 0, temp, 0, traces.length);
-            temp[len-1] = new Trace(1000, TRACE_COLORS[len-1 % 8], this);
+        var trace = traces.get(dataTrace.id);
 
-            traces = temp;
+        //check if the trace isn't created.
+        if (trace == null)
+        {
+            var len = OscilloscopePayload.DATA.get(oscilloscope_id).size();
+            trace = new Trace(1000, TRACE_COLORS[len -1 % 8], this);
+            traces.put(dataTrace.id, trace);
         }
 
-        for (;trace.bottom < trace.head; trace.bottom++)
+        for (;dataTrace.bottom < dataTrace.head; dataTrace.bottom++)
         {
-            traces[trace.id].pushData(trace.data[trace.bottom], this);
+            trace.pushData(dataTrace.data[dataTrace.bottom], this);
 
-            computeMaxAndMin(trace.data[trace.bottom]);
+            computeMaxAndMin(dataTrace.data[dataTrace.bottom]);
         }
     }
 
@@ -174,20 +182,20 @@ public class OscilloscopeScreen extends Screen
         //auto y-scale
         if (keyCode == InputConstants.KEY_SPACE)
         {
-            for (Trace trace : traces)
+            for (Trace trace : traces.values())
                 trace.centralize(this);
             return true;
         }
         if (keyCode == InputConstants.KEY_C)
         {
-            for (Trace trace : traces)
+            for (Trace trace : traces.values())
                 trace.autoScaleY(this);
             return true;
         }
         //resetData
         if (keyCode == InputConstants.KEY_R && hasControlDown())
         {
-            for (Trace trace : traces)
+            for (Trace trace : traces.values())
                 trace.clearData();
             return true;
         }
@@ -214,7 +222,7 @@ public class OscilloscopeScreen extends Screen
 
     public void zoomXAxes(InfiniteKnob infiniteKnob, double delta)
     {
-        for (Trace trace : traces)
+        for (Trace trace : traces.values())
         {
             trace.widthScale += delta;
             trace.reComputeAllPoints(this);
@@ -223,7 +231,7 @@ public class OscilloscopeScreen extends Screen
 
     public void moveXAxes(InfiniteKnob infiniteKnob, double delta)
     {
-        for (Trace trace : traces)
+        for (Trace trace : traces.values())
         {
             trace.widthOffSet -= 50 * delta;
             trace.reComputeAllPoints(this);
@@ -232,7 +240,7 @@ public class OscilloscopeScreen extends Screen
 
     public void zoomYAxes(InfiniteKnob infiniteKnob, double delta)
     {
-        for (Trace trace : traces)
+        for (Trace trace : traces.values())
         {
             trace.heightScale *= delta < 0 ? 2 : 0.5;
             trace.reComputeAllPoints(this);
@@ -241,7 +249,7 @@ public class OscilloscopeScreen extends Screen
 
     public void moveYAxes(InfiniteKnob infiniteKnob, double delta)
     {
-        for (Trace trace : traces)
+        for (Trace trace : traces.values())
         {
             trace.heightOffSet -= 50 * delta;
             trace.reComputeAllPoints(this);

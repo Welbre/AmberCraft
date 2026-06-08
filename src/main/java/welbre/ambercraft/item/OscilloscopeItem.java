@@ -4,7 +4,7 @@ import io.netty.buffer.Unpooled;
 import kuse.welbre.sim.electrical.Circuit;
 import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.sim.electrical.elements.Resistor;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,7 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.saveddata.maps.MapId;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import welbre.ambercraft.AmberCraft;
@@ -25,7 +25,7 @@ import welbre.ambercraft.module.electrical.ElectricalElementModule;
 import welbre.ambercraft.module.electrical.ElectricalMaster;
 import welbre.ambercraft.module.electrical.ElectricalTerminalModule;
 import welbre.ambercraft.module.network.NetworkModule;
-import welbre.ambercraft.network.OscilloscopeDataPayload;
+import welbre.ambercraft.network.OscilloscopePayload;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 public class OscilloscopeItem extends MultimeterItem
 {
     //used to store the player uuid in the oscilloscope section.
-    public static final HashMap<UUID,Integer> WATCHERS = new HashMap<>();
+    public static final HashMap<UUID,HashSet<Integer>> WATCHERS = new HashMap<>();
 
     public OscilloscopeItem(Properties properties) {
         super(properties);
@@ -288,8 +288,14 @@ public class OscilloscopeItem extends MultimeterItem
     {
         //start the scheduler that will update the oscilloscope data.
         final int osc_id = GET_OSCLLOSCOPE_ID(player);
-        final int trace_id = WATCHERS.getOrDefault(player.getUUID(),0);
-        master.scheduler.scheduleEachTick(0, 0, 99999999, (s) -> {}, task -> {
+        WATCHERS.putIfAbsent(player.getUUID(), new HashSet<>());
+        final HashSet<Integer> trace = WATCHERS.get(player.getUUID());
+        final int trace_id = new Random().nextInt();
+
+        //start a new trace
+        PacketDistributor.sendToPlayer(player, new OscilloscopePayload(OscilloscopePayload.PayType.START, osc_id, trace_id, 0));
+
+        master.scheduler.scheduleEachTick(2f/20f, 0, 99999999, (s) -> {}, task -> {
             if (SHOULD_END_WATCHER(player))
             {
                 task.markToRemove();
@@ -297,10 +303,10 @@ public class OscilloscopeItem extends MultimeterItem
                 return;
             }
 
-            PacketDistributor.sendToPlayer(player, new OscilloscopeDataPayload(osc_id, trace_id, dataSupplier.get()));
+            PacketDistributor.sendToPlayer(player, new OscilloscopePayload(OscilloscopePayload.PayType.PUSH, osc_id, trace_id, dataSupplier.get()));
         });
 
-        WATCHERS.put(player.getUUID(), trace_id + 1);
+        trace.add(trace_id);//push a new trace_id
         openOscilloscopeScreen(player, osc_id);
     }
 
@@ -332,9 +338,15 @@ public class OscilloscopeItem extends MultimeterItem
         if (itemInHand.isEmpty())
             throw new RuntimeException("Player without a oscilloscope in hands while using the OscilloscopeItem");
 
-        if (!itemInHand.getComponents().has(DataComponents.MAP_ID))
-            itemInHand.set(DataComponents.MAP_ID, new MapId(new Random().nextInt()));
+        return itemInHand.get(AmberCraft.Components.MULTIMETER_CACHE_DATA_COMPONENT.get()).id().hashCode();
+    }
 
-        return itemInHand.get(DataComponents.MAP_ID).id();
+    ///Clear the WATCHERS when the level loads.
+    public static void onLevelLoad(LevelEvent.Load event)
+    {
+        WATCHERS.clear();
+        if (Minecraft.getInstance().level != null)
+            if (Minecraft.getInstance().level.isClientSide)
+                OscilloscopePayload.DATA.clear();
     }
 }

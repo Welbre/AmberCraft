@@ -4,7 +4,6 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import welbre.ambercraft.network.facedcable.FacedCableRemoveFacePayload;
 import welbre.ambercraft.network.facedcable.FacedCableStateChangePayload;
-import welbre.ambercraft.network.oscilloscope.OscilloscopeClosedPayload;
 
 public class PayLoadRegister {
     public static void registerPayLoads(RegisterPayloadHandlersEvent event) {
@@ -52,16 +51,11 @@ public class PayLoadRegister {
                 AmberValueModifierPayload::handleOnServer
         );
 
-        registrar.playToClient(
-                OscilloscopeDataPayload.TYPE,
-                OscilloscopeDataPayload.STREAM_CODEC,
-                OscilloscopeDataPayload::handleOnClient
-        );
-
-        registrar.playToServer(
-                OscilloscopeClosedPayload.TYPE,
-                OscilloscopeClosedPayload.STREAM_CODEC,
-                OscilloscopeClosedPayload::handleOnServer
+        //oscilloscope payloads
+        registrar.playBidirectional(
+                OscilloscopePayload.TYPE,
+                OscilloscopePayload.STREAM_CODEC,
+                OscilloscopePayload::handlePacket
         );
 
         //faced cables payloads
