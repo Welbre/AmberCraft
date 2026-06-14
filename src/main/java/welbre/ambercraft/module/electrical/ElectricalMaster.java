@@ -5,6 +5,7 @@ import kuse.welbre.sim.electrical.CircuitAnalyser;
 import kuse.welbre.sim.electrical.abstractt.Element;
 import kuse.welbre.sim.electrical.abstractt.Element3Pin;
 import kuse.welbre.sim.electrical.abstractt.Element4Pin;
+import kuse.welbre.sim.electrical.abstractt.Watcher;
 import kuse.welbre.sim.electrical.elements.Resistor;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -16,7 +17,7 @@ import welbre.ambercraft.module.network.NetworkModule;
 import java.util.*;
 
 public class ElectricalMaster extends Master {
-    /// Runs each tick after the circuit tick, useful to attack watchers.
+    /// Runs each tick after the circuit tick, useful to attach watchers.
     public transient Scheduler scheduler = new Scheduler();
     public transient AutoGroundingCircuit circuit;
     public boolean isCrashed = false;
@@ -33,6 +34,11 @@ public class ElectricalMaster extends Master {
             //this is extremely important, creating a circuit is expensive, redundant tasks should be avoided.
             return true;
         Profiler.get().push("ElectricalModuleMaster compile");
+
+        // run pre-compilation
+        for (NetworkModule v : master)
+            if (v instanceof ElectricalModule e)
+                e.preCompile(this);
 
         Set<Element> elements = new HashSet<>();
         Set<NetworkModule> visited = new HashSet<>();
@@ -56,6 +62,11 @@ public class ElectricalMaster extends Master {
         //the voltage sources are using the same pins, causing an infinite loop with no resistence and a matrix singular exception
         circuit = new AutoGroundingCircuit();
         circuit.addElement(elements);
+
+        // run pos compilation
+        for (NetworkModule v : master)
+            if (v instanceof ElectricalModule e)
+                e.posCompile(this);
 
         try
         {
